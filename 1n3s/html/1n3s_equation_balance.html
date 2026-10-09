@@ -380,11 +380,20 @@ function drawMv(now){
     if(cur.shakeT&&now-cur.shakeT<450){const q=(now-cur.shakeT)/450;dx=Math.sin(q*Math.PI*6)*0.12*F*(1-q);busy=true;}
     drawTile(t,cur.x+dx,cur.y,p.w,F,p.lead,{a,sc:(age<300?0.85+0.15*a:1)*sc*hs,flash,signRed,green:solved,hl});}
   // division animation: red fraction bars under both sides
-  if(mv.div){const t=(now-mv.div.t0)/(900*SPD.k);busy=true;const a=Math.min(1,t*2.5);ctx.globalAlpha=a;
-    for(let s=0;s<2;s++){const[x0,x1]=WS[s].length?lay.ext[s]:(s===0?[eqX-lay.eg-0.8*F,eqX-lay.eg]:[eqX+lay.eg,eqX+lay.eg+0.8*F]);const yb=y+0.9*F;
-      ctx.strokeStyle=RED;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x0,yb);ctx.lineTo(x1,yb);ctx.stroke();
-      drawToks([...(mv.div.a.n<0?[{s:MI}]:[]),...numToks(mv.div.a)],(x0+x1)/2,yb+0.48*F,0.72*F,"center",RED);}
-    ctx.globalAlpha=1;}
+  if(mv.div){ // coefficient lifts off → red fraction bars slide under both sides → it becomes the denominator on both
+    const T=Math.min(1,(now-mv.div.t0)/(1300*SPD.k));busy=true;
+    const den=[...(mv.div.a.n<0?[{s:MI}]:[]),...numToks(mv.div.a)],G=coefGeom(lay,mv.div.id,F)||{cx:eqX,y};
+    const top={x:G.cx,y:y-1.15*F},yb=y+0.9*F;
+    const lbl=(x,yy,sz)=>{const w=tw(den,sz)+0.3*sz;ctx.fillStyle="#fff";rrect(x-w/2,yy-0.62*sz,w,1.24*sz,0.2*sz);ctx.fill();drawToks(den,x,yy,sz,"center",RED);};
+    if(T<0.3){const e=easeOut(T/0.3);lbl(G.cx,G.y+(top.y-G.y)*e,F*(1-0.15*e));}
+    else{const e=ease(Math.min(1,(T-0.3)/0.4));
+      for(let s=0;s<2;s++){const[x0,x1]=WS[s].length?lay.ext[s]:(s===0?[eqX-lay.eg-0.8*F,eqX-lay.eg]:[eqX+lay.eg,eqX+lay.eg+0.8*F]),mx=(x0+x1)/2,hw=(x1-x0)/2*e;
+        ctx.strokeStyle=RED;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(mx-hw,yb);ctx.lineTo(mx+hw,yb);ctx.stroke();
+        lbl(top.x+(mx-top.x)*e,top.y+(yb+0.48*F-top.y)*e,F*(0.85-0.13*e));}}}
+  // tap hint: the coefficient pulses when 両辺をわる is possible
+  if(!D&&!mvBusy()){const I=divInfo();if(I){const G=coefGeom(lay,cS()[I.side][0].id,F);if(G){busy=true;
+    ctx.globalAlpha=0.35+0.35*Math.sin(now/380);ctx.strokeStyle=RED;ctx.lineWidth=5;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(G.x0,G.y+0.5*F);ctx.lineTo(G.x0+G.cw,G.y+0.5*F);ctx.stroke();ctx.globalAlpha=1;}}}
   // dragged tile (sign flips when crossing "=")
   if(D){const cx=D.x-D.ox,cy=D.y-D.oy,vs=cx<eqX?0:1;
     if(vs!==D.vs){D.vs=vs;D.flipT=now;}
@@ -419,8 +428,12 @@ function mvCombApply(G){const S=cloneS(cS());
       const cur=mv.tp.get(g.keep);if(cur)cur.born=performance.now()-120;}
     mv.comb=null;mvPush(S,{type:"comb"});}
 function mvDiv(){if(mvBusy()||mv.drag)return;const I=divInfo();if(!I)return;
-  mv.div={t0:performance.now(),a:I.a};kick();ui();
-  setTimeout(()=>mvDivApply(I),950*SPD.k);}
+  const id=cS()[I.side][0].id;mv.div={t0:performance.now(),a:I.a,side:I.side,id};kick();ui();
+  setTimeout(()=>mvDivApply(I),1400*SPD.k);}
+// coefficient of the single x tile (for the tap hint and the divide animation)
+function coefGeom(lay,id,F){const p=lay.pos.get(id),t=cS().flatMap(x=>x).find(q=>q.id===id);if(!p||!t)return null;
+  const cw=t.v.n<0&&qone(qabs(t.v))?tw([{s:MI}],F):tw(termToks(t.k,t.v,true,{tile:true}),F)-tw([{s:"x",it:true}],F);
+  const x0=p.x-tw(termToks(t.k,t.v,p.lead,{tile:true}),F)/2;return{x0,cw,cx:x0+cw/2,y:p.y};}
 function mvDivApply(I){const before=cloneS(cS()),S=cloneS(cS());
     for(const side of S)for(const t of side)t.v=qdiv(t.v,I.a);
     mv.div=null;mvPush(S,{type:"div",a:I.a,before});}
@@ -507,7 +520,7 @@ function ui(){
   $("tBal").classList.toggle("on",mode==="bal");$("tMv").classList.toggle("on",mode==="mv");
   document.querySelectorAll(".b").forEach(b=>b.classList.toggle("hide",mode!=="bal"));
   document.querySelectorAll(".m").forEach(b=>b.classList.toggle("hide",mode!=="mv"));
-  const dv=$("bDiv");
+  const dv=$("bDiv");dv.classList.toggle("hide",mode!=="bal");
   if(mode==="bal"){const g=balGcd();dv.textContent=g>=2?"÷"+g:"÷";dv.disabled=g<2||!!bal.drag;$("bMul").disabled=!canMul();$("bRand").disabled=false;
     $("bBack").disabled=!bal.hist.length;$("bPrev").disabled=!bal.rand&&bal.i===0;$("bNext").disabled=!bal.rand&&bal.i===BP.length-1;}
   else{const I=divInfo(),busy=!!(mvBusy());
@@ -544,14 +557,14 @@ cv.addEventListener("pointerdown",e=>{
     for(let s=0;s<2;s++)for(const t of S[s]){const q=mv.lay.pos.get(t.id),c=mv.tp.get(t.id)||q;if(!q)continue;
       if(Math.abs(p.x-c.x)<=q.w/2+6&&Math.abs(p.y-c.y)<=0.73*mv.F+8)hit={t,s,c};}
     if(!hit)return;
-    mv.drag={t:hit.t,from:hit.s,idx0:S[hit.s].indexOf(hit.t),vs:hit.s,shown:hit.s,flipT:-1e9,x:p.x,y:p.y,ox:p.x-hit.c.x,oy:p.y-hit.c.y};
+    mv.drag={t0:performance.now(),x0:p.x,y0:p.y,moved:false,t:hit.t,from:hit.s,idx0:S[hit.s].indexOf(hit.t),vs:hit.s,shown:hit.s,flipT:-1e9,x:p.x,y:p.y,ox:p.x-hit.c.x,oy:p.y-hit.c.y};
   }
   pid=e.pointerId;try{cv.setPointerCapture(pid);}catch(_){}ui();kick();});
 cv.addEventListener("pointermove",e=>{
   if(e.pointerId!==pid){if(e.pointerType==="mouse"&&pid===null)hover(e);return;}
   e.preventDefault();const p=pos(e);
   if(mode==="bal"&&bal.drag){bal.drag.x=p.x;bal.drag.y=p.y;}
-  if(mode==="mv"&&mv.drag){mv.drag.x=p.x;mv.drag.y=p.y;}
+  if(mode==="mv"&&mv.drag){const D=mv.drag;D.x=p.x;D.y=p.y;if(Math.hypot(p.x-D.x0,p.y-D.y0)>8)D.moved=true;}
   kick();});
 function hover(e){const p=pos(e);let g=false;
   if(mode==="bal")g=bal.hits.some(q=>p.x>=q.x0&&p.x<=q.x1&&p.y>=q.y0&&p.y<=q.y1);
@@ -566,7 +579,11 @@ function end(e){
       else{bal.ghosts.push({k:D.it.k,neg:D.it.neg,x:ix,y:iy,t0:now,mode:D.it.neg?"pop":"rise"});}} // taken off
     afterB(now);}
   if(mode==="mv"&&mv.drag){const D=mv.drag;mv.drag=null;const cx=D.x-D.ox,cy=D.y-D.oy,s=cx<W/2?0:1;
-    const cur=mv.tp.get(D.t.id);if(cur){cur.x=cx;cur.y=cy;}
+    const cur=mv.tp.get(D.t.id);
+    if(!D.moved&&now-D.t0<300){   // tap: x tile → 両辺を係数でわる (or shake if not ready yet)
+      if(D.t.k==="x"){const I=divInfo();if(I&&I.side===D.from)mvDiv();else if(!mvSolved()&&cur)cur.shakeT=now;}
+      ui();kick();return;}
+    if(cur){cur.x=cx;cur.y=cy;}
     const tg=mv.lay?mvHover(D,mv.lay,cS().map(side=>side.filter(t=>t.id!==D.t.id))):null;
     if(tg){if(tg.like)mvMergeStart(D.t.id,tg.id);else if(cur)cur.shakeT=now;ui();kick();return;}   // like → calculate, unlike → bounce back
     const S0=cS().map(side=>side.filter(t=>t.id!==D.t.id));
@@ -621,6 +638,7 @@ window.__eq={
     const I=divInfo();if(I){mvDivApply(I);out.steps++;chk();}
     out.solved=mvSolved();out.eq=eqStr(cS());out.ans=qstr(mv.P[2]);out.ok=out.solved&&out.eq==="x="+out.ans&&!out.bad.length;return out;},
   speed:k=>{SPD.k=k;},
+  xTile:()=>{const lay=mvLayout(cS(),null);for(const side of cS())for(const t of side)if(t.k==="x"){const G=coefGeom(lay,t.id,mv.F),p=lay.pos.get(t.id);return{x:p.x,y:p.y,cx:G.cx,cy:G.y,div:!!divInfo()};}return null;},
   mvLoad:(L,R,n,d)=>{mvLoad([L,R,Q(n,d||1)],true);return eqStr(cS());},
   tiles:()=>{const lay=mvLayout(cS(),null);return cS().map(side=>side.map(t=>{const p=lay.pos.get(t.id);return{id:t.id,k:t.k,v:qstr(t.v),x:p.x,y:p.y,w:p.w};}));},
   bounds:()=>{const lay=mvLayout(cS(),null),Fh=0.5*mv.F;let ok=lay.ext[0][0]>=0&&lay.ext[1][1]<=W;
