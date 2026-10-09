@@ -292,12 +292,14 @@ const MP=[ // 教科書 p.97〜99 の式  [左辺, 右辺, 解]
   [[["x",9]],[["n",4],["x",-7]],Q(1,4)],            // 9x=4−7x
   [[["x",3],["n",9]],[["x",-1],["n",-11]],Q(-5)],   // 3x+9=−x−11
 ];
-const mv={i:0,P:null,rand:false,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
+const SPD={k:1}; // animation time factor (tests only)
+const mv={i:0,merge:null,P:null,rand:false,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
 const cS=()=>mv.steps[mv.steps.length-1].S;
+const mvBusy=()=>!!(mv.comb||mv.div||mv.merge);
 const cloneS=S=>S.map(side=>side.map(t=>({id:t.id,k:t.k,v:{n:t.v.n,d:t.v.d}})));
 function mvLoad(p,rand){mv.P=p;mv.rand=rand;mvReset();}
 function mvReset(){const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
-  mv.drag=null;mv.comb=null;mv.div=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
+  mv.drag=null;mv.comb=null;mv.div=null;mv.merge=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
 function mvSolution(S){let A=Q(0),B=Q(0);
   for(const t of S[0]){if(t.k==="x")A=qadd(A,t.v);else B=qsub(B,t.v);}
   for(const t of S[1]){if(t.k==="x")A=qsub(A,t.v);else B=qadd(B,t.v);}
@@ -332,7 +334,7 @@ function drawTile(t,x,y,w,F,lead,o){
   const h=1.46*F,C=t.k==="x"?XC:NC;
   ctx.save();ctx.translate(x,y);ctx.scale(o.sc||1,(o.sc||1)*(o.sy==null?1:o.sy));ctx.globalAlpha=o.a==null?1:o.a;
   rrect(-w/2,-h/2,w,h,0.2*F);ctx.fillStyle=C.fi;ctx.fill();
-  ctx.lineWidth=o.flash>0?3+3*o.flash:3;ctx.strokeStyle=o.flash>0?mix(C.st,RED,o.flash):(o.green?GREEN:C.st);ctx.stroke();
+  ctx.lineWidth=o.hl?6:o.flash>0?3+3*o.flash:3;ctx.strokeStyle=o.hl?o.hl:o.flash>0?mix(C.st,RED,o.flash):(o.green?GREEN:C.st);ctx.stroke();
   drawToks(termToks(t.k,o.v||t.v,lead,{tile:true,c:C.tx,sc:o.signRed?RED:C.tx}),0,0,F,"center",C.tx);
   ctx.restore();}
 
@@ -342,8 +344,10 @@ function drawMv(now){
   let WS=S;if(D)WS=S.map(side=>side.filter(t=>t.id!==D.t.id));
   let ph=null;
   if(D){const cx=D.x-D.ox,vs=cx<W/2?0:1,base=mvLayout(WS,null);
-    ph={s:vs,idx:insIdx(WS,vs,cx,base),w:tileW(D.t.k,D.t.v,false,F)};}
+    ph=vs===D.from?{s:vs,idx:D.idx0,w:tileW(D.t.k,D.t.v,D.idx0===0,F)}:{s:vs,idx:insIdx(WS,vs,cx,base),w:tileW(D.t.k,D.t.v,false,F)};}
   const lay=mvLayout(WS,ph);mv.lay=lay;
+  if(D)D.tgt=mvHover(D,lay,WS);
+  if(mv.merge){const kp=lay.pos.get(mv.merge.tid),p=lay.pos.get(mv.merge.id);if(kp&&p)lay.pos.set(mv.merge.id,{...p,x:kp.x,y:kp.y});busy=true;}
   if(mv.comb){const t=(now-mv.comb.t0)/380;for(const g of mv.comb.groups){const kp=lay.pos.get(g.keep);for(const id of g.ids){const p=lay.pos.get(id);if(p&&kp&&id!==g.keep)lay.pos.set(id,{...p,x:kp.x,y:kp.y});}}busy=true;}
   const eqX=lay.eqX,y=mv.eqY;
   // history (previous equations, "=" aligned)
@@ -354,7 +358,7 @@ function drawMv(now){
   // dashed boundary at "=" while dragging
   if(D){ctx.setLineDash([10,8]);ctx.strokeStyle="#7a7a7a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(eqX,y-1.15*F);ctx.lineTo(eqX,y+1.15*F);ctx.stroke();ctx.setLineDash([]);}
   // "="
-  const solved=mvSolved()&&!D&&!mv.comb&&!mv.div;
+  const solved=mvSolved()&&!D&&!mvBusy();
   ctx.font=`700 ${F}px ${SANS}`;ctx.lineWidth=12;ctx.strokeStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.strokeText("=",eqX,y);
   drawToks([{s:"="}],eqX,y,F,"center",solved?DGREEN:INK);
   // empty side → 0
@@ -369,9 +373,14 @@ function drawMv(now){
     cur.x+=(p.x-cur.x)*0.22;cur.y+=(p.y-cur.y)*0.22;if(Math.hypot(p.x-cur.x,p.y-cur.y)>0.5)busy=true;else{cur.x=p.x;cur.y=p.y;}
     const age=now-cur.born,a=Math.min(1,age/250);if(a<1)busy=true;
     const fl=cur.flashT?now-cur.flashT:1e9;let signRed=fl<1400,flash=fl<600?1-fl/600:0;if(fl<1400)busy=true;
-    drawTile(t,cur.x,cur.y,p.w,F,p.lead,{a,sc:(age<300?0.85+0.15*a:1)*sc,flash,signRed,green:solved});}
+    let hl=null,hs=1,dx=0;
+    if(D&&D.tgt&&D.tgt.id===t.id){hl=D.tgt.like?GREEN:GRAY;hs=D.tgt.like?1.07:1;}
+    if(mv.merge&&(mv.merge.tid===t.id||mv.merge.id===t.id))hl=GREEN;
+    if(cur.mergeT&&now-cur.mergeT<600){hl=GREEN;busy=true;}
+    if(cur.shakeT&&now-cur.shakeT<450){const q=(now-cur.shakeT)/450;dx=Math.sin(q*Math.PI*6)*0.12*F*(1-q);busy=true;}
+    drawTile(t,cur.x+dx,cur.y,p.w,F,p.lead,{a,sc:(age<300?0.85+0.15*a:1)*sc*hs,flash,signRed,green:solved,hl});}
   // division animation: red fraction bars under both sides
-  if(mv.div){const t=(now-mv.div.t0)/900;busy=true;const a=Math.min(1,t*2.5);ctx.globalAlpha=a;
+  if(mv.div){const t=(now-mv.div.t0)/(900*SPD.k);busy=true;const a=Math.min(1,t*2.5);ctx.globalAlpha=a;
     for(let s=0;s<2;s++){const[x0,x1]=WS[s].length?lay.ext[s]:(s===0?[eqX-lay.eg-0.8*F,eqX-lay.eg]:[eqX+lay.eg,eqX+lay.eg+0.8*F]);const yb=y+0.9*F;
       ctx.strokeStyle=RED;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x0,yb);ctx.lineTo(x1,yb);ctx.stroke();
       drawToks([...(mv.div.a.n<0?[{s:MI}]:[]),...numToks(mv.div.a)],(x0+x1)/2,yb+0.48*F,0.72*F,"center",RED);}
@@ -382,10 +391,11 @@ function drawMv(now){
     const p=(now-D.flipT)/320;if(p>=0.5)D.shown=D.vs;if(p<1)busy=true;
     const crossed=D.shown!==D.from,v=crossed?qneg(D.t.v):D.t.v;
     const sy=p<1?Math.max(0.06,Math.abs(Math.cos(Math.PI*p))):1,flash=p<1?1:(crossed?1:0);
-    drawTile(D.t,cx,cy,tileW(D.t.k,v,false,F),F,false,{v,sc:1.08,sy,flash,signRed:crossed});}
+    const over=D.tgt&&D.tgt.like;   // over a like term: lift above the highlighted target
+    drawTile(D.t,cx,over?cy-1.2*F:cy,tileW(D.t.k,v,false,F),F,false,{v,sc:over?0.9:1.08,sy,flash,signRed:crossed,hl:over?GREEN:null});}
   // equivalent 等式の性質 step
   const st=mv.steps[mv.steps.length-1];
-  if(mv.showProp&&st.prop&&!D&&!mv.comb&&!mv.div){const P=st.prop,yy=y+1.42*F+(P.type==="div"?0.25*F:0);
+  if(mv.showProp&&st.prop&&!D&&!mvBusy()){const P=st.prop,yy=y+1.42*F+(P.type==="div"?0.25*F:0);
     if(P.type==="mv"){const ap={k:P.k,v:qneg(P.v)};
       const T=s=>[...sideToks(P.before[s],{c:INK,strikeId:s===P.from?P.id:null}),{gap:0.22},...termToks(ap.k,ap.v,false,{c:RED,strike:s===P.from})];
       drawToks(T(0),eqX-0.75*Fh,yy,Fh,"right",INK);drawToks([{s:"="}],eqX,yy,Fh,"center",INK);drawToks(T(1),eqX+0.75*Fh,yy,Fh,"left",INK);
@@ -398,9 +408,9 @@ function drawMv(now){
 
 function mvPush(S,prop){mv.steps.push({S,prop});mvFit();const s=mvSolved(S);if(s)mv.solvedT=performance.now();
   const sol=mvSolution(S);if(!sol||!qeq(sol,mv.P[2]))console.error("invariant broken",JSON.stringify(S));ui();kick();}
-function mvComb(){if(mv.comb||mv.div||mv.drag)return;const G=combGroups();if(!G.length)return;
+function mvComb(){if(mvBusy()||mv.drag)return;const G=combGroups();if(!G.length)return;
   mv.comb={t0:performance.now(),groups:G};kick();ui();
-  setTimeout(()=>mvCombApply(G),400);}
+  setTimeout(()=>mvCombApply(G),400*SPD.k);}
 function mvCombApply(G){const S=cloneS(cS());
     for(const g of G){const side=S[g.s],kp=side.find(t=>t.id===g.keep);let sum=Q(0);
       for(const id of g.ids)sum=qadd(sum,side.find(t=>t.id===id).v);
@@ -408,13 +418,23 @@ function mvCombApply(G){const S=cloneS(cS());
       if(qz(sum))S[g.s]=S[g.s].filter(t=>t.id!==g.keep);
       const cur=mv.tp.get(g.keep);if(cur)cur.born=performance.now()-120;}
     mv.comb=null;mvPush(S,{type:"comb"});}
-function mvDiv(){if(mv.comb||mv.div||mv.drag)return;const I=divInfo();if(!I)return;
+function mvDiv(){if(mvBusy()||mv.drag)return;const I=divInfo();if(!I)return;
   mv.div={t0:performance.now(),a:I.a};kick();ui();
-  setTimeout(()=>mvDivApply(I),950);}
+  setTimeout(()=>mvDivApply(I),950*SPD.k);}
 function mvDivApply(I){const before=cloneS(cS()),S=cloneS(cS());
     for(const side of S)for(const t of side)t.v=qdiv(t.v,I.a);
     mv.div=null;mvPush(S,{type:"div",a:I.a,before});}
-function mvUndo(){if(mv.steps.length<2||mv.comb||mv.div||mv.drag)return;mv.steps.pop();mvFit();mv.solvedT=-1e9;ui();kick();}
+// drag a tile onto a like term on the same side → calculate
+function mvHover(D,lay,WS){const cx=D.x-D.ox,cy=D.y-D.oy;if((cx<W/2?0:1)!==D.from)return null;
+  for(const t of WS[D.from]){const p=lay.pos.get(t.id);if(p&&Math.abs(cx-p.x)<0.42*p.w&&Math.abs(cy-p.y)<0.75*mv.F)return{id:t.id,like:t.k===D.t.k};}
+  return null;}
+function mvMergeStart(id,tid){mv.merge={id,tid,t0:performance.now()};ui();kick();setTimeout(()=>mvMergeApply(id,tid),320*SPD.k);}
+function mvMergeApply(id,tid){const S=cloneS(cS());
+  for(let s=0;s<2;s++){const side=S[s],a=side.find(t=>t.id===id),b=side.find(t=>t.id===tid);if(!a||!b||a.k!==b.k)continue;
+    b.v=qadd(b.v,a.v);S[s]=side.filter(t=>t.id!==id&&!(t.id===tid&&qz(b.v)));}
+  const cur=mv.tp.get(tid);if(cur){cur.born=performance.now()-120;cur.mergeT=performance.now();}
+  mv.merge=null;mvPush(S,{type:"calc"});}
+function mvUndo(){if(mv.steps.length<2||mvBusy()||mv.drag)return;mv.steps.pop();mvFit();mv.solvedT=-1e9;ui();kick();}
 
 
 /* ---------- random problems ---------- */
@@ -490,7 +510,7 @@ function ui(){
   const dv=$("bDiv");
   if(mode==="bal"){const g=balGcd();dv.textContent=g>=2?"÷"+g:"÷";dv.disabled=g<2||!!bal.drag;$("bMul").disabled=!canMul();$("bRand").disabled=false;
     $("bBack").disabled=!bal.hist.length;$("bPrev").disabled=!bal.rand&&bal.i===0;$("bNext").disabled=!bal.rand&&bal.i===BP.length-1;}
-  else{const I=divInfo(),busy=!!(mv.comb||mv.div);
+  else{const I=divInfo(),busy=!!(mvBusy());
     dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
     $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
     $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=!mv.rand&&mv.i===0;$("bNext").disabled=!mv.rand&&mv.i===MP.length-1;$("bRand").disabled=busy;}}
@@ -500,7 +520,7 @@ function step(d){ // ◀ ▶: textbook presets (from a random problem: the neigh
   if(mode==="bal"){const i=clamp(0,bal.i+d,BP.length-1);if(i===bal.i&&!bal.rand)return;bal.i=i;balLoad(BP[i],false);}
   else{const i=clamp(0,mv.i+d,MP.length-1);if(i===mv.i&&!mv.rand)return;mv.i=i;mvLoad(MP[i],false);}}
 $("bPrev").onclick=()=>step(-1);$("bNext").onclick=()=>step(1);
-$("bRand").onclick=()=>{if(mode==="bal"){if(bal.drag)return;balLoad(genBal(bal.P),true);}else{if(mv.drag||mv.comb||mv.div)return;mvLoad(genMv(mv.P),true);}};
+$("bRand").onclick=()=>{if(mode==="bal"){if(bal.drag)return;balLoad(genBal(bal.P),true);}else{if(mv.drag||mvBusy())return;mvLoad(genMv(mv.P),true);}};
 $("bP1").onclick=()=>balOp("p1");$("bM1").onclick=()=>balOp("m1");$("bPX").onclick=()=>balOp("px");$("bMX").onclick=()=>balOp("mx");
 $("bMul").onclick=()=>balOp("mul");
 $("bDiv").onclick=()=>{if(mode==="bal")balOp("div");else mvDiv();};
@@ -520,11 +540,11 @@ cv.addEventListener("pointerdown",e=>{
     bal.drag={it:h.it,from:h.side,idx,x:p.x,y:p.y,ox:p.x-ps.x,oy:p.y-ps.y,snap:snapB()};
     side.items.splice(idx,1);
   }else{
-    if(mv.comb||mv.div||!mv.lay)return;const S=cS();let hit=null;
+    if(mvBusy()||!mv.lay)return;const S=cS();let hit=null;
     for(let s=0;s<2;s++)for(const t of S[s]){const q=mv.lay.pos.get(t.id),c=mv.tp.get(t.id)||q;if(!q)continue;
       if(Math.abs(p.x-c.x)<=q.w/2+6&&Math.abs(p.y-c.y)<=0.73*mv.F+8)hit={t,s,c};}
     if(!hit)return;
-    mv.drag={t:hit.t,from:hit.s,vs:hit.s,shown:hit.s,flipT:-1e9,x:p.x,y:p.y,ox:p.x-hit.c.x,oy:p.y-hit.c.y};
+    mv.drag={t:hit.t,from:hit.s,idx0:S[hit.s].indexOf(hit.t),vs:hit.s,shown:hit.s,flipT:-1e9,x:p.x,y:p.y,ox:p.x-hit.c.x,oy:p.y-hit.c.y};
   }
   pid=e.pointerId;try{cv.setPointerCapture(pid);}catch(_){}ui();kick();});
 cv.addEventListener("pointermove",e=>{
@@ -547,6 +567,8 @@ function end(e){
     afterB(now);}
   if(mode==="mv"&&mv.drag){const D=mv.drag;mv.drag=null;const cx=D.x-D.ox,cy=D.y-D.oy,s=cx<W/2?0:1;
     const cur=mv.tp.get(D.t.id);if(cur){cur.x=cx;cur.y=cy;}
+    const tg=mv.lay?mvHover(D,mv.lay,cS().map(side=>side.filter(t=>t.id!==D.t.id))):null;
+    if(tg){if(tg.like)mvMergeStart(D.t.id,tg.id);else if(cur)cur.shakeT=now;ui();kick();return;}   // like → calculate, unlike → bounce back
     const S0=cS().map(side=>side.filter(t=>t.id!==D.t.id));
     mvMove(D.t.id,D.from,s,insIdx(S0,s,cx,mvLayout(S0,null)),now);}}
 function mvMove(id,from,s,idx,now){
@@ -598,6 +620,12 @@ window.__eq={
     const G=combGroups();if(G.length){mvCombApply(G);out.steps++;chk();}
     const I=divInfo();if(I){mvDivApply(I);out.steps++;chk();}
     out.solved=mvSolved();out.eq=eqStr(cS());out.ans=qstr(mv.P[2]);out.ok=out.solved&&out.eq==="x="+out.ans&&!out.bad.length;return out;},
+  speed:k=>{SPD.k=k;},
+  mvLoad:(L,R,n,d)=>{mvLoad([L,R,Q(n,d||1)],true);return eqStr(cS());},
+  tiles:()=>{const lay=mvLayout(cS(),null);return cS().map(side=>side.map(t=>{const p=lay.pos.get(t.id);return{id:t.id,k:t.k,v:qstr(t.v),x:p.x,y:p.y,w:p.w};}));},
+  bounds:()=>{const lay=mvLayout(cS(),null),Fh=0.5*mv.F;let ok=lay.ext[0][0]>=0&&lay.ext[1][1]<=W;
+    for(const st of mv.steps){const w=Math.max(tw(sideToks(st.S[0]),Fh),tw(sideToks(st.S[1]),Fh))+Fh;if(w>W/2)ok=false;}return ok;},
+  busy:()=>mvBusy(),
   checkAll:()=>MP.map(p=>{const S=[p[0].map(([k,v])=>({k,v:Q(v)})),p[1].map(([k,v])=>({k,v:Q(v)}))];return qstr(mvSolution(S))===qstr(p[2]);})
     .concat(BP.map(p=>p.L.x*p.sol+p.L.c===p.R.x*p.sol+p.R.c)),
 };
