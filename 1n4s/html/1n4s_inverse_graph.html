@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>反比例のグラフ</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;-webkit-touch-callout:none}
+svg{display:block;width:100vw;height:100vh;touch-action:none}
+text{font-weight:700}
+.var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
+.btn{cursor:pointer}.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
+.btn text{fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.btn.on rect{fill:#191919}.btn.on text{fill:#fff}.btn.off{opacity:.3}
+</style>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('svg');
+const COL={black:"#191919",red:"#d62728",blue:"#1f5fbf",green:"#1e8c46",orange:"#e65c00",gray:"#9a9a9a",
+  lred:"#f7c8c8",lblue:"#bed4f5",lgreen:"#bee6c8",grid:"#e1e1e1"};
+function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+// text with {italic} markup
+function T(g,x,y,s,size,color,anchor){
+  const t=el('text',{x,y,'font-size':size,fill:color||COL.black,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
+  String(s).split(/(\{[^}]*\})/).forEach(p=>{if(!p)return;
+    if(p[0]==='{'){const sp=el('tspan',{class:'var','font-size':size*1.15},t);sp.textContent=p.slice(1,-1);}
+    else{const sp=el('tspan',{},t);sp.textContent=p.replace(/ /g,'\u00a0');}});
+  return t;
+}
+function W(t){try{return t.getComputedTextLength();}catch(e){return 0;}}
+// stacked fraction; x = left edge; returns width
+function FR(g,x,y,num,den,size,color){
+  const a=T(g,0,y-size*0.62,num,size,color),b=T(g,0,y+size*0.66,den,size,color);
+  const w=Math.max(W(a),W(b))+size*0.35;
+  a.setAttribute('x',x+w/2);b.setAttribute('x',x+w/2);
+  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:color||COL.black,'stroke-width':Math.max(3,size/14)},g);
+  return w;
+}
+// parts: [str,color] or ['FRAC',num,den,color]; returns end x
+function RICH(g,x,y,parts,size,anchor){
+  const grp=el('g',{},g);let cx=0;
+  parts.forEach(p=>{
+    if(p[0]==='FRAC'){cx+=4;cx+=FR(grp,cx,y,p[1],p[2],size*0.8,p[3])+6;}
+    else{const t=T(grp,cx,y,p[0],size,p[1],'start');cx+=W(t);}
+  });
+  let off=x; if(anchor==='middle')off=x-cx/2; else if(anchor==='end')off=x-cx;
+  grp.setAttribute('transform',`translate(${off},0)`);
+  return off+cx;
+}
+// fractions
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function minus(s){return String(s).replace(/-/g,'−');}
+// value as parts: integer or fraction num/den (den>0)
+function fracParts(n,d,color,paren){
+  const g=gcd(n,d);n/=g;d/=g;if(d<0){n=-n;d=-d;}
+  if(d===1){const s=minus(n);return [[paren&&n<0?'('+s+')':s,color]];}
+  const neg=n<0;const body=[['FRAC',String(Math.abs(n)),String(d),color]];
+  if(!neg)return body;
+  return paren?[['(−',color],...body,[')',color]]:[['−',color],...body];
+}
+function fmt(v){ if(Math.abs(v-Math.round(v))<1e-9)return minus(Math.round(v)); return minus(+v.toFixed(2)); }
+// buttons
+function BTN(p,x,y,w,h,label,opt,fn){
+  opt=opt||{};const g=el('g',{class:'btn'+(opt.on?' on':'')+(opt.off?' off':''),transform:`translate(${x},${y})`},p);
+  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
+  const t=T(g,w/2,h/2,label,opt.fs||34,null);t.removeAttribute('fill');
+  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!opt.off)fn();});
+  return g;
+}
+// global drag handling: register draggable with onDown -> returns handler(pt) or null
+let DRAG=null;
+function svgPt(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+const HITS=[]; // functions(pt) -> move handler or null (checked in order)
+svg.addEventListener('pointerdown',e=>{const p=svgPt(e);
+  for(const h of HITS){const m=h(p);if(m){DRAG=m;svg.setPointerCapture(e.pointerId);e.preventDefault();m(p);return;}}});
+svg.addEventListener('pointermove',e=>{if(!DRAG)return;e.preventDefault();DRAG(svgPt(e));});
+svg.addEventListener('pointerup',()=>{DRAG=null;});svg.addEventListener('pointercancel',()=>{DRAG=null;});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+// slider drawing: n steps, idx; geometry stored for hit test
+function SLIDER(p,x,y,len,n,idx,label){
+  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:COL.gray,'stroke-width':8,'stroke-linecap':'round'},p);
+  const kx=x+len*idx/(n-1);
+  el('line',{x1:x,y1:y,x2:kx,y2:y,stroke:COL.black,'stroke-width':8,'stroke-linecap':'round'},p);
+  el('circle',{cx:kx,cy:y,r:26,fill:'#fff',stroke:COL.black,'stroke-width':5},p);
+  return {x,y,len,n};
+}
+function sliderHit(geo,setIdx){return p=>{ if(!geo)return null;
+  if(p.x<geo.x-40||p.x>geo.x+geo.len+40||Math.abs(p.y-geo.y)>45)return null;
+  return q=>{let i=Math.round((q.x-geo.x)/geo.len*(geo.n-1));i=Math.max(0,Math.min(geo.n-1,i));setIdx(i);};};}
+function isLand(){return innerWidth>=innerHeight;}
+
+
+// coordinate plane: cfg {cx,cy,u,xmin,xmax,ymin,ymax,step,fs}
+function PLANE(g,c){
+  const X=x=>c.cx+x*c.u, Y=y=>c.cy-y*c.u;
+  for(let x=c.xmin;x<=c.xmax;x++) el('line',{x1:X(x),y1:Y(c.ymin),x2:X(x),y2:Y(c.ymax),stroke:COL.grid,'stroke-width':2},g);
+  for(let y=c.ymin;y<=c.ymax;y++) el('line',{x1:X(c.xmin),y1:Y(y),x2:X(c.xmax),y2:Y(y),stroke:COL.grid,'stroke-width':2},g);
+  const ext=c.u*0.6;
+  el('line',{x1:X(c.xmin)-8,y1:Y(0),x2:X(c.xmax)+ext,y2:Y(0),stroke:COL.black,'stroke-width':4},g);
+  el('line',{x1:X(0),y1:Y(c.ymin)+8,x2:X(0),y2:Y(c.ymax)-ext,stroke:COL.black,'stroke-width':4},g);
+  el('polygon',{points:`${X(c.xmax)+ext+16},${Y(0)} ${X(c.xmax)+ext-2},${Y(0)-9} ${X(c.xmax)+ext-2},${Y(0)+9}`,fill:COL.black},g);
+  el('polygon',{points:`${X(0)},${Y(c.ymax)-ext-16} ${X(0)-9},${Y(c.ymax)-ext+2} ${X(0)+9},${Y(c.ymax)-ext+2}`,fill:COL.black},g);
+  const fs=c.fs||24, st=c.step||2;
+  for(let x=Math.ceil(c.xmin/st)*st;x<=c.xmax;x+=st){ if(!x)continue; T(g,X(x),Y(0)+fs*0.95,minus(x),fs,COL.black); }
+  for(let y=Math.ceil(c.ymin/st)*st;y<=c.ymax;y+=st){ if(!y)continue; T(g,X(0)-10,Y(y),minus(y),fs,COL.black,'end'); }
+  T(g,X(0)-fs*0.6,Y(0)+fs*0.9,'O',fs,COL.black);
+  T(g,X(c.xmax)+ext+10,Y(0)+fs*1.2,'{x}',fs*1.4,COL.black);
+  T(g,X(0)-fs*1.0,Y(c.ymax)-ext,'{y}',fs*1.4,COL.black);
+  return {X,Y};
+}
+// exact rational helpers: {n,d}
+function R(n,d){d=d||1;const g=gcd(n,d);n/=g;d/=g;if(d<0){n=-n;d=-d;}return {n,d};}
+function Rmul(a,b){return R(a.n*b.n,a.d*b.d);} function Radd(a,b){return R(a.n*b.d+b.n*a.d,a.d*b.d);}
+function Rsub(a,b){return R(a.n*b.d-b.n*a.d,a.d*b.d);} function Rdiv(a,b){return R(a.n*b.d,a.d*b.n);}
+function Rv(a){return a.n/a.d;}
+function terminating(d){while(d%2===0)d/=2;while(d%5===0)d/=5;return d===1;}
+// parts for a rational: decimals allowed if terminating(opt.dec)
+function Rparts(r,color,opt){opt=opt||{};
+  if(r.d===1){const s=minus(r.n);return [[opt.paren&&r.n<0?'('+s+')':s,color]];}
+  if(opt.dec&&terminating(r.d)){const s=minus(+(r.n/r.d).toFixed(4));return [[opt.paren&&r.n<0?'('+s+')':s,color]];}
+  return fracParts(r.n,r.d,color,opt.paren);
+}
+// coefficient parts for "a x" : 1 -> '', -1 -> '−'
+function coefParts(r,color){ if(r.n===r.d)return []; if(r.n===-r.d)return [['−',color]]; return Rparts(r,color); }
+
+
+const root=el('g',{},svg);
+const AV=[];for(let a=-12;a<=12;a++)if(a)AV.push(a);
+let st,L,sg=null,PG=null;
+function init(){st={ai:AV.indexOf(6),px:2,mode:2,tab:false};}
+function a(){return AV[st.ai];}
+function validX(x,av){ if(Math.abs(x)<0.25)x=0.5*(x<0?-1:1); x=Math.round(x*2)/2; if(x===0)x=0.5;
+  x=Math.max(-8,Math.min(8,x)); const m=Math.ceil(Math.abs(av)/8*2)/2; if(Math.abs(x)<m)x=m*Math.sign(x); return x; }
+function layout(){
+  if(isLand()){svg.setAttribute('viewBox','0 0 1600 900');
+    L={pl:{cx:470,cy:450,u:50,xmin:-8,xmax:8,ymin:-8,ymax:8,fs:22},eq:[1270,100],sl:[1010,240,540],btn:[[1010,310],[1230,310]],bw:[190,90],
+       prod:[1270,500],tab:{x:980,y:620,cw:42,lw:46},reset:[1400,790,170,90]};
+  } else {svg.setAttribute('viewBox','0 0 1000 1500');
+    L={pl:{cx:500,cy:490,u:52,xmin:-8,xmax:8,ymin:-8,ymax:8,fs:24},eq:[300,1010],prod:[720,1010],sl:[150,1130,700],btn:[[60,1200],[380,1200]],bw:[280,96],
+       tab:{x:30,y:1330,cw:70,lw:50},reset:[790,20,190,90]};
+  }
+  draw();
+}
+function draw(){
+  root.innerHTML='';const g=root,av=a(),col=av>0?COL.red:COL.blue,lcol=av>0?COL.lred:COL.lblue;
+  st.px=validX(st.px,av);
+  PG=PLANE(g,L.pl);const {X,Y}=PG;
+  const px=st.px, Py=Rdiv(R(av,1),R(Math.round(px*2),2)), py=Rv(Py);
+  // rectangle
+  el('rect',{x:Math.min(X(0),X(px)),y:Math.min(Y(0),Y(py)),width:Math.abs(X(px)-X(0)),height:Math.abs(Y(py)-Y(0)),fill:lcol,'fill-opacity':0.75,stroke:col,'stroke-width':3},g);
+  // graph
+  if(st.mode===2){ [-1,1].forEach(s=>{const pts=[];const x0=Math.abs(av)/8;
+      for(let i=0;i<=300;i++){const x=s*(x0+(8-x0)*i/300);pts.push(X(x)+','+Y(av/x));}
+      el('polyline',{points:pts.join(' '),fill:'none',stroke:col,'stroke-width':6,'stroke-linejoin':'round'},g);}); }
+  else { const step=st.mode===0?1:0.5; for(let x=-8;x<=8+1e-9;x+=step){ if(Math.abs(x)<1e-9)continue; const y=av/x; if(Math.abs(y)<=8+1e-9)el('circle',{cx:X(x),cy:Y(y),r:st.mode===0?8:6,fill:col},g);} }
+  // P
+  el('circle',{cx:X(px),cy:Y(py),r:14,fill:COL.black},g);
+  el('circle',{cx:X(px),cy:Y(py),r:30,fill:'none',stroke:COL.black,'stroke-width':2,'stroke-dasharray':'4 6'},g);
+  const right=px>0?(px<5):(px<-5), up=py>0?(py<6.5):(py<-6.5);
+  RICH(g,X(px)+(right?24:-24),Y(py)+(up?-42:42),[['P(',COL.black],[fmt(px),COL.black],[', ',COL.black],...Rparts(Py,COL.black,{dec:true}),[')',COL.black]],32,right?'start':'end');
+  // equation + product
+  RICH(g,L.eq[0],L.eq[1],[['{y} = ',COL.black],...(av<0?[['−',col]]:[]),['FRAC',String(Math.abs(av)),'{x}',col]],72,'middle');
+  RICH(g,L.prod[0],L.prod[1],[...Rparts(R(Math.round(px*2),2),COL.black,{dec:true,paren:true}),[' × ',COL.black],...Rparts(Py,COL.black,{dec:true,paren:true}),[' = ',COL.black],[minus(av),col]],60,'middle');
+  // slider
+  sg=SLIDER(g,L.sl[0],L.sl[1],L.sl[2],AV.length,st.ai);
+  T(g,L.sl[0]-10,L.sl[1]+44,'−12',24,COL.gray); T(g,L.sl[0]+L.sl[2]+10,L.sl[1]+44,'12',24,COL.gray);
+  const [bw,bh]=L.bw;
+  BTN(g,...L.btn[0],bw,bh,'点',{on:st.mode!==2},()=>{st.mode=(st.mode+1)%3;draw();});
+  BTN(g,...L.btn[1],bw,bh,'表',{on:st.tab},()=>{st.tab=!st.tab;draw();});
+  BTN(g,...L.reset,'リセット',{fs:32},()=>{init();draw();});
+  if(st.tab) table(g,av,col);
+}
+function table(g,av,col){const t=L.tab,xs=[-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6],h=72;
+  const w=t.lw+t.cw*xs.length;
+  el('rect',{x:t.x,y:t.y,width:w,height:h*2,fill:'none',stroke:COL.black,'stroke-width':3},g);
+  el('line',{x1:t.x,y1:t.y+h,x2:t.x+w,y2:t.y+h,stroke:COL.black,'stroke-width':2},g);
+  for(let i=0;i<=xs.length;i++){const x=t.x+t.lw+i*t.cw;el('line',{x1:x,y1:t.y,x2:x,y2:t.y+2*h,stroke:COL.black,'stroke-width':i?1.5:3},g);}
+  T(g,t.x+t.lw/2,t.y+h/2,'{x}',32,COL.black);T(g,t.x+t.lw/2,t.y+h*1.5,'{y}',32,COL.black);
+  xs.forEach((x,i)=>{const cx=t.x+t.lw+t.cw*(i+0.5);T(g,cx,t.y+h/2,minus(x),24,COL.black);
+    if(x===0){T(g,cx,t.y+h*1.5,'×',26,COL.black);return;}
+    const y=R(av,x);RICH(g,cx,t.y+h*1.5,Rparts(y,col),y.d===1?24:27,'middle');});
+}
+HITS.push(p=>sliderHit(sg,i=>{st.ai=i;draw();})(p));
+HITS.push(p=>{ if(!PG)return null;const av=a();
+  if(Math.hypot(p.x-PG.X(st.px),p.y-PG.Y(av/st.px))>44)return null;
+  return q=>{st.px=validX((q.x-L.pl.cx)/L.pl.u,av);draw();};});
+addEventListener('resize',layout);
+init();layout();
+
+</script>
+</body>
+</html>

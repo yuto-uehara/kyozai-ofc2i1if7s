@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>三角形の合同条件</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+svg{display:block;width:100vw;height:100vh;touch-action:none}
+.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
+.btn text{font-weight:700;fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.btn.on rect{fill:#191919}.btn.on text{fill:#fff}
+.btn.off{opacity:.3}
+.btn{cursor:pointer}
+</style>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <g id="fig"></g><g id="panel"></g><g id="ui"></g>
+</svg>
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('svg'),FIG=document.getElementById('fig'),PANEL=document.getElementById('panel'),UI=document.getElementById('ui');
+const BLACK="#191919",BLUE="#1f5fbf",ORANGE="#e65c00",GREEN="#1e8c46",GRAY="#9a9a9a";
+const L_BLUE="#bed4f5",L_GREEN="#bee6c8",L_ORANGE="#fcd6b4";
+const U=112;          // px per cm (figure coords)
+const DEG=Math.PI/180;
+function el(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+const pol=(o,r,deg)=>[o[0]+r*Math.cos(deg*DEG),o[1]+r*Math.sin(deg*DEG)];
+const B=[0,0],C=[6,0];
+function circleRay(c,r,o,deg){ // points on ray from o (dir deg) at distance r from c
+  const d=[Math.cos(deg*DEG),Math.sin(deg*DEG)],f=[o[0]-c[0],o[1]-c[1]];
+  const b=f[0]*d[0]+f[1]*d[1],cc=f[0]*f[0]+f[1]*f[1]-r*r,disc=b*b-cc;
+  if(disc<0)return[];const s=Math.sqrt(disc);return[-b-s,-b+s].filter(t=>t>0).map(t=>[o[0]+d[0]*t,o[1]+d[1]*t]);
+}
+function circCirc(p,r1,q,r2){const d=Math.hypot(q[0]-p[0],q[1]-p[1]);const a=(r1*r1-r2*r2+d*d)/(2*d);const h=Math.sqrt(r1*r1-a*a);
+  const m=[p[0]+a*(q[0]-p[0])/d,p[1]+a*(q[1]-p[1])/d];return[m[0]-h*(q[1]-p[1])/d,m[1]+h*(q[0]-p[0])/d];}
+// ---- modes (coordinates in cm, y up)
+const A1=circCirc(B,4,C,5);                 // 3辺 4,5,6
+const A2=pol(B,4,30);                       // 2辺とその間の角
+const A3=(()=>{ // 1辺とその両端の角 (30°,45°)
+  const t=6*Math.sin(45*DEG)/Math.sin(105*DEG); return pol(B,t,30);})();
+const NX=circleRay(C,4,B,30);               // 2辺と1つの角（間でない）→ 2点
+const MODES=[
+ {name:'3辺', given:[['seg','AB = 4cm',BLUE],['seg','BC = 6cm',BLUE],['seg','CA = 5cm',BLUE]], result:'1通り',
+  steps:[
+   [{t:'seg',a:B,b:C,c:BLUE,w:7,lab:'6cm'},{t:'pt',p:B,l:'B'},{t:'pt',p:C,l:'C'}],
+   [{t:'arc',o:B,r:4,a0:20,a1:120,c:GRAY},{t:'cap',o:B,p:pol(B,4,105),c:BLUE,lab:'4cm'}],
+   [{t:'arc',o:C,r:5,a0:85,a1:160,c:GRAY},{t:'cap',o:C,p:pol(C,5,95),c:BLUE,lab:'5cm'}],
+   [{t:'pt',p:A1,l:'A',c:ORANGE,big:1}],
+   [{t:'fill',ps:[A1,B,C],c:L_BLUE},{t:'seg',a:B,b:A1,c:BLUE,w:7},{t:'seg',a:C,b:A1,c:BLUE,w:7},{t:'res'}]
+  ]},
+ {name:'2辺とその間の角', given:[['seg','AB = 4cm',BLUE],['seg','BC = 6cm',BLUE],['ang','∠B = 30°',ORANGE]], result:'1通り',
+  steps:[
+   [{t:'seg',a:B,b:C,c:BLUE,w:7,lab:'6cm'},{t:'pt',p:B,l:'B'},{t:'pt',p:C,l:'C'}],
+   [{t:'ang',o:B,a0:0,a1:30,c:ORANGE,lab:'30°'},{t:'ray',o:B,deg:30,len:8.2,c:BLACK}],
+   [{t:'arc',o:B,r:4,a0:18,a1:42,c:GRAY},{t:'pt',p:A2,l:'A',c:ORANGE,big:1}],
+   [{t:'fill',ps:[A2,B,C],c:L_BLUE},{t:'seg',a:B,b:A2,c:BLUE,w:7,lab:'4cm'},{t:'seg',a:C,b:A2,c:BLUE,w:7},{t:'res'}]
+  ]},
+ {name:'1辺とその両端の角', given:[['seg','BC = 6cm',BLUE],['ang','∠B = 30°',ORANGE],['ang','∠C = 45°',ORANGE]], result:'1通り',
+  steps:[
+   [{t:'seg',a:B,b:C,c:BLUE,w:7,lab:'6cm'},{t:'pt',p:B,l:'B'},{t:'pt',p:C,l:'C'}],
+   [{t:'ang',o:B,a0:0,a1:30,c:ORANGE,lab:'30°'},{t:'ray',o:B,deg:30,len:8.2,c:BLACK}],
+   [{t:'ang',o:C,a0:135,a1:180,c:ORANGE,lab:'45°'},{t:'ray',o:C,deg:135,len:5.6,c:BLACK}],
+   [{t:'pt',p:A3,l:'A',c:ORANGE,big:1}],
+   [{t:'fill',ps:[A3,B,C],c:L_BLUE},{t:'seg',a:B,b:A3,c:BLUE,w:7},{t:'seg',a:C,b:A3,c:BLUE,w:7},{t:'res'}]
+  ]},
+ {name:'2辺と1つの角', given:[['seg','BC = 6cm',BLUE],['seg','CA = 4cm',BLUE],['ang','∠B = 30°',ORANGE]], result:'2通り', bad:true,
+  steps:[
+   [{t:'seg',a:B,b:C,c:BLUE,w:7,lab:'6cm'},{t:'pt',p:B,l:'B'},{t:'pt',p:C,l:'C'}],
+   [{t:'ang',o:B,a0:0,a1:30,c:ORANGE,lab:'30°'},{t:'ray',o:B,deg:30,len:8.6,c:BLACK}],
+   [{t:'arc',o:C,r:4,a0:62,a1:172,c:GRAY},{t:'cap',o:C,p:pol(C,4,72),c:BLUE,lab:'4cm'}],
+   [{t:'pt',p:NX[0],l:'A',c:ORANGE,big:1},{t:'pt',p:NX[1],l:'A′',c:GREEN,big:1}],
+   [{t:'fill',ps:[NX[0],B,C],c:L_ORANGE},{t:'seg',a:C,b:NX[0],c:ORANGE,w:7}],
+   [{t:'fill',ps:[NX[1],B,C],c:L_GREEN,op:.6},{t:'seg',a:C,b:NX[1],c:GREEN,w:7},{t:'res'}]
+  ]}
+];
+let mode=0,step=0,anim=1,animStart=0;
+let L; // layout
+function layout(){
+  const w=innerWidth,h=innerHeight;
+  if(w>=h){ svg.setAttribute('viewBox','0 0 1600 900');
+    L={land:true,tabs:{x:20,y:20,w:370,h:92,dx:385,dy:0,fs:34},fig:{ox:190,oy:700},
+       panel:{x:1150,y:250,dy:95},res:{x:1340,y:640},
+       prev:{x:1150,y:760,w:180,h:110},next:{x:1370,y:760,w:210,h:110},reset:{x:20,y:790,w:200,h:90}};
+  } else { svg.setAttribute('viewBox','0 0 1000 1500');
+    L={land:false,tabs:{x:20,y:20,w:470,h:100,dx:490,dy:115,cols:2,fs:34},fig:{ox:90,oy:830},
+       panel:{x:60,y:960,dy:90},res:{x:720,y:1050},
+       prev:{x:500,y:1340,w:200,h:120},next:{x:740,y:1340,w:240,h:120},reset:{x:20,y:1370,w:200,h:96}};
+  }
+  draw();
+}
+const X=p=>L.fig.ox+p[0]*U, Y=p=>L.fig.oy-p[1]*U;
+function txt(g,x,y,s,size,color,anchor){const t=el('text',{x,y,'font-size':size,fill:color,'font-weight':700,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);t.textContent=s;return t;}
+function partialSeg(a,b,p){return[a,[a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p]];}
+function drawItem(g,it,p){
+  const ease=p<1?p*p*(3-2*p):1;
+  switch(it.t){
+   case 'seg':{const [a,b]=partialSeg(it.a,it.b,ease);
+     el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:it.c,'stroke-width':it.w,'stroke-linecap':'round'},g);
+     if(it.lab&&p>=1){const m=[(it.a[0]+it.b[0])/2,(it.a[1]+it.b[1])/2];const dx=it.b[0]-it.a[0],dy=it.b[1]-it.a[1],Ln=Math.hypot(dx,dy);
+       const off=it.a[1]===it.b[1]?[0,-0.55]:[-dy/Ln*0.55,dx/Ln*0.55];
+       txt(g,X([m[0]+off[0],m[1]+off[1]]),Y([m[0]+off[0],m[1]+off[1]])+(it.a[1]===it.b[1]?0:0),it.lab,34,it.c);} break;}
+   case 'ray':{const e=pol(it.o,it.len,it.deg);const [a,b]=partialSeg(it.o,e,ease);
+     el('line',{x1:X(a),y1:Y(a),x2:X(b),y2:Y(b),stroke:it.c,'stroke-width':4,'stroke-linecap':'round'},g);break;}
+   case 'arc':{const a1=it.a0+(it.a1-it.a0)*ease;const pts=[];for(let k=0;k<=40;k++){pts.push(pol(it.o,it.r,it.a0+(a1-it.a0)*k/40));}
+     el('polyline',{points:pts.map(q=>X(q)+','+Y(q)).join(' '),fill:'none',stroke:it.c,'stroke-width':4,'stroke-dasharray':'14 10'},g);
+     if(ease<1){const q=pts[pts.length-1];el('line',{x1:X(it.o),y1:Y(it.o),x2:X(q),y2:Y(q),stroke:GRAY,'stroke-width':2},g);} break;}
+   case 'cap':{ // radius indicator (compass opening)
+     if(p<1)break; const m=[(it.o[0]+it.p[0])/2,(it.o[1]+it.p[1])/2];
+     el('line',{x1:X(it.o),y1:Y(it.o),x2:X(it.p),y2:Y(it.p),stroke:it.c,'stroke-width':3,'stroke-dasharray':'6 8'},g);
+     txt(g,X(m)+(it.p[0]<it.o[0]?-50:50),Y(m)-10,it.lab,34,it.c);break;}
+   case 'ang':{const r=1.15,a1=it.a0+(it.a1-it.a0)*ease;const pts=[it.o];for(let k=0;k<=30;k++)pts.push(pol(it.o,r,it.a0+(a1-it.a0)*k/30));
+     el('polygon',{points:pts.map(q=>X(q)+','+Y(q)).join(' '),fill:L_ORANGE,stroke:it.c,'stroke-width':4},g);
+     if(p>=1){const m=pol(it.o,r+0.6,(it.a0+it.a1)/2);txt(g,X(m),Y(m),it.lab,34,it.c);} break;}
+   case 'pt':{const r=(it.big?11:8)*Math.min(1,ease*1.5);el('circle',{cx:X(it.p),cy:Y(it.p),r,fill:it.c||BLACK},g);
+     if(ease>0.3){const off=it.l==='B'?[-40,26]:it.l==='C'?[34,30]:[0,-44];txt(g,X(it.p)+off[0],Y(it.p)+off[1],it.l,46,it.c||BLACK);} break;}
+   case 'fill':{el('polygon',{points:it.ps.map(q=>X(q)+','+Y(q)).join(' '),fill:it.c,opacity:(it.op||1)*ease},g);break;}
+   case 'res':break;
+  }
+}
+function draw(){
+  FIG.innerHTML='';PANEL.innerHTML='';UI.innerHTML='';
+  const M=MODES[mode];
+  // figure: fills first, then rest
+  const g0=el('g',{},FIG),g1=el('g',{},FIG);
+  M.steps.forEach((s,i)=>{ if(i>=step)return; const p=(i===step-1)?anim:1;
+    s.forEach(it=>drawItem(it.t==='fill'?g0:g1,it,p)); });
+  // given parts panel
+  const P=L.panel;
+  M.given.forEach(([k,s,c],i)=>{
+    const y=P.y+i*P.dy;
+    if(k==='seg') el('line',{x1:P.x,y1:y,x2:P.x+60,y2:y,stroke:c,'stroke-width':8,'stroke-linecap':'round'},PANEL);
+    else { el('path',{d:`M${P.x},${y+22} L${P.x+64},${y+22} A64,64 0 0 0 ${P.x+64*Math.cos(35*DEG)},${y+22-64*Math.sin(35*DEG)} Z`,fill:L_ORANGE,stroke:c,'stroke-width':4},PANEL); }
+    txt(PANEL,P.x+90,y,s,46,BLACK,'start');
+  });
+  const done=step===M.steps.length&&anim>=1;
+  if(done){ txt(PANEL,L.res.x,L.res.y,M.result,76,M.bad?ORANGE:BLUE); }
+  // tabs
+  const T=L.tabs;
+  MODES.forEach((m,i)=>{const cols=T.cols||4;const x=T.x+(i%cols)*T.dx,y=T.y+Math.floor(i/cols)*T.dy;
+    button(x,y,T.w,T.h,m.name,T.fs,i===mode,false,()=>{mode=i;step=0;anim=1;draw();});});
+  button(L.prev.x,L.prev.y,L.prev.w,L.prev.h,'◀',56,false,step===0,()=>{if(step>0){step--;anim=1;draw();}});
+  button(L.next.x,L.next.y,L.next.w,L.next.h,'▶',56,false,step>=M.steps.length,()=>{if(step<M.steps.length){step++;startAnim();}});
+  button(L.reset.x,L.reset.y,L.reset.w,L.reset.h,'リセット',34,false,false,()=>{mode=0;step=0;anim=1;draw();});
+}
+function button(x,y,w,h,label,fs,on,off,fn){
+  const g=el('g',{class:'btn'+(on?' on':'')+(off?' off':''),transform:`translate(${x},${y})`},UI);
+  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
+  const t=el('text',{x:w/2,y:h/2,'font-size':fs},g);t.textContent=label;
+  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!off)fn();});
+}
+let raf=null;
+function startAnim(){anim=0;animStart=performance.now();if(raf)cancelAnimationFrame(raf);
+  const tick=now=>{anim=Math.min(1,(now-animStart)/900);draw();if(anim<1)raf=requestAnimationFrame(tick);else raf=null;};
+  raf=requestAnimationFrame(tick);}
+document.addEventListener('gesturestart',e=>e.preventDefault());
+addEventListener('resize',layout);
+layout();
+</script>
+</body>
+</html>

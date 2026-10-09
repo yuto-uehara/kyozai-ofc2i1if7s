@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>平行線と角</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+svg{display:block;width:100vw;height:100vh;touch-action:none}
+.var{font-family:"Times New Roman","Noto Serif",serif;font-style:italic}
+.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
+.btn text{font-size:34px;font-weight:700;fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.btn.on rect{fill:#191919}.btn.on text{fill:#fff}
+.btn{cursor:pointer}
+</style>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <g id="fig"></g>
+  <g id="ui"></g>
+</svg>
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('svg'), fig=document.getElementById('fig'), ui=document.getElementById('ui');
+const BLACK="#191919", BLUE="#1f5fbf", ORANGE="#e65c00", GREEN="#1e8c46";
+const LIGHT={[BLUE]:"#bed4f5",[ORANGE]:"#fcd6b4",[GREEN]:"#bee6c8"};
+const FW=1200, FH=860;            // figure coordinate box
+const Q={x:560,y:620};             // m ∩ n
+const PQ=330;                      // distance P–Q along n
+const DEG=Math.PI/180;
+let st;
+function reset(){ st={phi:-10, theta:70, mode:null, idx:-1, showDeg:false}; render(); }
+// phi: angle of ℓ (deg, math orientation, measured from m), theta: angle of n with m (deg, 30..150)
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function geom(){
+  const t=st.theta*DEG;
+  const up={x:Math.cos(t),y:-Math.sin(t)};           // direction of n going up
+  const P={x:Q.x+up.x*PQ,y:Q.y+up.y*PQ};
+  const p=st.phi*DEG; const ldir={x:Math.cos(p),y:-Math.sin(p)};
+  return {P,up,ldir};
+}
+function clipLine(c,d){ // line through c with dir d, clipped to [0,FW]x[0,FH]
+  let t0=-1e9,t1=1e9;
+  [[d.x,c.x,0,FW],[d.y,c.y,0,FH]].forEach(([dd,cc,lo,hi])=>{
+    if(Math.abs(dd)<1e-9){ if(cc<lo||cc>hi){t0=1;t1=0;} return; }
+    let a=(lo-cc)/dd,b=(hi-cc)/dd; if(a>b)[a,b]=[b,a]; t0=Math.max(t0,a); t1=Math.min(t1,b);
+  });
+  return [{x:c.x+d.x*t0,y:c.y+d.y*t0},{x:c.x+d.x*t1,y:c.y+d.y*t1}];
+}
+// four angles at a vertex: rays (screen angles) leftL, upN, rightL, downN
+function angles(V,ldir,up){
+  // screen angle (y down) of each ray
+  const A=v=>Math.atan2(v.y,v.x);
+  let right=ldir.x>=0?ldir:{x:-ldir.x,y:-ldir.y};
+  const left={x:-right.x,y:-right.y}, down={x:-up.x,y:-up.y};
+  const rays={L:A(left),U:A(up),R:A(right),D:A(down)};
+  const sw=(a,b)=>{let s=b-a;while(s<=0)s+=2*Math.PI;while(s>2*Math.PI)s-=2*Math.PI;return s;}; // clockwise on screen from a to b
+  // upper-left: from L clockwise to U ; upper-right: U -> R ; lower-right: R -> D ; lower-left: D -> L
+  return {ul:[rays.L,sw(rays.L,rays.U)], ur:[rays.U,sw(rays.U,rays.R)], lr:[rays.R,sw(rays.R,rays.D)], ll:[rays.D,sw(rays.D,rays.L)]};
+}
+const PAIRS={
+  '対頂角':{color:BLUE,list:[['a','c'],['b','d'],['e','g'],['f','h']]},
+  '同位角':{color:ORANGE,list:[['a','e'],['b','f'],['c','g'],['d','h']]},
+  '錯角':{color:GREEN,list:[['b','h'],['c','e']]}
+};
+function sectorPath(V,a0,sw,r){
+  const x1=V.x+r*Math.cos(a0),y1=V.y+r*Math.sin(a0),x2=V.x+r*Math.cos(a0+sw),y2=V.y+r*Math.sin(a0+sw);
+  return `M${V.x},${V.y} L${x1},${y1} A${r},${r} 0 ${sw>Math.PI?1:0} 1 ${x2},${y2} Z`;
+}
+function arcPath(V,a0,sw,r){
+  const x1=V.x+r*Math.cos(a0),y1=V.y+r*Math.sin(a0),x2=V.x+r*Math.cos(a0+sw),y2=V.y+r*Math.sin(a0+sw);
+  return `M${x1},${y1} A${r},${r} 0 ${sw>Math.PI?1:0} 1 ${x2},${y2}`;
+}
+let layout={fx:0,fy:0,fs:1,top:{px:0,py:0,ax:0,ay:0}};
+function render(){
+  fig.innerHTML='';
+  const g=el('g',{transform:`translate(${layout.fx},${layout.fy}) scale(${layout.fs})`},fig);
+  const {P,up,ldir}=geom();
+  const parallel=Math.abs(st.phi)<1e-9;
+  // angles
+  const angP=angles(P,ldir,up), angQ=angles(Q,{x:1,y:0},up);
+  const names={a:[P,angP.ul],b:[P,angP.ll],c:[P,angP.lr],d:[P,angP.ur],e:[Q,angQ.ul],f:[Q,angQ.ll],g:[Q,angQ.lr],h:[Q,angQ.ur]};
+  let hl=[],hlColor=null;
+  if(st.mode&&st.idx>=0){hl=PAIRS[st.mode].list[st.idx];hlColor=PAIRS[st.mode].color;}
+  for(const k in names){
+    const [V,[a0,sw]]=names[k];
+    if(hl.includes(k)) el('path',{d:sectorPath(V,a0,sw,72),fill:LIGHT[hlColor],stroke:hlColor,'stroke-width':4},g);
+  }
+  // lines
+  const lineAttrs={stroke:BLACK,'stroke-width':7,'stroke-linecap':'round'};
+  const [m1,m2]=clipLine(Q,{x:1,y:0}); el('line',{x1:m1.x,y1:m1.y,x2:m2.x,y2:m2.y,...lineAttrs},g);
+  const [l1,l2]=clipLine(P,ldir); el('line',{x1:l1.x,y1:l1.y,x2:l2.x,y2:l2.y,...lineAttrs,stroke:parallel?BLUE:BLACK},g);
+  const [n1,n2]=clipLine(Q,up); el('line',{x1:n1.x,y1:n1.y,x2:n2.x,y2:n2.y,...lineAttrs},g);
+  if(parallel){ m1&&el('line',{x1:m1.x,y1:m1.y,x2:m2.x,y2:m2.y,...lineAttrs,stroke:BLUE},g); }
+  // line labels
+  const lr = l1.x>l2.x?l1:l2;
+  { const dx=(P.x-lr.x), dy=(P.y-lr.y), L=Math.hypot(dx,dy); label(g,lr.x+dx/L*40+dy/L*0, lr.y+dy/L*40-40,'ℓ',52,parallel?BLUE:BLACK,true); }
+  label(g,FW-40,Q.y-40,'m',52,parallel?BLUE:BLACK,true);
+  const ntop=n1.y<n2.y?n1:n2; label(g,ntop.x-up.x*40+(up.x>=0?-40:40),ntop.y-up.y*40,'n',52,BLACK,true);
+  // arcs + letters + degrees
+  for(const k in names){
+    const [V,[a0,sw]]=names[k];
+    const mid=a0+sw/2, r=sw<0.6?112:92;
+    label(g,V.x+r*Math.cos(mid),V.y+r*Math.sin(mid),k,40,hl.includes(k)?hlColor:BLACK,true);
+    if(st.showDeg){
+      const deg=Math.round(sw/DEG); const r2=r+58;
+      label(g,V.x+r2*Math.cos(mid),V.y+r2*Math.sin(mid),deg+'°',30,GRAY_T,false);
+    }
+  }
+  el('circle',{cx:P.x,cy:P.y,r:6,fill:BLACK},g); el('circle',{cx:Q.x,cy:Q.y,r:6,fill:BLACK},g);
+  // drag handles (visual)
+  { const dx=(P.x-lr.x), dy=(P.y-lr.y), L=Math.hypot(dx,dy); handle(g, lr.x+dx/L*130, lr.y+dy/L*130); }
+  handle(g, ntop.x- up.x*140, ntop.y- up.y*140);
+  // top labels
+  const top=el('g',{},fig), T=layout.top;
+  if(parallel) label(top,T.px,T.py,'ℓ // m',64,BLUE,'mixed');
+  if(hl.length) label(top,T.ax,T.ay,'∠'+hl[0]+'　∠'+hl[1],54,hlColor,'angle');
+  renderUI();
+}
+const GRAY_T="#555";
+function handle(g,x,y){ el('circle',{cx:x,cy:y,r:16,fill:'#fff',stroke:BLACK,'stroke-width':4},g); }
+function label(g,x,y,s,size,color,kind){
+  const t=el('text',{x,y,'font-size':size,fill:color,'text-anchor':'middle','dominant-baseline':'central','font-weight':700},g);
+  if(kind===true){ t.setAttribute('class','var'); t.setAttribute('font-weight',400); t.textContent=s; }
+  else if(kind==='mixed'){ // ℓ // m
+    const a=el('tspan',{class:'var','font-weight':400},t); a.textContent='ℓ';
+    const b=el('tspan',{},t); b.textContent=' // ';
+    const c=el('tspan',{class:'var','font-weight':400},t); c.textContent='m';
+  } else if(kind==='angle'){
+    s.split(/([a-h])/).forEach(p=>{ if(!p) return; const sp=el('tspan',/[a-h]/.test(p)?{class:'var','font-weight':400}:{},t); sp.textContent=p; });
+  } else t.textContent=s;
+  return t;
+}
+// ---------------- UI
+const BUTTONS=['対頂角','同位角','錯角','°'];
+function renderUI(){
+  ui.innerHTML='';
+  const L=layout.ui;
+  BUTTONS.forEach((b,i)=>{
+    const on = (b==='°'?st.showDeg:st.mode===b&&st.idx>=0);
+    const x=L.x+(L.dx*i), y=L.y+(L.dy*i);
+    mkButton(x,y,L.w,L.h,b,on,()=>press(b));
+  });
+  mkButton(L.rx,L.ry,L.w,L.h,'リセット',false,reset);
+}
+function mkButton(x,y,w,h,label,on,fn){
+  const g=el('g',{class:'btn'+(on?' on':''),transform:`translate(${x},${y})`},ui);
+  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
+  const t=el('text',{x:w/2,y:h/2},g); t.textContent=label; if(label==='°'){t.style.fontSize='60px';t.setAttribute('y',h/2+8);}
+  g.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();fn();});
+}
+function press(b){
+  if(b==='°'){st.showDeg=!st.showDeg;}
+  else if(st.mode!==b){st.mode=b;st.idx=0;}
+  else { st.idx++; if(st.idx>=PAIRS[b].list.length){st.idx=-1;st.mode=null;} }
+  render();
+}
+// ---------------- layout
+function doLayout(){
+  const w=window.innerWidth,h=window.innerHeight;
+  if(w>=h){ // landscape 1600x900
+    svg.setAttribute('viewBox','0 0 1600 900');
+    layout={fx:10,fy:20,fs:1.0,top:{px:1430,py:60,ax:1430,ay:150},ui:{x:1300,y:230,dx:0,dy:112,w:260,h:92,rx:1300,ry:780}};
+  } else { // portrait 1000x1400
+    svg.setAttribute('viewBox','0 0 1000 1400');
+    layout={fx:0,fy:100,fs:1000/FW,top:{px:250,py:50,ax:720,ay:50},ui:{x:30,y:1060,dx:240,dy:0,w:210,h:100,rx:760,ry:1250}};
+  }
+  render();
+}
+// ---------------- drag
+let drag=null;
+function toFig(e){
+  const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+  const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+  return {x:(p.x-layout.fx)/layout.fs,y:(p.y-layout.fy)/layout.fs};
+}
+function distToLine(p,c,d){ return Math.abs((p.x-c.x)*d.y-(p.y-c.y)*d.x); }
+svg.addEventListener('pointerdown',e=>{
+  const p=toFig(e); const {P,up,ldir}=geom();
+  const dl=distToLine(p,P,ldir), dn=distToLine(p,Q,up);
+  const fromP=Math.hypot(p.x-P.x,p.y-P.y), fromQ=Math.hypot(p.x-Q.x,p.y-Q.y);
+  const tol=50/layout.fs;
+  if(dl<tol && fromP>40 && (dl<=dn || fromQ<60)) drag='l';
+  else if(dn<tol && fromQ>40) drag='n';
+  else drag=null;
+  if(drag){svg.setPointerCapture(e.pointerId);e.preventDefault();}
+});
+svg.addEventListener('pointermove',e=>{
+  if(!drag) return; e.preventDefault();
+  const p=toFig(e);
+  if(drag==='l'){
+    const {P}=geom();
+    let a=Math.atan2(-(p.y-P.y),p.x-P.x)/DEG; // math angle
+    while(a>90)a-=180; while(a<=-90)a+=180;
+    a=Math.max(-60,Math.min(60,a));
+    if(Math.abs(a)<1) a=0;
+    st.phi=a;
+  } else {
+    let a=Math.atan2(-(p.y-Q.y),p.x-Q.x)/DEG;
+    if(a<0) a+=180;               // use upward direction
+    st.theta=Math.max(30,Math.min(150,a));
+  }
+  render();
+});
+const end=e=>{drag=null;};
+svg.addEventListener('pointerup',end); svg.addEventListener('pointercancel',end);
+document.addEventListener('gesturestart',e=>e.preventDefault());
+window.addEventListener('resize',doLayout);
+st={phi:-10,theta:70,mode:null,idx:-1,showDeg:false}; doLayout();
+</script>
+</body>
+</html>

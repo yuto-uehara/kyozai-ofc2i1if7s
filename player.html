@@ -1,0 +1,5 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>動画</title>
+<style>body{margin:0;background:#000;color:#fff;font-family:-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+a{position:fixed;top:10px;left:14px;color:#fff;text-decoration:none;font-size:18px;padding:6px 10px}h1{font-size:18px;font-weight:500;margin:0 0 10px}video{max-width:100%;max-height:calc(100vh - 70px);width:1280px}</style></head>
+<body><a href="./">← 一覧</a><h1 id="t"></h1><video id="v" controls playsinline autoplay></video>
+<script>var p=new URLSearchParams(location.search),s=p.get('v')||'';if(/^[0-9a-z]+\/video\/[0-9a-z_]+\.mp4$/.test(s)){document.getElementById('v').src=s;}var t=p.get('t')||'';document.getElementById('t').textContent=t;if(t)document.title=t;</script></body></html>

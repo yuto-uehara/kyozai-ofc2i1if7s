@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>平行線と面積</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;-webkit-touch-callout:none}
+svg{display:block;width:100vw;height:100vh;touch-action:none}
+text{font-weight:700}
+.var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
+.btn{cursor:pointer}.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
+.btn text{fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.btn.on rect{fill:#191919}.btn.on text{fill:#fff}.btn.off{opacity:.3}
+</style>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('svg');
+const COL={black:"#191919",red:"#d62728",blue:"#1f5fbf",green:"#1e8c46",orange:"#e65c00",gray:"#9a9a9a",
+  lred:"#f7c8c8",lblue:"#bed4f5",lgreen:"#bee6c8",grid:"#e1e1e1"};
+function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+// text with {italic} markup
+function T(g,x,y,s,size,color,anchor){
+  const t=el('text',{x,y,'font-size':size,fill:color||COL.black,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
+  String(s).split(/(\{[^}]*\})/).forEach(p=>{if(!p)return;
+    if(p[0]==='{'){const sp=el('tspan',{class:'var','font-size':size*1.15},t);sp.textContent=p.slice(1,-1);}
+    else{const sp=el('tspan',{},t);sp.textContent=p.replace(/ /g,'\u00a0');}});
+  return t;
+}
+function W(t){try{return t.getComputedTextLength();}catch(e){return 0;}}
+// stacked fraction; x = left edge; returns width
+function FR(g,x,y,num,den,size,color){
+  const a=T(g,0,y-size*0.62,num,size,color),b=T(g,0,y+size*0.66,den,size,color);
+  const w=Math.max(W(a),W(b))+size*0.35;
+  a.setAttribute('x',x+w/2);b.setAttribute('x',x+w/2);
+  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:color||COL.black,'stroke-width':Math.max(3,size/14)},g);
+  return w;
+}
+// parts: [str,color] or ['FRAC',num,den,color]; returns end x
+function RICH(g,x,y,parts,size,anchor){
+  const grp=el('g',{},g);let cx=0;
+  parts.forEach(p=>{
+    if(p[0]==='FRAC'){cx+=4;cx+=FR(grp,cx,y,p[1],p[2],size*0.8,p[3])+6;}
+    else{const t=T(grp,cx,y,p[0],size,p[1],'start');cx+=W(t);}
+  });
+  let off=x; if(anchor==='middle')off=x-cx/2; else if(anchor==='end')off=x-cx;
+  grp.setAttribute('transform',`translate(${off},0)`);
+  return off+cx;
+}
+// fractions
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function minus(s){return String(s).replace(/-/g,'−');}
+// value as parts: integer or fraction num/den (den>0)
+function fracParts(n,d,color,paren){
+  const g=gcd(n,d);n/=g;d/=g;if(d<0){n=-n;d=-d;}
+  if(d===1){const s=minus(n);return [[paren&&n<0?'('+s+')':s,color]];}
+  const neg=n<0;const body=[['FRAC',String(Math.abs(n)),String(d),color]];
+  if(!neg)return body;
+  return paren?[['(−',color],...body,[')',color]]:[['−',color],...body];
+}
+function fmt(v){ if(Math.abs(v-Math.round(v))<1e-9)return minus(Math.round(v)); return minus(+v.toFixed(2)); }
+// buttons
+function BTN(p,x,y,w,h,label,opt,fn){
+  opt=opt||{};const g=el('g',{class:'btn'+(opt.on?' on':'')+(opt.off?' off':''),transform:`translate(${x},${y})`},p);
+  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
+  const t=T(g,w/2,h/2,label,opt.fs||34,null);t.removeAttribute('fill');
+  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!opt.off)fn();});
+  return g;
+}
+// global drag handling: register draggable with onDown -> returns handler(pt) or null
+let DRAG=null;
+function svgPt(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+const HITS=[]; // functions(pt) -> move handler or null (checked in order)
+svg.addEventListener('pointerdown',e=>{const p=svgPt(e);
+  for(const h of HITS){const m=h(p);if(m){DRAG=m;svg.setPointerCapture(e.pointerId);e.preventDefault();m(p);return;}}});
+svg.addEventListener('pointermove',e=>{if(!DRAG)return;e.preventDefault();DRAG(svgPt(e));});
+svg.addEventListener('pointerup',()=>{DRAG=null;});svg.addEventListener('pointercancel',()=>{DRAG=null;});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+// slider drawing: n steps, idx; geometry stored for hit test
+function SLIDER(p,x,y,len,n,idx,label){
+  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:COL.gray,'stroke-width':8,'stroke-linecap':'round'},p);
+  const kx=x+len*idx/(n-1);
+  el('line',{x1:x,y1:y,x2:kx,y2:y,stroke:COL.black,'stroke-width':8,'stroke-linecap':'round'},p);
+  el('circle',{cx:kx,cy:y,r:26,fill:'#fff',stroke:COL.black,'stroke-width':5},p);
+  return {x,y,len,n};
+}
+function sliderHit(geo,setIdx){return p=>{ if(!geo)return null;
+  if(p.x<geo.x-40||p.x>geo.x+geo.len+40||Math.abs(p.y-geo.y)>45)return null;
+  return q=>{let i=Math.round((q.x-geo.x)/geo.len*(geo.n-1));i=Math.max(0,Math.min(geo.n-1,i));setIdx(i);};};}
+function isLand(){return innerWidth>=innerHeight;}
+
+
+// coordinate plane: cfg {cx,cy,u,xmin,xmax,ymin,ymax,step,fs}
+function PLANE(g,c){
+  const X=x=>c.cx+x*c.u, Y=y=>c.cy-y*c.u;
+  for(let x=c.xmin;x<=c.xmax;x++) el('line',{x1:X(x),y1:Y(c.ymin),x2:X(x),y2:Y(c.ymax),stroke:COL.grid,'stroke-width':2},g);
+  for(let y=c.ymin;y<=c.ymax;y++) el('line',{x1:X(c.xmin),y1:Y(y),x2:X(c.xmax),y2:Y(y),stroke:COL.grid,'stroke-width':2},g);
+  const ext=c.u*0.6;
+  el('line',{x1:X(c.xmin)-8,y1:Y(0),x2:X(c.xmax)+ext,y2:Y(0),stroke:COL.black,'stroke-width':4},g);
+  el('line',{x1:X(0),y1:Y(c.ymin)+8,x2:X(0),y2:Y(c.ymax)-ext,stroke:COL.black,'stroke-width':4},g);
+  el('polygon',{points:`${X(c.xmax)+ext+16},${Y(0)} ${X(c.xmax)+ext-2},${Y(0)-9} ${X(c.xmax)+ext-2},${Y(0)+9}`,fill:COL.black},g);
+  el('polygon',{points:`${X(0)},${Y(c.ymax)-ext-16} ${X(0)-9},${Y(c.ymax)-ext+2} ${X(0)+9},${Y(c.ymax)-ext+2}`,fill:COL.black},g);
+  const fs=c.fs||24, st=c.step||2;
+  for(let x=Math.ceil(c.xmin/st)*st;x<=c.xmax;x+=st){ if(!x)continue; T(g,X(x),Y(0)+fs*0.95,minus(x),fs,COL.black); }
+  for(let y=Math.ceil(c.ymin/st)*st;y<=c.ymax;y+=st){ if(!y)continue; T(g,X(0)-10,Y(y),minus(y),fs,COL.black,'end'); }
+  T(g,X(0)-fs*0.6,Y(0)+fs*0.9,'O',fs,COL.black);
+  T(g,X(c.xmax)+ext+10,Y(0)+fs*1.2,'{x}',fs*1.4,COL.black);
+  T(g,X(0)-fs*1.0,Y(c.ymax)-ext,'{y}',fs*1.4,COL.black);
+  return {X,Y};
+}
+// exact rational helpers: {n,d}
+function R(n,d){d=d||1;const g=gcd(n,d);n/=g;d/=g;if(d<0){n=-n;d=-d;}return {n,d};}
+function Rmul(a,b){return R(a.n*b.n,a.d*b.d);} function Radd(a,b){return R(a.n*b.d+b.n*a.d,a.d*b.d);}
+function Rsub(a,b){return R(a.n*b.d-b.n*a.d,a.d*b.d);} function Rdiv(a,b){return R(a.n*b.d,a.d*b.n);}
+function Rv(a){return a.n/a.d;}
+function terminating(d){while(d%2===0)d/=2;while(d%5===0)d/=5;return d===1;}
+// parts for a rational: decimals allowed if terminating(opt.dec)
+function Rparts(r,color,opt){opt=opt||{};
+  if(r.d===1){const s=minus(r.n);return [[opt.paren&&r.n<0?'('+s+')':s,color]];}
+  if(opt.dec&&terminating(r.d)){const s=minus(+(r.n/r.d).toFixed(4));return [[opt.paren&&r.n<0?'('+s+')':s,color]];}
+  return fracParts(r.n,r.d,color,opt.paren);
+}
+// coefficient parts for "a x" : 1 -> '', -1 -> '−'
+function coefParts(r,color){ if(r.n===r.d)return []; if(r.n===-r.d)return [['−',color]]; return Rparts(r,color); }
+
+
+const root=el('g',{},svg);
+let st,L;
+const NX=16,NY=12;
+// mode 0: triangle PBC, P on line y=3 ; mode 1: quadrilateral ABCD, D slides on line through D parallel to AC
+const B0=[4,10],C0=[10,10],LY=3;
+const QA=[3,4],QB=[2,10],QC=[8,10],QD0=[7,2]; // AC dir (5,6) ; D + t*(5,6)
+function init(){st={mode:0,px:6,t:0,h:true};}
+function layout(){
+  if(isLand()){svg.setAttribute('viewBox','0 0 1600 900');
+    L={ox:30,oy:90,u:58,tabs:[[1050,40],[1260,40]],tw:[190,96],hb:[1050,170,190,96],area:[1060,420],reset:[1400,790,170,90]};
+  } else {svg.setAttribute('viewBox','0 0 1000 1500');
+    L={ox:52,oy:40,u:56,tabs:[[40,780],[260,780]],tw:[200,96],hb:[480,780,200,96],area:[60,1000],reset:[790,1395,190,90]};
+  }
+  draw();
+}
+const X=p=>[L.ox+p[0]*L.u,L.oy+p[1]*L.u];
+function area2(P){let s=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];s+=a[0]*b[1]-a[1]*b[0];}return Math.round(Math.abs(s));}
+function fmtA(a2){return a2%2===0?String(a2/2):[['FRAC',String(a2),'2',COL.blue]];}
+function Dpos(){return [QD0[0]+5*st.t,QD0[1]+6*st.t];}
+function poly(g,P,fill,stroke,w){el('polygon',{points:P.map(p=>X(p).join(',')).join(' '),fill,stroke,'stroke-width':w||5,'stroke-linejoin':'round'},g);}
+function seg(g,p,q,c,w,dash){const a=X(p),b=X(q);el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:c,'stroke-width':w,'stroke-dasharray':dash||'none'},g);}
+function lab(g,p,s,dx,dy,c){const a=X(p);T(g,a[0]+dx,a[1]+dy,s,38,c||COL.black);}
+function handle(g,p,c){const a=X(p);el('circle',{cx:a[0],cy:a[1],r:16,fill:'#fff',stroke:c,'stroke-width':6},g);}
+function draw(){
+  root.innerHTML='';const g=root;
+  for(let i=0;i<=NX;i++)el('line',{x1:L.ox+i*L.u,y1:L.oy,x2:L.ox+i*L.u,y2:L.oy+NY*L.u,stroke:COL.grid,'stroke-width':2},g);
+  for(let j=0;j<=NY;j++)el('line',{x1:L.ox,y1:L.oy+j*L.u,x2:L.ox+NX*L.u,y2:L.oy+j*L.u,stroke:COL.grid,'stroke-width':2},g);
+  let a2;
+  if(st.mode===0){const P=[st.px,LY];
+    seg(g,[0,LY],[NX,LY],COL.orange,5); const e=X([NX,LY]);T(g,e[0]-20,e[1]-30,'ℓ',40,COL.orange);
+    poly(g,[[6,LY],B0,C0],'none',COL.gray,3);
+    poly(g,[P,B0,C0],COL.lblue,COL.blue);
+    if(st.h){seg(g,P,[P[0],B0[1]],COL.red,4,'10 8');T(g,X(P)[0]+28,X([0,(LY+B0[1])/2])[1],'{h}',44,COL.red);}
+    lab(g,P,'A',0,-40,COL.blue);lab(g,B0,'B',-30,34);lab(g,C0,'C',30,34);
+    handle(g,P,COL.blue);
+    a2=area2([P,B0,C0]);
+    RICH(g,L.area[0],L.area[1],[['△ABC = ',COL.black],...[].concat(typeof fmtA(a2)==='string'?[[fmtA(a2),COL.blue]]:fmtA(a2))],56,'start');
+  } else {
+    const D=Dpos(),E=[QD0[0]+5*(8/6),10];
+    seg(g,QA,QC,COL.black,3,'10 8');
+    const l0=[QD0[0]-5*0.4,QD0[1]-6*0.4],l1=[QD0[0]+5*1.55,QD0[1]+6*1.55];seg(g,l0,l1,COL.orange,5);
+    const le=X(l0);T(g,le[0]-24,le[1],'ℓ',40,COL.orange);
+    seg(g,QC,[13,10],COL.black,3,'10 8');
+    poly(g,[QA,QB,QC],COL.lblue,'none',0);poly(g,[QA,QC,D],COL.lgreen,'none',0);
+    poly(g,[QA,QB,QC,D],'none',COL.blue,5);
+    if(st.t>0)poly(g,[QA,QC,QD0],'none',COL.gray,3);
+    lab(g,QA,'A',-30,-26);lab(g,QB,'B',-30,30);lab(g,QC,'C',0,40);lab(g,QD0,'D',30,-26);
+    const ee=X(E);el('circle',{cx:ee[0],cy:ee[1],r:8,fill:COL.orange},g);T(g,ee[0]+8,ee[1]+40,'E',38,COL.orange);
+    handle(g,D,COL.green);
+    a2=area2([QA,QB,QC,D]);
+    RICH(g,L.area[0],L.area[1],[['四角形 = ',COL.black],...[].concat(typeof fmtA(a2)==='string'?[[fmtA(a2),COL.blue]]:fmtA(a2))],52,'start');
+    RICH(g,L.area[0],L.area[1]+110,[['△ACD = △ACE',COL.green]],48,'start');
+  }
+  const [tw,th]=L.tw;
+  BTN(g,...L.tabs[0],tw,th,'△',{on:st.mode===0,fs:44},()=>{st.mode=0;draw();});
+  BTN(g,...L.tabs[1],tw,th,'四角形',{on:st.mode===1,fs:34},()=>{st.mode=1;draw();});
+  if(st.mode===0)BTN(g,...L.hb,'{h}',{on:st.h,fs:44},()=>{st.h=!st.h;draw();});
+  BTN(g,...L.reset,'リセット',{fs:32},()=>{init();draw();});
+}
+HITS.push(p=>{ if(!L)return null;
+  if(st.mode===0){const a=X([st.px,LY]);if(Math.hypot(p.x-a[0],p.y-a[1])>44)return null;
+    return m=>{let x=Math.round((m.x-L.ox)/L.u);x=Math.max(0,Math.min(NX,x));if(x!==st.px){st.px=x;draw();}};}
+  const a=X(Dpos());if(Math.hypot(p.x-a[0],p.y-a[1])>44)return null;
+  return m=>{ // project onto line, snap t to 1/6 steps (grid crossings of y), clamp 0..8/6
+    const w=[(m.x-L.ox)/L.u,(m.y-L.oy)/L.u];let t=((w[0]-QD0[0])*5+(w[1]-QD0[1])*6)/61;
+    t=Math.round(t*6)/6;t=Math.max(-0.33,Math.min(8/6,t));if(Math.abs(t-st.t)>1e-9){st.t=t;draw();}};});
+addEventListener('resize',layout);
+init();layout();
+
+</script>
+</body>
+</html>
