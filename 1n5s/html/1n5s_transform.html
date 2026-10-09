@@ -5,31 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>図形の移動</title>
 <style>
-html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;-webkit-touch-callout:none}
-svg{display:block;width:100vw;height:100vh;touch-action:none}
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#svg{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+.sep{flex:none;width:14px}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
 text{font-weight:700}
 .var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
-.btn{cursor:pointer}.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
-.btn text{fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.btn.on rect{fill:#191919}.btn.on text{fill:#fff}.btn.off{opacity:.3}
+.row{cursor:pointer}.row rect{fill:#fff;stroke:#191919;stroke-width:3}
+.row text{fill:#191919;dominant-baseline:central;pointer-events:none}
+.row.on rect{fill:#191919}.row.on text{fill:#fff}
 </style>
 </head>
 <body>
+<div id="wrap">
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+<div id="bar"></div>
+</div>
 <script>
 "use strict";
 const NS="http://www.w3.org/2000/svg";
 const svg=document.getElementById('svg');
-const COL={black:"#191919",red:"#d62728",blue:"#1f5fbf",green:"#1e8c46",orange:"#e65c00",gray:"#9a9a9a",
-  lred:"#f7c8c8",lblue:"#bed4f5",lgreen:"#bee6c8",grid:"#e1e1e1"};
+const COL={black:"#191919",red:"#d0362b",blue:"#2f7dd1",green:"#2ea55a",orange:"#f08a24",gray:"#9a9a9a",
+  lred:"#f6cdc9",lblue:"#c9dff5",lgreen:"#c4e9d0",lorange:"#fbdcbd",grid:"#e1e1e1",text2:"#666"};
+// text color: figure color darkened (x0.7) for legibility
+const TXT={[COL.blue]:"#215892",[COL.green]:"#20743f",[COL.orange]:"#a8611a"};
+const tc=c=>TXT[c]||c||COL.black;
+// size tokens (px on screen, see style_reference.md); portrait viewBox is 1000 wide on ~820px -> x1.22
+const TK={label:30,main:36,big:96,small:24,corner:28};
+function SZ(n){return (typeof n==='number'?n:TK[n])*(isLand()?1:1.22);}
 function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // text with {italic} markup
 function T(g,x,y,s,size,color,anchor){
-  const t=el('text',{x,y,'font-size':size,fill:color||COL.black,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
+  const t=el('text',{x,y,'font-size':size,fill:tc(color),'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
   String(s).split(/(\{[^}]*\})/).forEach(p=>{if(!p)return;
     if(p[0]==='{'){const sp=el('tspan',{class:'var','font-size':size*1.15},t);sp.textContent=p.slice(1,-1);}
     else{const sp=el('tspan',{},t);sp.textContent=p.replace(/ /g,'\u00a0');}});
+  if(size>=80)t.style.fontWeight=800;
   return t;
 }
 function W(t){try{return t.getComputedTextLength();}catch(e){return 0;}}
@@ -38,7 +58,7 @@ function FR(g,x,y,num,den,size,color){
   const a=T(g,0,y-size*0.62,num,size,color),b=T(g,0,y+size*0.66,den,size,color);
   const w=Math.max(W(a),W(b))+size*0.35;
   a.setAttribute('x',x+w/2);b.setAttribute('x',x+w/2);
-  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:color||COL.black,'stroke-width':Math.max(3,size/14)},g);
+  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:tc(color),'stroke-width':Math.max(3,size/14)},g);
   return w;
 }
 // parts: [str,color] or ['FRAC',num,den,color]; returns end x
@@ -64,13 +84,16 @@ function fracParts(n,d,color,paren){
   return paren?[['(−',color],...body,[')',color]]:[['−',color],...body];
 }
 function fmt(v){ if(Math.abs(v-Math.round(v))<1e-9)return minus(Math.round(v)); return minus(+v.toFixed(2)); }
-// buttons
-function BTN(p,x,y,w,h,label,opt,fn){
-  opt=opt||{};const g=el('g',{class:'btn'+(opt.on?' on':'')+(opt.off?' off':''),transform:`translate(${x},${y})`},p);
-  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
-  const t=T(g,w/2,h/2,label,opt.fs||34,null);t.removeAttribute('fill');
-  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!opt.off)fn();});
-  return g;
+// toolbar (HTML buttons at the bottom, same style as the exterior-angle page)
+// specs: [{t:label, on, main, off, sep:true(gap before), aria, fn}]
+const BAR=document.getElementById('bar');let barKey='';
+function TOOLBAR(specs){
+  const key=specs.map(b=>(b.sep?'|':'')+b.t).join(',');
+  if(key!==barKey){BAR.innerHTML='';barKey=key;
+    specs.forEach(b=>{if(b.sep){const d=document.createElement('span');d.className='sep';BAR.appendChild(d);}
+      const e=document.createElement('button');e.textContent=b.t;if(b.aria)e.setAttribute('aria-label',b.aria);BAR.appendChild(e);});}
+  const bs=BAR.querySelectorAll('button');
+  specs.forEach((b,i)=>{const e=bs[i];e.classList.toggle('on',!!b.on);e.classList.toggle('main',!!b.main);e.disabled=!!b.off;e.onclick=()=>b.fn();});
 }
 // global drag handling: register draggable with onDown -> returns handler(pt) or null
 let DRAG=null;
@@ -84,15 +107,17 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 // slider drawing: n steps, idx; geometry stored for hit test
 function SLIDER(p,x,y,len,n,idx,label){
-  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:COL.gray,'stroke-width':8,'stroke-linecap':'round'},p);
+  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:'#d6d6d6','stroke-width':8,'stroke-linecap':'round'},p);
   const kx=x+len*idx/(n-1);
   el('line',{x1:x,y1:y,x2:kx,y2:y,stroke:COL.black,'stroke-width':8,'stroke-linecap':'round'},p);
-  el('circle',{cx:kx,cy:y,r:26,fill:'#fff',stroke:COL.black,'stroke-width':5},p);
+  el('circle',{cx:kx,cy:y,r:SZ(22),fill:COL.black},p);el('circle',{cx:kx,cy:y,r:SZ(8),fill:'#fff'},p);
   return {x,y,len,n};
 }
 function sliderHit(geo,setIdx){return p=>{ if(!geo)return null;
   if(p.x<geo.x-40||p.x>geo.x+geo.len+40||Math.abs(p.y-geo.y)>45)return null;
   return q=>{let i=Math.round((q.x-geo.x)/geo.len*(geo.n-1));i=Math.max(0,Math.min(geo.n-1,i));setIdx(i);};};}
+// draggable point (same look as the exterior-angle page: filled dot + white center)
+function DOT(p,x,y,c){el('circle',{cx:x,cy:y,r:SZ(12),fill:c||COL.black},p);el('circle',{cx:x,cy:y,r:SZ(4.5),fill:'#fff'},p);}
 function isLand(){return innerWidth>=innerHeight;}
 
 
@@ -135,10 +160,10 @@ const TRI=[[4,5],[3,10],[8,9]], NM=['A','B','C'];
 let st,L,FIG=null;
 function init(){st={mode:0,lines:false,v:[9,-4],O:[10,8],ang:90,ax:[[11,1],[11,15]]};}
 function layout(){
-  if(isLand()){svg.setAttribute('viewBox','0 0 1600 900');
-    L={ox:30,oy:34,u:52,nx:20,ny:16,tabs:[[1100,40],[1260,40],[1420,40]],tw:[150,90],line:[1100,170,150,90],info:[1110,380],reset:[1400,790,170,90]};
-  } else {svg.setAttribute('viewBox','0 0 1000 1500');
-    L={ox:20,oy:30,u:48,nx:20,ny:16,tabs:[[40,1040],[350,1040],[660,1040]],tw:[290,96],line:[40,1170,290,96],info:[380,1220],reset:[790,1395,190,90]};
+  if(isLand()){svg.setAttribute('viewBox','0 0 1600 820');
+    L={ox:30,oy:26,u:48,nx:20,ny:16,info:[1060,110]};
+  } else {svg.setAttribute('viewBox','0 0 1000 1340');
+    L={ox:20,oy:26,u:48,nx:20,ny:16,info:[60,900]};
   }
   draw();
 }
@@ -153,10 +178,10 @@ function imgPts(){
 function poly(g,pts,fill,stroke){el('polygon',{points:pts.map(p=>X(p).join(',')).join(' '),fill,stroke,'stroke-width':5,'stroke-linejoin':'round'},g);}
 function seg(g,p,q,c,w,dash){const a=X(p),b=X(q);el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:c,'stroke-width':w,'stroke-dasharray':dash||'none'},g);}
 function labels(g,pts,names,c){const cx=(pts[0][0]+pts[1][0]+pts[2][0])/3,cy=(pts[0][1]+pts[1][1]+pts[2][1])/3;
-  pts.forEach((p,i)=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;const q=X([p[0]+dx/l*0.75,p[1]+dy/l*0.75]);T(g,q[0],q[1],names[i],34,c);});}
+  pts.forEach((p,i)=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;const q=X([p[0]+dx/l*0.75,p[1]+dy/l*0.75]);T(g,q[0],q[1],names[i],SZ('label'),c);});}
 function tick(g,p,q,k,c){const a=X(p),b=X(q),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,l=Math.hypot(b[0]-a[0],b[1]-a[1])||1,ux=(b[0]-a[0])/l,uy=(b[1]-a[1])/l;
   for(let i=0;i<k;i++){const o=(i-(k-1)/2)*9,cx=mx+ux*o,cy=my+uy*o;el('line',{x1:cx-uy*10,y1:cy+ux*10,x2:cx+uy*10,y2:cy-ux*10,stroke:c,'stroke-width':3},g);}}
-function handle(g,p,c){const a=X(p);el('circle',{cx:a[0],cy:a[1],r:16,fill:'#fff',stroke:c,'stroke-width':6},g);}
+function handle(g,p,c){const a=X(p);DOT(g,a[0],a[1],c);}
 function draw(){
   root.innerHTML='';const g=root;
   for(let i=0;i<=L.nx;i++)el('line',{x1:L.ox+i*L.u,y1:L.oy,x2:L.ox+i*L.u,y2:L.oy+L.ny*L.u,stroke:COL.grid,'stroke-width':2},g);
@@ -165,7 +190,7 @@ function draw(){
   const fg=el('g',{},g);
   if(st.mode===2){const [a,b]=st.ax,ux=b[0]-a[0],uy=b[1]-a[1],l=Math.hypot(ux,uy);
     seg(fg,[a[0]-ux/l*30,a[1]-uy/l*30],[a[0]+ux/l*30,a[1]+uy/l*30],COL.black,4);}
-  poly(fg,TRI,COL.lblue,COL.blue); poly(fg,I,'#fbd6b4',COL.orange);
+  poly(fg,TRI,COL.lblue,COL.blue); poly(fg,I,COL.lorange,COL.orange);
   if(st.lines){const cs=[COL.green,COL.red,COL.black];
     if(st.mode===0) TRI.forEach((p,i)=>{seg(fg,p,I[i],cs[i],4,'10 8');tick(fg,p,I[i],2,cs[i]);});
     if(st.mode===1) TRI.forEach((p,i)=>{if(i===2)return;seg(fg,st.O,p,cs[i],4);seg(fg,st.O,I[i],cs[i],4);tick(fg,st.O,p,i+1,cs[i]);tick(fg,st.O,I[i],i+1,cs[i]);});
@@ -183,23 +208,22 @@ function draw(){
       el('path',{d:`M${o[0]+r*Math.cos(a1)},${o[1]+r*Math.sin(a1)} A${r},${r} 0 ${large} 0 ${e[0]},${e[1]}`,fill:'none',stroke:COL.green,'stroke-width':5},fg);
       if(!st.lines){seg(fg,st.O,TRI[0],COL.gray,3,'8 6');seg(fg,st.O,I[0],COL.gray,3,'8 6');}}
     el('circle',{cx:o[0],cy:o[1],r:12,fill:COL.black},fg);el('circle',{cx:o[0],cy:o[1],r:24,fill:'none',stroke:COL.black,'stroke-width':3,'stroke-dasharray':'5 5'},fg);
-    T(fg,o[0]-30,o[1]+32,'O',34,COL.black);
+    T(fg,o[0]-SZ(30),o[1]+SZ(32),'O',SZ('label'),COL.black);
     handle(fg,I[0],COL.orange);
   }
   if(st.mode===0) handle(fg,I[0],COL.orange);
-  if(st.mode===2){st.ax.forEach(p=>handle(fg,p,COL.black));const b=X(st.ax[1]);T(fg,b[0]+34,b[1]-34,'ℓ',40,COL.black);}
+  if(st.mode===2){st.ax.forEach(p=>handle(fg,p,COL.black));const b=X(st.ax[1]);T(fg,b[0]+SZ(34),b[1]-SZ(34),'ℓ',SZ(36),COL.black);}
   // panel
-  const [tw,th]=L.tw;
-  ['平行移動','回転移動','対称移動'].forEach((s,i)=>BTN(g,...L.tabs[i],tw,th,s,{on:st.mode===i,fs:30},()=>{st.mode=i;draw();}));
-  BTN(g,...L.line,'線',{on:st.lines,fs:36},()=>{st.lines=!st.lines;draw();});
+  TOOLBAR([...['平行移動','回転移動','対称移動'].map((s,i)=>({t:s,on:st.mode===i,fn:()=>{st.mode=i;draw();}})),
+    {t:'線',sep:true,on:st.lines,aria:'線を表示',fn:()=>{st.lines=!st.lines;draw();}},
+    {t:'リセット',sep:true,fn:()=>{init();draw();}}]);
   const [ix,iy]=L.info;
-  if(st.mode===1) T(g,ix,iy,st.ang+'°',80,COL.green,'start');
+  if(st.mode===1) T(g,ix,iy,st.ang+'°',SZ('big'),COL.green,'start');
   if(st.lines){
     const rows=st.mode===0?[['AA′ // BB′ // CC′',COL.black],['AA′ = BB′ = CC′',COL.black]]:
       st.mode===1?[['OA = OA′',COL.green],['OB = OB′',COL.red]]:[['AA′ ⊥ ℓ',COL.green],['BB′ ⊥ ℓ',COL.red]];
-    rows.forEach((r,k)=>T(g,ix,iy+(st.mode===1?110:0)+k*80,r[0],44,r[1],'start'));
+    rows.forEach((r,k)=>T(g,ix,iy+(st.mode===1?SZ(120):0)+k*SZ(62),r[0],SZ('main'),r[1],'start'));
   }
-  BTN(g,...L.reset,'リセット',{fs:32},()=>{init();draw();});
 }
 function toW(p){return [(p.x-L.ox)/L.u,(p.y-L.oy)/L.u];}
 function near(p,w,r){const a=X(w);return Math.hypot(p.x-a[0],p.y-a[1])<(r||40);}

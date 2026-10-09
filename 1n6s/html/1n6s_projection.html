@@ -5,31 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>投影図</title>
 <style>
-html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;-webkit-touch-callout:none}
-svg{display:block;width:100vw;height:100vh;touch-action:none}
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#svg{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+.sep{flex:none;width:14px}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
 text{font-weight:700}
 .var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
-.btn{cursor:pointer}.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
-.btn text{fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.btn.on rect{fill:#191919}.btn.on text{fill:#fff}.btn.off{opacity:.3}
+.row{cursor:pointer}.row rect{fill:#fff;stroke:#191919;stroke-width:3}
+.row text{fill:#191919;dominant-baseline:central;pointer-events:none}
+.row.on rect{fill:#191919}.row.on text{fill:#fff}
 </style>
 </head>
 <body>
+<div id="wrap">
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+<div id="bar"></div>
+</div>
 <script>
 "use strict";
 const NS="http://www.w3.org/2000/svg";
 const svg=document.getElementById('svg');
-const COL={black:"#191919",red:"#d62728",blue:"#1f5fbf",green:"#1e8c46",orange:"#e65c00",gray:"#9a9a9a",
-  lred:"#f7c8c8",lblue:"#bed4f5",lgreen:"#bee6c8",grid:"#e1e1e1"};
+const COL={black:"#191919",red:"#d0362b",blue:"#2f7dd1",green:"#2ea55a",orange:"#f08a24",gray:"#9a9a9a",
+  lred:"#f6cdc9",lblue:"#c9dff5",lgreen:"#c4e9d0",lorange:"#fbdcbd",grid:"#e1e1e1",text2:"#666"};
+// text color: figure color darkened (x0.7) for legibility
+const TXT={[COL.blue]:"#215892",[COL.green]:"#20743f",[COL.orange]:"#a8611a"};
+const tc=c=>TXT[c]||c||COL.black;
+// size tokens (px on screen, see style_reference.md); portrait viewBox is 1000 wide on ~820px -> x1.22
+const TK={label:30,main:36,big:96,small:24,corner:28};
+function SZ(n){return (typeof n==='number'?n:TK[n])*(isLand()?1:1.22);}
 function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // text with {italic} markup
 function T(g,x,y,s,size,color,anchor){
-  const t=el('text',{x,y,'font-size':size,fill:color||COL.black,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
+  const t=el('text',{x,y,'font-size':size,fill:tc(color),'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
   String(s).split(/(\{[^}]*\})/).forEach(p=>{if(!p)return;
     if(p[0]==='{'){const sp=el('tspan',{class:'var','font-size':size*1.15},t);sp.textContent=p.slice(1,-1);}
     else{const sp=el('tspan',{},t);sp.textContent=p.replace(/ /g,'\u00a0');}});
+  if(size>=80)t.style.fontWeight=800;
   return t;
 }
 function W(t){try{return t.getComputedTextLength();}catch(e){return 0;}}
@@ -38,7 +58,7 @@ function FR(g,x,y,num,den,size,color){
   const a=T(g,0,y-size*0.62,num,size,color),b=T(g,0,y+size*0.66,den,size,color);
   const w=Math.max(W(a),W(b))+size*0.35;
   a.setAttribute('x',x+w/2);b.setAttribute('x',x+w/2);
-  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:color||COL.black,'stroke-width':Math.max(3,size/14)},g);
+  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:tc(color),'stroke-width':Math.max(3,size/14)},g);
   return w;
 }
 // parts: [str,color] or ['FRAC',num,den,color]; returns end x
@@ -64,13 +84,16 @@ function fracParts(n,d,color,paren){
   return paren?[['(−',color],...body,[')',color]]:[['−',color],...body];
 }
 function fmt(v){ if(Math.abs(v-Math.round(v))<1e-9)return minus(Math.round(v)); return minus(+v.toFixed(2)); }
-// buttons
-function BTN(p,x,y,w,h,label,opt,fn){
-  opt=opt||{};const g=el('g',{class:'btn'+(opt.on?' on':'')+(opt.off?' off':''),transform:`translate(${x},${y})`},p);
-  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
-  const t=T(g,w/2,h/2,label,opt.fs||34,null);t.removeAttribute('fill');
-  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!opt.off)fn();});
-  return g;
+// toolbar (HTML buttons at the bottom, same style as the exterior-angle page)
+// specs: [{t:label, on, main, off, sep:true(gap before), aria, fn}]
+const BAR=document.getElementById('bar');let barKey='';
+function TOOLBAR(specs){
+  const key=specs.map(b=>(b.sep?'|':'')+b.t).join(',');
+  if(key!==barKey){BAR.innerHTML='';barKey=key;
+    specs.forEach(b=>{if(b.sep){const d=document.createElement('span');d.className='sep';BAR.appendChild(d);}
+      const e=document.createElement('button');e.textContent=b.t;if(b.aria)e.setAttribute('aria-label',b.aria);BAR.appendChild(e);});}
+  const bs=BAR.querySelectorAll('button');
+  specs.forEach((b,i)=>{const e=bs[i];e.classList.toggle('on',!!b.on);e.classList.toggle('main',!!b.main);e.disabled=!!b.off;e.onclick=()=>b.fn();});
 }
 // global drag handling: register draggable with onDown -> returns handler(pt) or null
 let DRAG=null;
@@ -84,15 +107,17 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 // slider drawing: n steps, idx; geometry stored for hit test
 function SLIDER(p,x,y,len,n,idx,label){
-  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:COL.gray,'stroke-width':8,'stroke-linecap':'round'},p);
+  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:'#d6d6d6','stroke-width':8,'stroke-linecap':'round'},p);
   const kx=x+len*idx/(n-1);
   el('line',{x1:x,y1:y,x2:kx,y2:y,stroke:COL.black,'stroke-width':8,'stroke-linecap':'round'},p);
-  el('circle',{cx:kx,cy:y,r:26,fill:'#fff',stroke:COL.black,'stroke-width':5},p);
+  el('circle',{cx:kx,cy:y,r:SZ(22),fill:COL.black},p);el('circle',{cx:kx,cy:y,r:SZ(8),fill:'#fff'},p);
   return {x,y,len,n};
 }
 function sliderHit(geo,setIdx){return p=>{ if(!geo)return null;
   if(p.x<geo.x-40||p.x>geo.x+geo.len+40||Math.abs(p.y-geo.y)>45)return null;
   return q=>{let i=Math.round((q.x-geo.x)/geo.len*(geo.n-1));i=Math.max(0,Math.min(geo.n-1,i));setIdx(i);};};}
+// draggable point (same look as the exterior-angle page: filled dot + white center)
+function DOT(p,x,y,c){el('circle',{cx:x,cy:y,r:SZ(12),fill:c||COL.black},p);el('circle',{cx:x,cy:y,r:SZ(4.5),fill:'#fff'},p);}
 function isLand(){return innerWidth>=innerHeight;}
 
 
@@ -194,12 +219,10 @@ const SOL=[
 let st,L;
 function init(){st={k:0,yaw:-0.45,pitch:0.4};}
 function layout(){
-  if(isLand()){svg.setAttribute('viewBox','0 0 1600 900');
-    L={c:[460,390],s:115,area:[0,0,920,740],tabs:[0,1,2,3,4].map(i=>[20+i*178,780]),tw:[166,96],
-       fr:[1250,215],tp:[1250,590],u:70,sep:[960,1540,400],lab:990,view:[[960,790,170,90],[1150,790,170,90]],reset:[1400,790,170,90]};
-  } else {svg.setAttribute('viewBox','0 0 1000 1500');
-    L={c:[500,350],s:125,area:[0,0,1000,700],tabs:[0,1,2,3,4].map(i=>[16+i*196,710]),tw:[182,96],
-       fr:[360,930],tp:[360,1260],u:62,sep:[90,640,1095],lab:60,view:[[700,900,250,96],[700,1030,250,96]],reset:[790,1395,190,90]};
+  if(isLand()){svg.setAttribute('viewBox','0 0 1600 820');
+    L={c:[460,400],s:115,area:[0,0,920,820],fr:[1250,215],tp:[1250,590],u:70,sep:[960,1540,400],lab:990};
+  } else {svg.setAttribute('viewBox','0 0 1000 1340');
+    L={c:[500,350],s:125,area:[0,0,1000,720],fr:[560,880],tp:[560,1190],u:62,sep:[60,940,1035],lab:60};
   }
   draw();
 }
@@ -226,17 +249,15 @@ function draw(){
   // projections
   const [s0,s1,sy]=L.sep;
   el('line',{x1:s0,y1:sy,x2:s1,y2:sy,stroke:COL.gray,'stroke-width':3},g);
-  T(g,L.lab,L.fr[1],'立面図',30,COL.red,'start');T(g,L.lab,L.tp[1],'平面図',30,COL.blue,'start');
+  T(g,L.lab,L.fr[1],'立面図',SZ('label'),COL.red,'start');T(g,L.lab,L.tp[1],'平面図',SZ('label'),COL.blue,'start');
   const w=1.7*L.u;
   [-1,1].forEach(sg=>el('line',{x1:L.fr[0]+sg*(S.nm==='球'?1.7:S.nm==='三角柱'?1.6:1.5)*L.u,y1:L.fr[1],x2:L.fr[0]+sg*(S.nm==='球'?1.7:S.nm==='三角柱'?1.6:1.5)*L.u,y2:L.tp[1],stroke:COL.gray,'stroke-width':2,'stroke-dasharray':'6 8'},g));
   const pf=el('g',{},g);proj2(pf,S.front,L.fr[0],L.fr[1],L.u,false);
   const pt=el('g',{},g);proj2(pt,S.top,L.tp[0],L.tp[1],L.u,false);
   // buttons
-  const [tw,th]=L.tw;
-  SOL.forEach((s,i)=>BTN(g,...L.tabs[i],tw,th,s.nm,{on:st.k===i,fs:32},()=>{st.k=i;draw();}));
-  BTN(g,...L.view[0],'正面',{fs:34},()=>{st.yaw=0;st.pitch=0;draw();});
-  BTN(g,...L.view[1],'真上',{fs:34},()=>{st.yaw=0;st.pitch=Math.PI/2;draw();});
-  BTN(g,...L.reset,'リセット',{fs:32},()=>{init();draw();});
+  TOOLBAR([...SOL.map((s,i)=>({t:s.nm,on:st.k===i,fn:()=>{st.k=i;draw();}})),
+    {t:'正面',sep:true,fn:()=>{st.yaw=0;st.pitch=0;draw();}},{t:'真上',fn:()=>{st.yaw=0;st.pitch=Math.PI/2;draw();}},
+    {t:'リセット',sep:true,fn:()=>{init();draw();}}]);
 }
 HITS.push(orbitHit(p=>p.x>=L.area[0]&&p.x<=L.area[2]&&p.y>=L.area[1]&&p.y<=L.area[3],()=>({yaw:st.yaw,pitch:st.pitch}),(y,pt)=>{st.yaw=y;st.pitch=pt;draw();}));
 addEventListener('resize',layout);

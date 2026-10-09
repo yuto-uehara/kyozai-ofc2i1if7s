@@ -5,31 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>おうぎ形</title>
 <style>
-html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif;-webkit-touch-callout:none}
-svg{display:block;width:100vw;height:100vh;touch-action:none}
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#svg{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+.sep{flex:none;width:14px}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
 text{font-weight:700}
 .var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
-.btn{cursor:pointer}.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
-.btn text{fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.btn.on rect{fill:#191919}.btn.on text{fill:#fff}.btn.off{opacity:.3}
+.row{cursor:pointer}.row rect{fill:#fff;stroke:#191919;stroke-width:3}
+.row text{fill:#191919;dominant-baseline:central;pointer-events:none}
+.row.on rect{fill:#191919}.row.on text{fill:#fff}
 </style>
 </head>
 <body>
+<div id="wrap">
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+<div id="bar"></div>
+</div>
 <script>
 "use strict";
 const NS="http://www.w3.org/2000/svg";
 const svg=document.getElementById('svg');
-const COL={black:"#191919",red:"#d62728",blue:"#1f5fbf",green:"#1e8c46",orange:"#e65c00",gray:"#9a9a9a",
-  lred:"#f7c8c8",lblue:"#bed4f5",lgreen:"#bee6c8",grid:"#e1e1e1"};
+const COL={black:"#191919",red:"#d0362b",blue:"#2f7dd1",green:"#2ea55a",orange:"#f08a24",gray:"#9a9a9a",
+  lred:"#f6cdc9",lblue:"#c9dff5",lgreen:"#c4e9d0",lorange:"#fbdcbd",grid:"#e1e1e1",text2:"#666"};
+// text color: figure color darkened (x0.7) for legibility
+const TXT={[COL.blue]:"#215892",[COL.green]:"#20743f",[COL.orange]:"#a8611a"};
+const tc=c=>TXT[c]||c||COL.black;
+// size tokens (px on screen, see style_reference.md); portrait viewBox is 1000 wide on ~820px -> x1.22
+const TK={label:30,main:36,big:96,small:24,corner:28};
+function SZ(n){return (typeof n==='number'?n:TK[n])*(isLand()?1:1.22);}
 function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 // text with {italic} markup
 function T(g,x,y,s,size,color,anchor){
-  const t=el('text',{x,y,'font-size':size,fill:color||COL.black,'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
+  const t=el('text',{x,y,'font-size':size,fill:tc(color),'text-anchor':anchor||'middle','dominant-baseline':'central'},g);
   String(s).split(/(\{[^}]*\})/).forEach(p=>{if(!p)return;
     if(p[0]==='{'){const sp=el('tspan',{class:'var','font-size':size*1.15},t);sp.textContent=p.slice(1,-1);}
     else{const sp=el('tspan',{},t);sp.textContent=p.replace(/ /g,'\u00a0');}});
+  if(size>=80)t.style.fontWeight=800;
   return t;
 }
 function W(t){try{return t.getComputedTextLength();}catch(e){return 0;}}
@@ -38,7 +58,7 @@ function FR(g,x,y,num,den,size,color){
   const a=T(g,0,y-size*0.62,num,size,color),b=T(g,0,y+size*0.66,den,size,color);
   const w=Math.max(W(a),W(b))+size*0.35;
   a.setAttribute('x',x+w/2);b.setAttribute('x',x+w/2);
-  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:color||COL.black,'stroke-width':Math.max(3,size/14)},g);
+  el('line',{x1:x,y1:y,x2:x+w,y2:y,stroke:tc(color),'stroke-width':Math.max(3,size/14)},g);
   return w;
 }
 // parts: [str,color] or ['FRAC',num,den,color]; returns end x
@@ -64,13 +84,16 @@ function fracParts(n,d,color,paren){
   return paren?[['(−',color],...body,[')',color]]:[['−',color],...body];
 }
 function fmt(v){ if(Math.abs(v-Math.round(v))<1e-9)return minus(Math.round(v)); return minus(+v.toFixed(2)); }
-// buttons
-function BTN(p,x,y,w,h,label,opt,fn){
-  opt=opt||{};const g=el('g',{class:'btn'+(opt.on?' on':'')+(opt.off?' off':''),transform:`translate(${x},${y})`},p);
-  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
-  const t=T(g,w/2,h/2,label,opt.fs||34,null);t.removeAttribute('fill');
-  g.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(!opt.off)fn();});
-  return g;
+// toolbar (HTML buttons at the bottom, same style as the exterior-angle page)
+// specs: [{t:label, on, main, off, sep:true(gap before), aria, fn}]
+const BAR=document.getElementById('bar');let barKey='';
+function TOOLBAR(specs){
+  const key=specs.map(b=>(b.sep?'|':'')+b.t).join(',');
+  if(key!==barKey){BAR.innerHTML='';barKey=key;
+    specs.forEach(b=>{if(b.sep){const d=document.createElement('span');d.className='sep';BAR.appendChild(d);}
+      const e=document.createElement('button');e.textContent=b.t;if(b.aria)e.setAttribute('aria-label',b.aria);BAR.appendChild(e);});}
+  const bs=BAR.querySelectorAll('button');
+  specs.forEach((b,i)=>{const e=bs[i];e.classList.toggle('on',!!b.on);e.classList.toggle('main',!!b.main);e.disabled=!!b.off;e.onclick=()=>b.fn();});
 }
 // global drag handling: register draggable with onDown -> returns handler(pt) or null
 let DRAG=null;
@@ -84,15 +107,17 @@ document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 // slider drawing: n steps, idx; geometry stored for hit test
 function SLIDER(p,x,y,len,n,idx,label){
-  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:COL.gray,'stroke-width':8,'stroke-linecap':'round'},p);
+  el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:'#d6d6d6','stroke-width':8,'stroke-linecap':'round'},p);
   const kx=x+len*idx/(n-1);
   el('line',{x1:x,y1:y,x2:kx,y2:y,stroke:COL.black,'stroke-width':8,'stroke-linecap':'round'},p);
-  el('circle',{cx:kx,cy:y,r:26,fill:'#fff',stroke:COL.black,'stroke-width':5},p);
+  el('circle',{cx:kx,cy:y,r:SZ(22),fill:COL.black},p);el('circle',{cx:kx,cy:y,r:SZ(8),fill:'#fff'},p);
   return {x,y,len,n};
 }
 function sliderHit(geo,setIdx){return p=>{ if(!geo)return null;
   if(p.x<geo.x-40||p.x>geo.x+geo.len+40||Math.abs(p.y-geo.y)>45)return null;
   return q=>{let i=Math.round((q.x-geo.x)/geo.len*(geo.n-1));i=Math.max(0,Math.min(geo.n-1,i));setIdx(i);};};}
+// draggable point (same look as the exterior-angle page: filled dot + white center)
+function DOT(p,x,y,c){el('circle',{cx:x,cy:y,r:SZ(12),fill:c||COL.black},p);el('circle',{cx:x,cy:y,r:SZ(4.5),fill:'#fff'},p);}
 function isLand(){return innerWidth>=innerHeight;}
 
 
@@ -134,10 +159,10 @@ const root=el('g',{},svg);
 let st,L,sr=null,CEN=null;
 function init(){st={r:6,a:120};}
 function layout(){
-  if(isLand()){svg.setAttribute('viewBox','0 0 1600 900');
-    L={c:[440,450],u:38,sl:[1050,110,480],lab:990,eq:[960,300],reset:[1400,790,170,90],big:[960,230]};
-  } else {svg.setAttribute('viewBox','0 0 1000 1500');
-    L={c:[500,470],u:40,sl:[180,960,700],lab:100,eq:[60,1140],reset:[790,1395,190,90],big:[60,1060]};
+  if(isLand()){svg.setAttribute('viewBox','0 0 1600 820');
+    L={c:[440,410],u:38,sl:[1050,100,480],lab:990,eq:[960,290],big:[960,200]};
+  } else {svg.setAttribute('viewBox','0 0 1000 1340');
+    L={c:[500,400],u:38,sl:[180,850,700],lab:100,eq:[60,1030],big:[60,975]};
   }
   draw();
 }
@@ -161,24 +186,24 @@ function draw(){
   if(a>0&&a<360){const mx=cx+ra*Math.cos(t),my=cy+ra*Math.sin(t);
     el('path',{d:`M${cx+ra},${cy} A${ra},${ra} 0 ${large} 0 ${mx},${my}`,fill:'none',stroke:COL.green,'stroke-width':4},g);}
   const mid=t/2, lr=Math.max(ra+40,70);
-  T(g,cx+lr*Math.cos(mid),cy+lr*Math.sin(mid),a+'°',34,COL.green);
+  T(g,cx+lr*Math.cos(mid),cy+lr*Math.sin(mid),a+'°',SZ('label'),COL.green);
   // radius label
-  T(g,cx+Rp/2,cy+30,'{r}',36,COL.black);
+  T(g,cx+Rp/2,cy+SZ(30),'{r}',SZ('label'),COL.black);
   el('circle',{cx,cy,r:8,fill:COL.black},g);
   // handle
-  el('circle',{cx:ex,cy:ey,r:18,fill:'#fff',stroke:COL.red,'stroke-width':6},g);
+  DOT(g,ex,ey,COL.red);
   // slider r
-  T(g,L.lab,L.sl[1],'{r}',44,COL.black);
+  T(g,L.lab,L.sl[1],'{r}',SZ('main'),COL.black);
   sr=SLIDER(g,...L.sl,10,st.r-1);
-  T(g,L.sl[0],L.sl[1]+46,'1',24,COL.gray);T(g,L.sl[0]+L.sl[2],L.sl[1]+46,'10',24,COL.gray);
+  T(g,L.sl[0],L.sl[1]+SZ(48),'1',SZ('small'),COL.text2);T(g,L.sl[0]+L.sl[2],L.sl[1]+SZ(48),'10',SZ('small'),COL.text2);
   // values
   const [bx,by]=L.big;
-  RICH(g,bx,by,[['{r} = '+st.r+' cm',COL.black],['    {a} = '+a+'°',COL.green]],44,'start');
-  const [qx,qy]=L.eq,fs=40;
+  RICH(g,bx,by,[['{r} = '+st.r+' cm',COL.black],['    {a} = '+a+'°',COL.green]],SZ('main'),'start');
+  const [qx,qy]=L.eq,fs=SZ('main');
   const l=R(2*st.r*a,360), S=R(st.r*st.r*a,360);
-  RICH(g,qx,qy+30,[['ℓ = 2{π} × '+st.r+' × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(l,COL.red),[' cm',COL.black]],fs,'start');
-  RICH(g,qx,qy+170,[['{S} = {π} × '+st.r+'² × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(S,COL.blue),[' cm²',COL.black]],fs,'start');
-  BTN(g,...L.reset,'リセット',{fs:32},()=>{init();draw();});
+  RICH(g,qx,qy+SZ(30),[['ℓ = 2{π} × '+st.r+' × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(l,COL.red),[' cm',COL.black]],fs,'start');
+  RICH(g,qx,qy+SZ(160),[['{S} = {π} × '+st.r+'² × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(S,COL.blue),[' cm²',COL.black]],fs,'start');
+  TOOLBAR([{t:'リセット',fn:()=>{init();draw();}}]);
 }
 HITS.push(p=>sliderHit(sr,i=>{if(i+1!==st.r){st.r=i+1;draw();}})(p));
 HITS.push(p=>{ if(!CEN)return null;const R=st.r*L.u,t=-st.a*Math.PI/180;

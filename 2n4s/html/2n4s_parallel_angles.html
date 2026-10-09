@@ -5,27 +5,50 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>平行線と角</title>
 <style>
-html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
-svg{display:block;width:100vw;height:100vh;touch-action:none}
-.var{font-family:"Times New Roman","Noto Serif",serif;font-style:italic}
-.btn rect{fill:#fff;stroke:#191919;stroke-width:3}
-.btn text{font-size:34px;font-weight:700;fill:#191919;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.btn.on rect{fill:#191919}.btn.on text{fill:#fff}
-.btn{cursor:pointer}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#svg{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+.sep{flex:none;width:14px}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
+text{font-weight:700}
+.var{font-family:"Times New Roman","Noto Serif","Georgia",serif;font-style:italic;font-weight:400}
+.row{cursor:pointer}.row rect{fill:#fff;stroke:#191919;stroke-width:3}
+.row text{fill:#191919;dominant-baseline:central;pointer-events:none}
+.row.on rect{fill:#191919}.row.on text{fill:#fff}
 </style>
 </head>
 <body>
+<div id="wrap">
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
   <g id="fig"></g>
   <g id="ui"></g>
 </svg>
+<div id="bar">
+  <button data-b="対頂角">対頂角</button>
+  <button data-b="同位角">同位角</button>
+  <button data-b="錯角">錯角</button>
+  <button data-b="°" aria-label="角度を表示">°</button>
+  <span class="sep"></span>
+  <button id="bReset">リセット</button>
+</div>
+</div>
 <script>
 "use strict";
 const NS="http://www.w3.org/2000/svg";
 const svg=document.getElementById('svg'), fig=document.getElementById('fig'), ui=document.getElementById('ui');
-const BLACK="#191919", BLUE="#1f5fbf", ORANGE="#e65c00", GREEN="#1e8c46";
-const LIGHT={[BLUE]:"#bed4f5",[ORANGE]:"#fcd6b4",[GREEN]:"#bee6c8"};
+const BLACK="#191919", BLUE="#2f7dd1", ORANGE="#f08a24", GREEN="#2ea55a";
+const TXT={[BLUE]:"#215892",[ORANGE]:"#a8611a",[GREEN]:"#20743f",[BLACK]:BLACK};
+// size tokens (px on screen, see style_reference.md): portrait viewBox 1000 wide on ~820px -> x1.22
+const U=()=>innerWidth>=innerHeight?1:1.22;
+const Z=px=>px*U()/layout.fs;   // px -> figure units
 const FW=1200, FH=860;            // figure coordinate box
 const Q={x:560,y:620};             // m ∩ n
 const PQ=330;                      // distance P–Q along n
@@ -86,43 +109,44 @@ function render(){
   if(st.mode&&st.idx>=0){hl=PAIRS[st.mode].list[st.idx];hlColor=PAIRS[st.mode].color;}
   for(const k in names){
     const [V,[a0,sw]]=names[k];
-    if(hl.includes(k)) el('path',{d:sectorPath(V,a0,sw,72),fill:LIGHT[hlColor],stroke:hlColor,'stroke-width':4},g);
+    if(hl.includes(k)) el('path',{d:sectorPath(V,a0,sw,72),fill:hlColor,'fill-opacity':0.82},g);
   }
   // lines
-  const lineAttrs={stroke:BLACK,'stroke-width':7,'stroke-linecap':'round'};
+  const lineAttrs={stroke:BLACK,'stroke-width':Z(5),'stroke-linecap':'round'};
   const [m1,m2]=clipLine(Q,{x:1,y:0}); el('line',{x1:m1.x,y1:m1.y,x2:m2.x,y2:m2.y,...lineAttrs},g);
   const [l1,l2]=clipLine(P,ldir); el('line',{x1:l1.x,y1:l1.y,x2:l2.x,y2:l2.y,...lineAttrs,stroke:parallel?BLUE:BLACK},g);
   const [n1,n2]=clipLine(Q,up); el('line',{x1:n1.x,y1:n1.y,x2:n2.x,y2:n2.y,...lineAttrs},g);
   if(parallel){ m1&&el('line',{x1:m1.x,y1:m1.y,x2:m2.x,y2:m2.y,...lineAttrs,stroke:BLUE},g); }
   // line labels
   const lr = l1.x>l2.x?l1:l2;
-  { const dx=(P.x-lr.x), dy=(P.y-lr.y), L=Math.hypot(dx,dy); label(g,lr.x+dx/L*40+dy/L*0, lr.y+dy/L*40-40,'ℓ',52,parallel?BLUE:BLACK,true); }
-  label(g,FW-40,Q.y-40,'m',52,parallel?BLUE:BLACK,true);
-  const ntop=n1.y<n2.y?n1:n2; label(g,ntop.x-up.x*40+(up.x>=0?-40:40),ntop.y-up.y*40,'n',52,BLACK,true);
+  { const dx=(P.x-lr.x), dy=(P.y-lr.y), L=Math.hypot(dx,dy); label(g,lr.x+dx/L*40+dy/L*0, lr.y+dy/L*40-40,'ℓ',Z(40),parallel?BLUE:BLACK,true); }
+  label(g,FW-40,Q.y-40,'m',Z(40),parallel?BLUE:BLACK,true);
+  const ntop=n1.y<n2.y?n1:n2; label(g,ntop.x-up.x*40+(up.x>=0?-40:40),ntop.y-up.y*40,'n',Z(40),BLACK,true);
   // arcs + letters + degrees
   for(const k in names){
     const [V,[a0,sw]]=names[k];
     const mid=a0+sw/2, r=sw<0.6?112:92;
-    label(g,V.x+r*Math.cos(mid),V.y+r*Math.sin(mid),k,40,hl.includes(k)?hlColor:BLACK,true);
+    label(g,V.x+r*Math.cos(mid),V.y+r*Math.sin(mid),k,Math.min(Z(34),42),hl.includes(k)?hlColor:BLACK,true);
     if(st.showDeg){
       const deg=Math.round(sw/DEG); const r2=r+58;
-      label(g,V.x+r2*Math.cos(mid),V.y+r2*Math.sin(mid),deg+'°',30,GRAY_T,false);
+      label(g,V.x+r2*Math.cos(mid),V.y+r2*Math.sin(mid),deg+'°',Math.min(Z(30),36),GRAY_T,false);
     }
   }
-  el('circle',{cx:P.x,cy:P.y,r:6,fill:BLACK},g); el('circle',{cx:Q.x,cy:Q.y,r:6,fill:BLACK},g);
+  el('circle',{cx:P.x,cy:P.y,r:Z(6),fill:BLACK},g); el('circle',{cx:Q.x,cy:Q.y,r:Z(6),fill:BLACK},g);
   // drag handles (visual)
   { const dx=(P.x-lr.x), dy=(P.y-lr.y), L=Math.hypot(dx,dy); handle(g, lr.x+dx/L*130, lr.y+dy/L*130); }
   handle(g, ntop.x- up.x*140, ntop.y- up.y*140);
   // top labels
   const top=el('g',{},fig), T=layout.top;
-  if(parallel) label(top,T.px,T.py,'ℓ // m',64,BLUE,'mixed');
-  if(hl.length) label(top,T.ax,T.ay,'∠'+hl[0]+'　∠'+hl[1],54,hlColor,'angle');
+  if(parallel){ const t=label(top,T.px,T.py,'ℓ // m',96*U(),BLUE,'mixed'); t.style.fontWeight=800; }
+  if(hl.length) label(top,T.ax,T.ay,'∠'+hl[0]+'　∠'+hl[1],64*U(),hlColor,'angle');
   renderUI();
 }
-const GRAY_T="#555";
-function handle(g,x,y){ el('circle',{cx:x,cy:y,r:16,fill:'#fff',stroke:BLACK,'stroke-width':4},g); }
+const GRAY_T="#666";
+// draggable point: same look as the exterior-angle page (filled dot + white center)
+function handle(g,x,y){ el('circle',{cx:x,cy:y,r:Z(12),fill:BLACK},g); el('circle',{cx:x,cy:y,r:Z(4.5),fill:'#fff'},g); }
 function label(g,x,y,s,size,color,kind){
-  const t=el('text',{x,y,'font-size':size,fill:color,'text-anchor':'middle','dominant-baseline':'central','font-weight':700},g);
+  const t=el('text',{x,y,'font-size':size,fill:TXT[color]||color,'text-anchor':'middle','dominant-baseline':'central','font-weight':700},g);
   if(kind===true){ t.setAttribute('class','var'); t.setAttribute('font-weight',400); t.textContent=s; }
   else if(kind==='mixed'){ // ℓ // m
     const a=el('tspan',{class:'var','font-weight':400},t); a.textContent='ℓ';
@@ -133,23 +157,13 @@ function label(g,x,y,s,size,color,kind){
   } else t.textContent=s;
   return t;
 }
-// ---------------- UI
+// ---------------- UI (HTML toolbar)
 const BUTTONS=['対頂角','同位角','錯角','°'];
+document.querySelectorAll('#bar button[data-b]').forEach(e=>{e.onclick=()=>press(e.dataset.b);});
+document.getElementById('bReset').onclick=()=>reset();
 function renderUI(){
-  ui.innerHTML='';
-  const L=layout.ui;
-  BUTTONS.forEach((b,i)=>{
-    const on = (b==='°'?st.showDeg:st.mode===b&&st.idx>=0);
-    const x=L.x+(L.dx*i), y=L.y+(L.dy*i);
-    mkButton(x,y,L.w,L.h,b,on,()=>press(b));
-  });
-  mkButton(L.rx,L.ry,L.w,L.h,'リセット',false,reset);
-}
-function mkButton(x,y,w,h,label,on,fn){
-  const g=el('g',{class:'btn'+(on?' on':''),transform:`translate(${x},${y})`},ui);
-  el('rect',{x:0,y:0,width:w,height:h,rx:16},g);
-  const t=el('text',{x:w/2,y:h/2},g); t.textContent=label; if(label==='°'){t.style.fontSize='60px';t.setAttribute('y',h/2+8);}
-  g.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();fn();});
+  document.querySelectorAll('#bar button[data-b]').forEach(e=>{const b=e.dataset.b;
+    e.classList.toggle('on', b==='°'?st.showDeg:(st.mode===b&&st.idx>=0));});
 }
 function press(b){
   if(b==='°'){st.showDeg=!st.showDeg;}
@@ -160,12 +174,12 @@ function press(b){
 // ---------------- layout
 function doLayout(){
   const w=window.innerWidth,h=window.innerHeight;
-  if(w>=h){ // landscape 1600x900
-    svg.setAttribute('viewBox','0 0 1600 900');
-    layout={fx:10,fy:20,fs:1.0,top:{px:1430,py:60,ax:1430,ay:150},ui:{x:1300,y:230,dx:0,dy:112,w:260,h:92,rx:1300,ry:780}};
-  } else { // portrait 1000x1400
-    svg.setAttribute('viewBox','0 0 1000 1400');
-    layout={fx:0,fy:100,fs:1000/FW,top:{px:250,py:50,ax:720,ay:50},ui:{x:30,y:1060,dx:240,dy:0,w:210,h:100,rx:760,ry:1250}};
+  if(w>=h){ // landscape 1600x820 (+ toolbar)
+    svg.setAttribute('viewBox','0 0 1600 820');
+    layout={fx:20,fy:10,fs:0.93,top:{px:1390,py:90,ax:1390,ay:230}};
+  } else { // portrait 1000x1340 (+ toolbar)
+    svg.setAttribute('viewBox','0 0 1000 1340');
+    layout={fx:0,fy:250,fs:1000/FW,top:{px:260,py:90,ax:730,ay:90}};
   }
   render();
 }
