@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>等式の性質と移項</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#cv{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none;cursor:default}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+button i{font-family:"Times New Roman",Times,"Liberation Serif",serif;font-weight:400;font-size:1.15em}
+.sep{flex:none;width:14px}
+.hide{display:none}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
+</style>
+</head>
+<body>
+<div id="wrap">
+<canvas id="cv"></canvas>
+<div id="bar">
+  <button id="tBal" class="on">天びん</button>
+  <button id="tMv">移項</button>
+  <span class="sep"></span>
+  <button id="bPrev" aria-label="前の式">◀</button>
+  <button id="bNext" aria-label="次の式">▶</button>
+  <span class="sep"></span>
+  <button id="bP1" class="b" aria-label="両辺に1を加える">＋1</button>
+  <button id="bM1" class="b" aria-label="両辺から1をひく">−1</button>
+  <button id="bPX" class="b" aria-label="両辺にxを加える">＋<i>x</i></button>
+  <button id="bMX" class="b" aria-label="両辺からxをひく">−<i>x</i></button>
+  <button id="bMul" class="b" aria-label="両辺に2をかける">×2</button>
+  <button id="bProp" class="m">等式の性質</button>
+  <button id="bComb" class="m main">まとめる</button>
+  <button id="bDiv" aria-label="両辺をわる">÷</button>
+  <button id="bBack">もどす</button>
+  <button id="bReset">リセット</button>
+</div>
+</div>
+<script>
+"use strict";
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const INK="#191919", GRAY="#9a9a9a", RED="#d0362b", GREEN="#2ea55a", DGREEN="#20743f";
+const XC={st:"#2f7dd1",fi:"#c9dff5",tx:"#215892"}, NC={st:"#f08a24",fi:"#fbdcbd",tx:"#a8611a"};
+const SANS='"Hiragino Sans","Noto Sans CJK JP","Noto Sans JP",sans-serif', SERIF='"Times New Roman",Times,"Liberation Serif",serif';
+const MI="−", TAU=Math.PI*2;
+const clamp=(a,v,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const easeOut=t=>1-Math.pow(1-t,3);
+let W=1,H=1,dpr=1,m=1,lab=30,mode="bal",uid=1;
+
+/* ---------- fractions ---------- */
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a;};
+function Q(n,d=1){if(d<0){n=-n;d=-d;}const g=gcd(n,d)||1;return{n:n/g,d:d/g};}
+const qadd=(a,b)=>Q(a.n*b.d+b.n*a.d,a.d*b.d), qsub=(a,b)=>Q(a.n*b.d-b.n*a.d,a.d*b.d),
+      qdiv=(a,b)=>Q(a.n*b.d,a.d*b.n), qneg=a=>Q(-a.n,a.d), qabs=a=>Q(Math.abs(a.n),a.d),
+      qz=a=>a.n===0, qeq=(a,b)=>a.n===b.n&&a.d===b.d, qone=a=>a.n===1&&a.d===1;
+const qstr=a=>(a.n<0?"-":"")+Math.abs(a.n)+(a.d!==1?"/"+a.d:"");
+
+/* ---------- math text tokens ---------- */
+function fontOf(t,sz){return t.it?`italic 400 ${sz*1.15}px ${SERIF}`:`700 ${sz}px ${SANS}`;}
+function tokW(t,sz){
+  if(t.gap!=null)return t.gap*sz;
+  if(t.fr){const s2=sz*0.62;return Math.max(tw(t.fr[0],s2),tw(t.fr[1],s2))+sz*0.24;}
+  ctx.font=fontOf(t,sz);return ctx.measureText(t.s).width;}
+function tw(toks,sz){let w=0;for(const t of toks)w+=tokW(t,sz);return w;}
+function drawToks(toks,x,y,sz,align,col){
+  const w=tw(toks,sz);let cx=align==="right"?x-w:align==="center"?x-w/2:x;
+  ctx.textAlign="left";ctx.textBaseline="middle";
+  for(const t of toks){const w1=tokW(t,sz),c=t.c||col;
+    if(t.fr){const s2=sz*0.62,mx=cx+w1/2;
+      drawToks(t.fr[0],mx,y-sz*0.43,s2,"center",c);drawToks(t.fr[1],mx,y+sz*0.45,s2,"center",t.dc||c);
+      ctx.strokeStyle=t.dc||c;ctx.lineWidth=Math.max(2,sz*0.06);ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(cx+sz*0.07,y+sz*0.03);ctx.lineTo(cx+w1-sz*0.07,y+sz*0.03);ctx.stroke();}
+    else if(t.gap==null){ctx.font=fontOf(t,sz);ctx.fillStyle=c;ctx.textBaseline="alphabetic";ctx.fillText(t.s,cx,y+sz*0.36);ctx.textBaseline="middle";}
+    if(t.strike){ctx.strokeStyle=GRAY;ctx.lineWidth=Math.max(2,sz*0.07);ctx.lineCap="butt";
+      ctx.beginPath();ctx.moveTo(cx,y+sz*0.02);ctx.lineTo(cx+w1,y+sz*0.02);ctx.stroke();ctx.lineCap="round";}
+    cx+=w1;}
+  return w;}
+function numToks(a,c){return a.d===1?[{s:String(Math.abs(a.n)),c}]:[{fr:[[{s:String(Math.abs(a.n))}],[{s:String(a.d)}]],c}];}
+// term → tokens (lead: first term on a side, "+" hidden)
+function termToks(k,v,lead,o={}){
+  const neg=v.n<0,a=qabs(v),T=[];
+  if(neg)T.push({s:MI,c:o.sc||o.c});else if(!lead)T.push({s:"+",c:o.sc||o.c});
+  if(T.length)T.push({gap:lead?(o.tile?0.06:0.05):(o.tile?0.12:0.22)});
+  if(k==="x"){if(!qone(a))T.push(...numToks(a,o.c));T.push({s:"x",it:true,c:o.c});}
+  else T.push(...numToks(a,o.c));
+  if(o.strike)T.forEach(t=>t.strike=true);
+  return T;}
+function sideToks(terms,o={}){
+  if(!terms.length)return[{s:"0",c:o.c}];
+  const T=[];terms.forEach((t,i)=>{if(i){const g={gap:0.22};if(o.strikeId!=null&&t.id===o.strikeId)g.strike=true;T.push(g);}
+    T.push(...termToks(t.k,t.v,i===0,{c:t.c||o.c,strike:o.strikeId!=null&&t.id===o.strikeId}));});
+  return T;}
+function absTermToks(k,v,c){return termToks(k,qabs(v),true,{c:c||INK});}
+function jp(s,c){return{s,c};}
+function phrase(kind,k,v){ // 等式の性質 phrases (教科書の表現)
+  const g={gap:0.25};
+  if(kind==="add")return[jp("両辺に"),g,...absTermToks(k,v),g,jp("を加える")];
+  if(kind==="sub")return[jp("両辺から"),g,...absTermToks(k,v),g,jp("をひく")];
+  if(kind==="mul")return[jp("両辺に"),g,...numToks(v,INK),g,jp("をかける")];
+  return[jp("両辺を"),g,...(v.n<0?[{s:MI,c:INK}]:[]),...numToks(v,INK),g,jp("でわる")];}
+
+function rrect(x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function mix(a,b,t){const p=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const A=p(a),B=p(b);return`rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")})`;}
+
+/* =================================================================
+   天びん mode
+   ================================================================= */
+const BP=[ // 教科書の式（左辺/右辺の x の個数と数、o:'nx' は数が先）
+  {L:{x:2,c:1},R:{x:0,c:7},sol:3},          // 2x+1=7（p.95 てんびん）
+  {L:{x:1,c:4},R:{x:0,c:12},sol:8},         // x+4=12
+  {L:{x:4,c:0},R:{x:0,c:8},sol:2},          // 4x=8
+  {L:{x:5,c:0},R:{x:3,c:6,o:"nx"},sol:3},   // 5x=6+3x
+  {L:{x:3,c:-3},R:{x:2,c:7,o:"nx"},sol:10}, // 3x−3=7+2x
+  {L:{x:1,c:9},R:{x:0,c:4},sol:-5},         // x+9=4
+];
+const MAXT=9*Math.PI/180, CAP=30;
+const bal={i:0,S:null,hist:[],prop:null,ghosts:[],th:0,solvedT:-1e9,drag:null,pos:new Map(),zones:[],hits:[],G:null};
+function mkSide(d){const it=[],o=d.o||"xn";
+  const push=(k,n)=>{for(let j=0;j<Math.abs(n);j++)it.push({id:uid++,k,neg:n<0,born:-1e9});};
+  if(o==="xn"){push("x",d.x);push("n",d.c);}else{push("n",d.c);push("x",d.x);}return{items:it,o};}
+function cnt(s){let x=0,c=0;for(const it of s.items){const v=it.neg?-1:1;if(it.k==="x")x+=v;else c+=v;}return{x,c};}
+function balDiff(){const a=cnt(bal.S[0]),b=cnt(bal.S[1]),s=BP[bal.i].sol;return (b.x-a.x)*s+(b.c-a.c);} // >0: right heavier
+function balSolved(){if(bal.drag)return false;const a=cnt(bal.S[0]),b=cnt(bal.S[1]);
+  return balDiff()===0&&((a.x===1&&a.c===0&&b.x===0)||(b.x===1&&b.c===0&&a.x===0));}
+function balReset(){const p=BP[bal.i];bal.S=[mkSide(p.L),mkSide(p.R)];bal.hist=[];bal.prop=null;bal.ghosts=[];bal.drag=null;bal.solvedT=-1e9;wasSolvedB=false;ui();kick();}
+const snapB=()=>({S:JSON.parse(JSON.stringify(bal.S)),prop:bal.prop});
+function pushB(){bal.hist.push(snapB());}
+function ghost(it,mode2,now){const p=bal.pos.get(it.id);if(!p)return;bal.ghosts.push({k:it.k,neg:it.neg,x:p.x,y:p.y,t0:now,mode:mode2});}
+function addUnit(side,k,sgn,now){
+  let j=-1;for(let q=side.items.length-1;q>=0;q--){const it=side.items[q];if(it.k===k&&it.neg===(sgn>0)){j=q;break;}}
+  if(j>=0){const it=side.items[j];ghost(it,it.neg?"pop":"rise",now);side.items.splice(j,1);}
+  else side.items.push({id:uid++,k,neg:sgn<0,born:now});}
+function balGcd(){const a=cnt(bal.S[0]),b=cnt(bal.S[1]);return gcd(gcd(a.x,a.c),gcd(b.x,b.c));}
+function balOp(op){
+  if(bal.drag)return;const now=performance.now();
+  if(op==="mul"&&!canMul())return; if(op==="div"&&balGcd()<2)return;
+  pushB();
+  if(op==="p1"||op==="m1"||op==="px"||op==="mx"){
+    const k=op[1]==="1"?"n":"x",sg=op[0]==="p"?1:-1;
+    for(const s of bal.S)addUnit(s,k,sg,now);
+    bal.prop=phrase(sg>0?"add":"sub",k,Q(1));
+  }else if(op==="mul"){
+    for(const s of bal.S){const n=s.items.length;for(let j=0;j<n;j++){const it=s.items[j];s.items.push({id:uid++,k:it.k,neg:it.neg,born:now+j*25});}}
+    bal.prop=phrase("mul","n",Q(2));
+  }else if(op==="div"){
+    const g=balGcd();
+    for(const s of bal.S){for(const k of["x","n"]){const L=s.items.filter(it=>it.k===k),keep=L.length/g;
+      L.slice(keep).forEach((it,j)=>{ghost(it,it.neg?"pop":"rise",now+j*20);s.items.splice(s.items.indexOf(it),1);});}}
+    bal.prop=phrase("div","n",Q(g));
+  }
+  afterB(now);}
+function canMul(){return bal.S.every(s=>s.items.length*2<=CAP);}
+function afterB(now){const sv=balSolved();if(sv&&!wasSolvedB)bal.solvedT=now;wasSolvedB=sv;ui();kick();}
+let wasSolvedB=false;
+function balUndo(){if(!bal.hist.length||bal.drag)return;const h=bal.hist.pop();bal.S=h.S;bal.prop=h.prop;bal.ghosts=[];wasSolvedB=balSolved();ui();kick();}
+
+function balGeo(){
+  const eqF=clamp(30,0.06*m,54);
+  const Lb=W<H*1.1?Math.min((W/2-14)/1.62,0.5*H):Math.min(0.27*W,0.58*H), pw=1.18*Lb;
+  const u=clamp(24,Math.min(0.085*m,pw/6),72);
+  const postH=clamp(46,0.09*H,110), standH=clamp(60,0.12*H,150), above=6.6*u;
+  const block=above+postH+standH+eqF*1.75+lab*1.7;
+  const top=Math.max(lab*1.2,(H-block)/2);
+  const panY=top+above, pivotY=panY+postH, groundY=pivotY+standH, eqY=groundY+eqF*1.1, propY=eqY+eqF*0.62+lab*0.95;
+  return{eqF,Lb,pw,u,postH,standH,panY,pivotY,groundY,eqY,propY,cx:W/2};}
+// layout of one pan: items (x boxes / 1g weights) in rows, balloons above
+function layoutSide(s,px,py,G){
+  const u=G.u,pw=G.pw,gap=0.12*u,out=[];
+  const order=s.o==="nx"?["n","x"]:["x","n"];
+  const pos=s.items.filter(it=>!it.neg).sort((a,b)=>order.indexOf(a.k)-order.indexOf(b.k));
+  const negs=s.items.filter(it=>it.neg).sort((a,b)=>order.indexOf(a.k)-order.indexOf(b.k));
+  const wOf=it=>it.k==="x"?1.1*u:0.8*u, hOf=it=>it.k==="x"?1.1*u:0.84*u;
+  const rows=[];let row=[],rw=0;const maxW=pw-0.3*u;
+  for(const it of pos){const w=wOf(it);if(row.length&&rw+gap+w>maxW){rows.push(row);row=[];rw=0;}rw+=(row.length?gap:0)+w;row.push(it);}
+  if(row.length)rows.push(row);
+  let yb=py-4;
+  for(const r of rows){const tot=r.reduce((a,it)=>a+wOf(it),0)+gap*(r.length-1);let x=px-tot/2,rh=0;
+    for(const it of r){const w=wOf(it),h=hOf(it);out.push({it,x:x+w/2,y:yb-h/2,w,h});x+=w+gap;rh=Math.max(rh,h);}
+    yb-=rh+gap;}
+  const br=0.4*u,step=0.95*u,per=Math.max(1,Math.floor((pw-0.2*u)/step));
+  let by=Math.min(yb,py-1.2*u)-1.15*u-br;
+  for(let j=0;j<negs.length;j+=per){const r=negs.slice(j,j+per),tot=step*(r.length-1);
+    r.forEach((it,q)=>out.push({it,x:px-tot/2+q*step,y:by,w:2*br,h:2*br,ball:true}));by-=1.05*u;}
+  return{out,top:by+0.5*u};}
+
+function drawXBox(x,y,u,a){const s=1.1*u;ctx.globalAlpha=a;rrect(x-s/2,y-s/2,s,s,0.14*u);ctx.fillStyle=XC.fi;ctx.fill();
+  ctx.lineWidth=3;ctx.strokeStyle=XC.st;ctx.stroke();ctx.font=`italic 400 ${0.78*u}px ${SERIF}`;ctx.fillStyle=XC.tx;
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("x",x,y-0.04*u);ctx.globalAlpha=1;}
+function drawWeight(x,y,u,a){ // 1の分銅
+  const w=0.8*u,h=0.62*u,b=y+0.42*u;ctx.globalAlpha=a;
+  ctx.beginPath();ctx.arc(x,b-h-0.1*u,0.12*u,0,TAU);ctx.lineWidth=3;ctx.strokeStyle=NC.st;ctx.fillStyle=NC.fi;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x-w*0.36,b-h);ctx.lineTo(x+w*0.36,b-h);ctx.lineTo(x+w/2,b);ctx.lineTo(x-w/2,b);ctx.closePath();
+  ctx.lineJoin="round";ctx.fill();ctx.stroke();
+  ctx.font=`700 ${0.42*u}px ${SANS}`;ctx.fillStyle=NC.tx;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",x,b-h/2+0.02*u);ctx.globalAlpha=1;}
+function drawBalloon(x,y,u,k,a,sc){const r=0.4*u*(sc||1);ctx.globalAlpha=a;
+  ctx.beginPath();ctx.moveTo(x,y+r-2);ctx.lineTo(x-0.09*u,y+r+0.12*u);ctx.lineTo(x+0.09*u,y+r+0.12*u);ctx.closePath();ctx.fillStyle=RED;ctx.fill();
+  ctx.beginPath();ctx.ellipse(x,y,r*0.92,r,0,0,TAU);ctx.fill();
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+  if(k==="x"){ctx.font=`700 ${0.32*u}px ${SANS}`;const w1=ctx.measureText(MI).width;ctx.font=`italic 400 ${0.42*u}px ${SERIF}`;const w2=ctx.measureText("x").width;
+    const x0=x-(w1+w2)/2;ctx.textAlign="left";ctx.font=`700 ${0.32*u}px ${SANS}`;ctx.fillText(MI,x0,y+0.01*u);ctx.font=`italic 400 ${0.42*u}px ${SERIF}`;ctx.fillText("x",x0+w1,y-0.03*u);}
+  else{ctx.font=`700 ${0.32*u}px ${SANS}`;ctx.fillText(MI+"1",x,y+0.01*u);}
+  ctx.globalAlpha=1;}
+function drawItem(it,x,y,u,a){if(it.neg)drawBalloon(x,y,u,it.k,a);else if(it.k==="x")drawXBox(x,y,u,a);else drawWeight(x,y,u,a);}
+
+function balTerms(s){const c=cnt(s),T=[];const X={k:"x",v:Q(c.x)},N={k:"n",v:Q(c.c)};
+  for(const t of(s.o==="nx"?[N,X]:[X,N]))if(!qz(t.v))T.push(t);return T;}
+
+function drawBal(now){
+  const G=balGeo();bal.G=G;let busy=false;const u=G.u;
+  const d=balDiff(),tgt=d===0?0:Math.sign(d)*MAXT*(0.5+0.5*Math.min(Math.abs(d),6)/6);
+  bal.th+=(tgt-bal.th)*0.14;if(Math.abs(tgt-bal.th)>1e-4)busy=true;else bal.th=tgt;
+  const th=bal.th,c=Math.cos(th),s=Math.sin(th),cx=G.cx;
+  const E=[{x:cx-G.Lb*c,y:G.pivotY-G.Lb*s},{x:cx+G.Lb*c,y:G.pivotY+G.Lb*s}];
+  const level=d===0;
+  // stand
+  ctx.fillStyle=INK;rrect(cx-0.2*G.Lb,G.groundY-14,0.4*G.Lb,14,6);ctx.fill();
+  ctx.strokeStyle=INK;ctx.lineCap="round";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(cx,G.groundY-12);ctx.lineTo(cx,G.pivotY);ctx.stroke();
+  // needle + level mark
+  const nl=G.postH*0.62,mk=G.pivotY-nl-10;
+  ctx.fillStyle=GRAY;ctx.beginPath();ctx.moveTo(cx,mk+2);ctx.lineTo(cx-9,mk-12);ctx.lineTo(cx+9,mk-12);ctx.closePath();ctx.fill();
+  ctx.strokeStyle=level?(balSolved()?GREEN:INK):RED;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(cx,G.pivotY);ctx.lineTo(cx+s*nl,G.pivotY-c*nl);ctx.stroke();
+  // beam
+  ctx.strokeStyle=INK;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(E[0].x,E[0].y);ctx.lineTo(E[1].x,E[1].y);ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,G.pivotY,10,0,TAU);ctx.fillStyle=INK;ctx.fill();
+  bal.pos.clear();bal.hits=[];bal.zones=[];
+  const L=[];
+  for(let k=0;k<2;k++){
+    const px=E[k].x,py=E[k].y-G.postH;
+    ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(E[k].x,E[k].y);ctx.lineTo(px,py);ctx.stroke();
+    const lay=layoutSide(bal.S[k],px,py,G);L.push({lay,px,py});
+    bal.zones.push({x0:px-G.pw/2-0.6*u,x1:px+G.pw/2+0.6*u,y0:Math.min(lay.top,py-3*u)-1.2*u,y1:py+1.6*u});
+  }
+  // drop-zone highlight while dragging
+  if(bal.drag){const z=zoneAt(bal.drag.x,bal.drag.y);if(z>=0){const Z=bal.zones[z];ctx.fillStyle="#f2f2f2";rrect(Z.x0,Z.y0,Z.x1-Z.x0,Z.y1-Z.y0,16);ctx.fill();}}
+  for(let k=0;k<2;k++){const{lay,px,py}=L[k];
+    // strings of balloons
+    for(const o of lay.out)if(o.ball){const ax=clamp(px-G.pw/2+0.3*u,o.x,px+G.pw/2-0.3*u);
+      ctx.strokeStyle=GRAY;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(o.x,o.y+0.4*u+0.12*u);ctx.quadraticCurveTo(o.x,(o.y+py)/2+0.3*u,ax,py-3);ctx.stroke();}
+    // pan
+    ctx.strokeStyle=INK;ctx.lineWidth=7;ctx.lineJoin="round";ctx.beginPath();
+    ctx.moveTo(px-G.pw/2,py-0.22*u);ctx.lineTo(px-G.pw/2+0.22*u,py);ctx.lineTo(px+G.pw/2-0.22*u,py);ctx.lineTo(px+G.pw/2,py-0.22*u);ctx.stroke();
+    for(const o of lay.out){const age=now-o.it.born;let dy=0,a=1;
+      if(age<0){a=0;busy=true;}else if(age<450){const e=easeOut(age/450);dy=(o.ball?1.2:-2.2)*u*(1-e);a=e;busy=true;}
+      drawItem(o.it,o.x,o.y+dy,u,a);bal.pos.set(o.it.id,{x:o.x,y:o.y});
+      bal.hits.push({it:o.it,side:k,x0:o.x-o.w/2-6,x1:o.x+o.w/2+6,y0:o.y-o.h/2-6,y1:o.y+o.h/2+6});}
+  }
+  // ghosts (removed items)
+  bal.ghosts=bal.ghosts.filter(g=>now-g.t0<520);
+  for(const g of bal.ghosts){const t=(now-g.t0)/520;if(t<0){drawItem(g,g.x,g.y,u,1);busy=true;continue;}busy=true;
+    if(g.mode==="pop"){drawBalloon(g.x,g.y,u,g.k,1-t,1+0.6*t);}
+    else drawItem(g,g.x,g.y-2*u*easeOut(t),u,1-t);}
+  // dragged item
+  if(bal.drag){const D=bal.drag;drawItem(D.it,D.x-D.ox,D.y-D.oy,u*1.06,1);}
+  // equation under the scale
+  const solved=balSolved();let sc=1;
+  if(solved){const t=(now-bal.solvedT)/700;if(t<1){sc=1+0.12*Math.sin(Math.PI*t);busy=true;}}
+  const col=solved?DGREEN:INK;
+  ctx.save();ctx.translate(cx,G.eqY);ctx.scale(sc,sc);
+  const lt=sideToks(balTerms(bal.S[0])),rt=sideToks(balTerms(bal.S[1]));
+  drawToks(lt,-G.eqF*0.55,0,G.eqF,"right",col);drawToks(rt,G.eqF*0.55,0,G.eqF,"left",col);
+  drawToks([{s:level?"=":"≠",c:level?col:RED}],0,0,G.eqF,"center",col);
+  ctx.restore();
+  if(bal.prop&&level&&!bal.drag)drawToks(bal.prop,cx,G.propY,lab,"center","#666");
+  return busy;}
+function zoneAt(x,y){for(let k=0;k<2;k++){const Z=bal.zones[k];if(Z&&x>=Z.x0&&x<=Z.x1&&y>=Z.y0&&y<=Z.y1)return k;}return-1;}
+
+/* =================================================================
+   移項 mode
+   ================================================================= */
+const MP=[ // 教科書 p.97〜99 の式  [左辺, 右辺, 解]
+  [[["x",1],["n",-3]],[["n",11]],Q(14)],            // x−3=11
+  [[["x",4]],[["x",-2],["n",18]],Q(3)],             // 4x=−2x+18
+  [[["x",5]],[["n",6],["x",3]],Q(3)],               // 5x=6+3x
+  [[["x",9],["n",-5]],[["x",2],["n",23]],Q(4)],     // 9x−5=2x+23
+  [[["x",5],["n",-4]],[["x",2],["n",8]],Q(4)],      // 5x−4=2x+8
+  [[["x",2],["n",7]],[["n",19],["x",-4]],Q(2)],     // 2x+7=19−4x
+  [[["x",7],["n",-3]],[["x",4],["n",9]],Q(4)],      // 7x−3=4x+9
+  [[["n",9],["x",-1]],[["n",2],["x",6]],Q(1)],      // 9−x=2+6x
+  [[["n",5],["x",-1]],[["x",1],["n",9]],Q(-2)],     // 5−x=x+9
+  [[["x",9]],[["n",4],["x",-7]],Q(1,4)],            // 9x=4−7x
+  [[["x",3],["n",9]],[["x",-1],["n",-11]],Q(-5)],   // 3x+9=−x−11
+];
+const mv={i:0,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
+const cS=()=>mv.steps[mv.steps.length-1].S;
+const cloneS=S=>S.map(side=>side.map(t=>({id:t.id,k:t.k,v:{n:t.v.n,d:t.v.d}})));
+function mvReset(){const p=MP[mv.i];mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
+  mv.drag=null;mv.comb=null;mv.div=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
+function mvSolution(S){let A=Q(0),B=Q(0);
+  for(const t of S[0]){if(t.k==="x")A=qadd(A,t.v);else B=qsub(B,t.v);}
+  for(const t of S[1]){if(t.k==="x")A=qsub(A,t.v);else B=qadd(B,t.v);}
+  return qz(A)?null:qdiv(B,A);}
+function mvSolved(S){S=S||cS();for(let k=0;k<2;k++){const a=S[k],b=S[1-k];
+  if(a.length===1&&a[0].k==="x"&&qone(a[0].v)&&b.every(t=>t.k==="n")&&b.length<=1)return true;}return false;}
+function divInfo(S){S=S||cS();for(let k=0;k<2;k++){const a=S[k],b=S[1-k];
+  if(a.length===1&&a[0].k==="x"&&!qone(a[0].v)&&b.length<=1&&b.every(t=>t.k==="n"))return{side:k,a:a[0].v};}return null;}
+function combGroups(S){S=S||cS();const G=[];S.forEach((side,s)=>{for(const k of["x","n"]){const L=side.filter(t=>t.k===k);if(L.length>1)G.push({s,k,ids:L.map(t=>t.id),keep:L[0].id});}});return G;}
+function tileW(k,v,lead,F){return tw(termToks(k,v,lead,{tile:true}),F)+0.56*F;}
+function mvFit(){
+  const F0=Math.min(clamp(36,0.1*m,90),mv.Fp||1e9),S=cS();let need=0;
+  for(const side of S){let w=0,mx=0;side.forEach((t,i)=>{const tw1=tileW(t.k,t.v,i===0,F0);w+=tw1+(i?0.22*F0:0);mx=Math.max(mx,tileW(t.k,t.v,false,F0));});
+    need=Math.max(need,w+0.35*mx);}
+  need=2*need+2*0.62*F0;
+  mv.F=need>0.94*W?F0*0.94*W/need:F0;mv.Fp=mv.F;
+  mv.eqY=H*0.56;}
+// target positions of tiles (optionally with a placeholder for the dragged tile)
+function mvLayout(S,ph){
+  const F=mv.F,gap=0.22*F,eqX=W/2,eg=0.62*F,pos=new Map(),sw=[0,0],ext=[];
+  for(let s=0;s<2;s++){
+    const seq=S[s].map(t=>({t,w:0}));if(ph&&ph.s===s)seq.splice(ph.idx,0,{ph:true,w:ph.w});
+    seq.forEach((e,i)=>{if(!e.ph)e.w=tileW(e.t.k,e.t.v,i===0,F);});
+    const tot=seq.reduce((a,e)=>a+e.w,0)+gap*Math.max(0,seq.length-1);sw[s]=tot;
+    let x=s===0?eqX-eg-tot:eqX+eg;
+    seq.forEach((e,i)=>{if(!e.ph)pos.set(e.t.id,{x:x+e.w/2,y:mv.eqY,w:e.w,lead:i===0,s});x+=e.w+gap;});
+    ext.push(s===0?[eqX-eg-tot,eqX-eg]:[eqX+eg,eqX+eg+tot]);}
+  return{pos,sw,ext,F,eqX,eg};}
+function insIdx(S,s,x,lay){let i=0;for(const t of S[s]){const p=lay.pos.get(t.id);if(p&&p.x<x)i++;}return i;}
+
+function drawTile(t,x,y,w,F,lead,o){
+  const h=1.46*F,C=t.k==="x"?XC:NC;
+  ctx.save();ctx.translate(x,y);ctx.scale(o.sc||1,(o.sc||1)*(o.sy==null?1:o.sy));ctx.globalAlpha=o.a==null?1:o.a;
+  rrect(-w/2,-h/2,w,h,0.2*F);ctx.fillStyle=C.fi;ctx.fill();
+  ctx.lineWidth=o.flash>0?3+3*o.flash:3;ctx.strokeStyle=o.flash>0?mix(C.st,RED,o.flash):(o.green?GREEN:C.st);ctx.stroke();
+  drawToks(termToks(t.k,o.v||t.v,lead,{tile:true,c:C.tx,sc:o.signRed?RED:C.tx}),0,0,F,"center",C.tx);
+  ctx.restore();}
+
+function drawMv(now){
+  let busy=false;const S=cS(),F=mv.F,D=mv.drag;
+  // working sides (dragged tile removed)
+  let WS=S;if(D)WS=S.map(side=>side.filter(t=>t.id!==D.t.id));
+  let ph=null;
+  if(D){const cx=D.x-D.ox,vs=cx<W/2?0:1,base=mvLayout(WS,null);
+    ph={s:vs,idx:insIdx(WS,vs,cx,base),w:tileW(D.t.k,D.t.v,false,F)};}
+  const lay=mvLayout(WS,ph);mv.lay=lay;
+  if(mv.comb){const t=(now-mv.comb.t0)/380;for(const g of mv.comb.groups){const kp=lay.pos.get(g.keep);for(const id of g.ids){const p=lay.pos.get(id);if(p&&kp&&id!==g.keep)lay.pos.set(id,{...p,x:kp.x,y:kp.y});}}busy=true;}
+  const eqX=lay.eqX,y=mv.eqY;
+  // history (previous equations, "=" aligned)
+  const hs=mv.steps.slice(Math.max(0,mv.steps.length-5),-1),Fh=0.5*F;
+  hs.forEach((st,j)=>{const yy=y-1.22*F-(hs.length-1-j)*0.82*F,a=0.45+0.55*(j+1)/hs.length;ctx.globalAlpha=a;
+    drawToks(sideToks(st.S[0]),eqX-0.45*Fh*1.5,yy,Fh,"right",GRAY);drawToks([{s:"="}],eqX,yy,Fh,"center",GRAY);
+    drawToks(sideToks(st.S[1]),eqX+0.45*Fh*1.5,yy,Fh,"left",GRAY);ctx.globalAlpha=1;});
+  // dashed boundary at "=" while dragging
+  if(D){ctx.setLineDash([10,8]);ctx.strokeStyle="#7a7a7a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(eqX,y-1.15*F);ctx.lineTo(eqX,y+1.15*F);ctx.stroke();ctx.setLineDash([]);}
+  // "="
+  const solved=mvSolved()&&!D&&!mv.comb&&!mv.div;
+  ctx.font=`700 ${F}px ${SANS}`;ctx.lineWidth=12;ctx.strokeStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.strokeText("=",eqX,y);
+  drawToks([{s:"="}],eqX,y,F,"center",solved?DGREEN:INK);
+  // empty side → 0
+  for(let s=0;s<2;s++)if(!WS[s].length&&!(ph&&ph.s===s))drawToks([{s:"0"}],s===0?eqX-lay.eg-0.1*F:eqX+lay.eg+0.1*F,y,F,s===0?"right":"left",INK);
+  // pulse on solve
+  let sc=1;if(solved){const t=(now-mv.solvedT)/700;if(t<1){sc=1+0.08*Math.sin(Math.PI*t);busy=true;}}
+  if(solved){const x0=Math.min(lay.ext[0][0],eqX-lay.eg-0.6*F)-0.3*F,x1=Math.max(lay.ext[1][1],eqX+lay.eg+0.6*F)+0.3*F;
+    ctx.strokeStyle=GREEN;ctx.lineWidth=4;rrect(x0,y-1.0*F,x1-x0,2.0*F,0.3*F);ctx.stroke();}
+  // tiles (smooth movement to targets)
+  for(const side of WS)for(const t of side){const p=lay.pos.get(t.id);if(!p)continue;let cur=mv.tp.get(t.id);
+    if(!cur){cur={x:p.x,y:p.y,born:now};mv.tp.set(t.id,cur);}
+    cur.x+=(p.x-cur.x)*0.22;cur.y+=(p.y-cur.y)*0.22;if(Math.hypot(p.x-cur.x,p.y-cur.y)>0.5)busy=true;else{cur.x=p.x;cur.y=p.y;}
+    const age=now-cur.born,a=Math.min(1,age/250);if(a<1)busy=true;
+    const fl=cur.flashT?now-cur.flashT:1e9;let signRed=fl<1400,flash=fl<600?1-fl/600:0;if(fl<1400)busy=true;
+    drawTile(t,cur.x,cur.y,p.w,F,p.lead,{a,sc:(age<300?0.85+0.15*a:1)*sc,flash,signRed,green:solved});}
+  // division animation: red fraction bars under both sides
+  if(mv.div){const t=(now-mv.div.t0)/900;busy=true;const a=Math.min(1,t*2.5);ctx.globalAlpha=a;
+    for(let s=0;s<2;s++){const[x0,x1]=WS[s].length?lay.ext[s]:(s===0?[eqX-lay.eg-0.8*F,eqX-lay.eg]:[eqX+lay.eg,eqX+lay.eg+0.8*F]);const yb=y+0.9*F;
+      ctx.strokeStyle=RED;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x0,yb);ctx.lineTo(x1,yb);ctx.stroke();
+      drawToks([...(mv.div.a.n<0?[{s:MI}]:[]),...numToks(mv.div.a)],(x0+x1)/2,yb+0.48*F,0.72*F,"center",RED);}
+    ctx.globalAlpha=1;}
+  // dragged tile (sign flips when crossing "=")
+  if(D){const cx=D.x-D.ox,cy=D.y-D.oy,vs=cx<eqX?0:1;
+    if(vs!==D.vs){D.vs=vs;D.flipT=now;}
+    const p=(now-D.flipT)/320;if(p>=0.5)D.shown=D.vs;if(p<1)busy=true;
+    const crossed=D.shown!==D.from,v=crossed?qneg(D.t.v):D.t.v;
+    const sy=p<1?Math.max(0.06,Math.abs(Math.cos(Math.PI*p))):1,flash=p<1?1:(crossed?1:0);
+    drawTile(D.t,cx,cy,tileW(D.t.k,v,false,F),F,false,{v,sc:1.08,sy,flash,signRed:crossed});}
+  // equivalent 等式の性質 step
+  const st=mv.steps[mv.steps.length-1];
+  if(mv.showProp&&st.prop&&!D&&!mv.comb&&!mv.div){const P=st.prop,yy=y+1.42*F+(P.type==="div"?0.25*F:0);
+    if(P.type==="mv"){const ap={k:P.k,v:qneg(P.v)};
+      const T=s=>[...sideToks(P.before[s],{c:INK,strikeId:s===P.from?P.id:null}),{gap:0.22},...termToks(ap.k,ap.v,false,{c:RED,strike:s===P.from})];
+      drawToks(T(0),eqX-0.75*Fh,yy,Fh,"right",INK);drawToks([{s:"="}],eqX,yy,Fh,"center",INK);drawToks(T(1),eqX+0.75*Fh,yy,Fh,"left",INK);
+      drawToks(phrase(P.v.n>0?"sub":"add",P.k,P.v),eqX,yy+0.62*F+lab*0.4,lab,"center","#666");}
+    else if(P.type==="div"){const den=[...(P.a.n<0?[{s:MI}]:[]),...numToks(P.a)];
+      drawToks([{fr:[sideToks(P.before[0]),den],dc:RED}],eqX-0.75*Fh,yy,Fh,"right",INK);drawToks([{s:"="}],eqX,yy,Fh,"center",INK);
+      drawToks([{fr:[sideToks(P.before[1]),den],dc:RED}],eqX+0.75*Fh,yy,Fh,"left",INK);
+      drawToks(phrase("div","n",P.a),eqX,yy+0.75*F+lab*0.4,lab,"center","#666");}}
+  return busy;}
+
+function mvPush(S,prop){mv.steps.push({S,prop});mvFit();const s=mvSolved(S);if(s)mv.solvedT=performance.now();
+  const sol=mvSolution(S);if(!sol||!qeq(sol,MP[mv.i][2]))console.error("invariant broken",JSON.stringify(S));ui();kick();}
+function mvComb(){if(mv.comb||mv.div||mv.drag)return;const G=combGroups();if(!G.length)return;
+  mv.comb={t0:performance.now(),groups:G};kick();ui();
+  setTimeout(()=>{const S=cloneS(cS());
+    for(const g of G){const side=S[g.s],kp=side.find(t=>t.id===g.keep);let sum=Q(0);
+      for(const id of g.ids)sum=qadd(sum,side.find(t=>t.id===id).v);
+      kp.v=sum;S[g.s]=side.filter(t=>t.id===g.keep||!g.ids.includes(t.id));
+      if(qz(sum))S[g.s]=S[g.s].filter(t=>t.id!==g.keep);
+      const cur=mv.tp.get(g.keep);if(cur)cur.born=performance.now()-120;}
+    mv.comb=null;mvPush(S,{type:"comb"});},400);}
+function mvDiv(){if(mv.comb||mv.div||mv.drag)return;const I=divInfo();if(!I)return;
+  mv.div={t0:performance.now(),a:I.a};kick();ui();
+  setTimeout(()=>{const before=cloneS(cS()),S=cloneS(cS());
+    for(const side of S)for(const t of side)t.v=qdiv(t.v,I.a);
+    mv.div=null;mvPush(S,{type:"div",a:I.a,before});},950);}
+function mvUndo(){if(mv.steps.length<2||mv.comb||mv.div||mv.drag)return;mv.steps.pop();mvFit();mv.solvedT=-1e9;ui();kick();}
+
+/* ---------- drawing / loop ---------- */
+let raf=0;function kick(){if(!raf)raf=requestAnimationFrame(frame);}
+function frame(now){raf=0;if(draw(now))kick();}
+function draw(now){now=now||performance.now();
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);
+  ctx.lineJoin="round";ctx.lineCap="round";
+  const busy=mode==="bal"?drawBal(now):drawMv(now);
+  // corner label: which equation
+  ctx.font=`700 ${Math.round(lab*0.95)}px ${SANS}`;ctx.fillStyle="#666";ctx.textAlign="left";ctx.textBaseline="top";
+  ctx.fillText(mode==="bal"?`${bal.i+1} / ${BP.length}`:`${mv.i+1} / ${MP.length}`,14,12);
+  return busy;}
+function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  W=Math.max(1,r.width);H=Math.max(1,r.height);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  m=Math.min(W,H);lab=clamp(18,0.0374*m,30);mv.Fp=0;if(mv.steps.length)mvFit();mv.tp.clear();draw();kick();}
+
+/* ---------- buttons ---------- */
+const $=id=>document.getElementById(id);
+function ui(){
+  $("tBal").classList.toggle("on",mode==="bal");$("tMv").classList.toggle("on",mode==="mv");
+  document.querySelectorAll(".b").forEach(b=>b.classList.toggle("hide",mode!=="bal"));
+  document.querySelectorAll(".m").forEach(b=>b.classList.toggle("hide",mode!=="mv"));
+  const dv=$("bDiv");
+  if(mode==="bal"){const g=balGcd();dv.textContent=g>=2?"÷"+g:"÷";dv.disabled=g<2||!!bal.drag;$("bMul").disabled=!canMul();
+    $("bBack").disabled=!bal.hist.length;$("bPrev").disabled=bal.i===0;$("bNext").disabled=bal.i===BP.length-1;}
+  else{const I=divInfo(),busy=!!(mv.comb||mv.div);
+    dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
+    $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
+    $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=mv.i===0;$("bNext").disabled=mv.i===MP.length-1;}}
+$("tBal").onclick=()=>{mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
+$("tMv").onclick=()=>{mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
+$("bPrev").onclick=()=>{if(mode==="bal"){if(bal.i>0){bal.i--;balReset();}}else if(mv.i>0){mv.i--;mvReset();}};
+$("bNext").onclick=()=>{if(mode==="bal"){if(bal.i<BP.length-1){bal.i++;balReset();}}else if(mv.i<MP.length-1){mv.i++;mvReset();}};
+$("bP1").onclick=()=>balOp("p1");$("bM1").onclick=()=>balOp("m1");$("bPX").onclick=()=>balOp("px");$("bMX").onclick=()=>balOp("mx");
+$("bMul").onclick=()=>balOp("mul");
+$("bDiv").onclick=()=>{if(mode==="bal")balOp("div");else mvDiv();};
+$("bProp").onclick=()=>{mv.showProp=!mv.showProp;ui();kick();};
+$("bComb").onclick=mvComb;
+$("bBack").onclick=()=>{if(mode==="bal")balUndo();else mvUndo();};
+$("bReset").onclick=()=>{if(mode==="bal")balReset();else mvReset();};
+
+/* ---------- pointer input ---------- */
+let pid=null;
+function pos(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
+cv.addEventListener("pointerdown",e=>{
+  if(pid!==null)return;const p=pos(e);e.preventDefault();
+  if(mode==="bal"){
+    let h=null;for(let j=bal.hits.length-1;j>=0;j--){const q=bal.hits[j];if(p.x>=q.x0&&p.x<=q.x1&&p.y>=q.y0&&p.y<=q.y1){h=q;break;}}
+    if(!h)return;const ps=bal.pos.get(h.it.id),side=bal.S[h.side],idx=side.items.indexOf(h.it);
+    bal.drag={it:h.it,from:h.side,idx,x:p.x,y:p.y,ox:p.x-ps.x,oy:p.y-ps.y,snap:snapB()};
+    side.items.splice(idx,1);
+  }else{
+    if(mv.comb||mv.div||!mv.lay)return;const S=cS();let hit=null;
+    for(let s=0;s<2;s++)for(const t of S[s]){const q=mv.lay.pos.get(t.id),c=mv.tp.get(t.id)||q;if(!q)continue;
+      if(Math.abs(p.x-c.x)<=q.w/2+6&&Math.abs(p.y-c.y)<=0.73*mv.F+8)hit={t,s,c};}
+    if(!hit)return;
+    mv.drag={t:hit.t,from:hit.s,vs:hit.s,shown:hit.s,flipT:-1e9,x:p.x,y:p.y,ox:p.x-hit.c.x,oy:p.y-hit.c.y};
+  }
+  pid=e.pointerId;try{cv.setPointerCapture(pid);}catch(_){}ui();kick();});
+cv.addEventListener("pointermove",e=>{
+  if(e.pointerId!==pid){if(e.pointerType==="mouse"&&pid===null)hover(e);return;}
+  e.preventDefault();const p=pos(e);
+  if(mode==="bal"&&bal.drag){bal.drag.x=p.x;bal.drag.y=p.y;}
+  if(mode==="mv"&&mv.drag){mv.drag.x=p.x;mv.drag.y=p.y;}
+  kick();});
+function hover(e){const p=pos(e);let g=false;
+  if(mode==="bal")g=bal.hits.some(q=>p.x>=q.x0&&p.x<=q.x1&&p.y>=q.y0&&p.y<=q.y1);
+  else if(mv.lay)g=[...mv.lay.pos.values()].some(q=>Math.abs(p.x-q.x)<=q.w/2&&Math.abs(p.y-q.y)<=0.73*mv.F);
+  cv.style.cursor=g?"grab":"default";}
+function end(e){
+  if(e.pointerId!==pid)return;pid=null;const now=performance.now();
+  if(mode==="bal"&&bal.drag){const D=bal.drag;bal.drag=null;const ix=D.x-D.ox,iy=D.y-D.oy,z=zoneAt(D.x,D.y);
+    if(z===D.from){bal.S[z].items.splice(D.idx,0,D.it);}          // back where it was
+    else{bal.hist.push(D.snap);bal.prop=null;
+      if(z>=0){addUnit(bal.S[z],D.it.k,D.it.neg?-1:1,now);}      // moved to the other pan
+      else{bal.ghosts.push({k:D.it.k,neg:D.it.neg,x:ix,y:iy,t0:now,mode:D.it.neg?"pop":"rise"});}} // taken off
+    afterB(now);}
+  if(mode==="mv"&&mv.drag){const D=mv.drag;mv.drag=null;const cx=D.x-D.ox,cy=D.y-D.oy,s=cx<W/2?0:1;
+    const S=cloneS(cS()),before=cloneS(cS());const from=S[D.from],j=from.findIndex(t=>t.id===D.t.id),t=from[j];from.splice(j,1);
+    const base=mvLayout(S,null);const idx=insIdx(S,s,cx,base);
+    const cur=mv.tp.get(t.id);if(cur){cur.x=cx;cur.y=cy;}
+    if(s===D.from){S[s].splice(idx,0,t);mv.steps[mv.steps.length-1].S=S;mvFit();}   // reorder on the same side
+    else{const v0=t.v;t.v=qneg(t.v);S[s].splice(idx,0,t);if(cur)cur.flashT=now;
+      mvPush(S,{type:"mv",k:t.k,v:v0,id:t.id,from:D.from,before});}
+    ui();kick();}}
+cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+window.addEventListener("resize",resize);window.addEventListener("orientationchange",()=>setTimeout(resize,200));
+if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);
+
+// test hook
+const eqStr=S=>S.map(side=>side.length?side.map((t,i)=>{const a=qabs(t.v),sg=t.v.n<0?"-":(i?"+":"");return sg+(t.k==="x"?(qone(a)?"":qstr(a))+"x":qstr(a));}).join(""):"0").join("=");
+window.__eq={
+  mode:()=>mode,
+  bal:()=>({i:bal.i,L:cnt(bal.S[0]),R:cnt(bal.S[1]),diff:balDiff(),th:bal.th,solved:balSolved(),eq:eqStr(bal.S.map(balTerms)),hist:bal.hist.length}),
+  balItem:(side,k,neg)=>{const it=bal.S[side].items.filter(q=>q.k===k&&!!q.neg===!!neg).pop();return it?bal.pos.get(it.id):null;},
+  balZone:s=>bal.zones[s],
+  mv:()=>({i:mv.i,eq:eqStr(cS()),steps:mv.steps.length,solved:mvSolved(),sol:qstr(mvSolution(cS())||Q(0)),ans:qstr(MP[mv.i][2]),F:mv.F,eqX:W/2,eqY:mv.eqY}),
+  tile:(s,j)=>{const t=cS()[s][j];const p=mv.lay&&mv.lay.pos.get(t.id);return p?{x:p.x,y:p.y,w:p.w,eq:eqStr([[t],[]]).split("=")[0]}:null;},
+  drag:()=>mv.drag?{shown:mv.drag.shown,from:mv.drag.from}:null,
+  checkAll:()=>MP.map(p=>{const S=[p[0].map(([k,v])=>({k,v:Q(v)})),p[1].map(([k,v])=>({k,v:Q(v)}))];return qstr(mvSolution(S))===qstr(p[2]);})
+    .concat(BP.map(p=>p.L.x*p.sol+p.L.c===p.R.x*p.sol+p.R.c)),
+};
+balReset();mvReset();resize();ui();
+</script>
+</body>
+</html>
