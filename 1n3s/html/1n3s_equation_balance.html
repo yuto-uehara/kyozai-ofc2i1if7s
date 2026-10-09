@@ -31,6 +31,7 @@ button i{font-family:"Times New Roman",Times,"Liberation Serif",serif;font-weigh
   <span class="sep"></span>
   <button id="bPrev" aria-label="前の式">◀</button>
   <button id="bNext" aria-label="次の式">▶</button>
+  <button id="bRand">ランダム</button>
   <span class="sep"></span>
   <button id="bP1" class="b" aria-label="両辺に1を加える">＋1</button>
   <button id="bM1" class="b" aria-label="両辺から1をひく">−1</button>
@@ -124,15 +125,16 @@ const BP=[ // 教科書の式（左辺/右辺の x の個数と数、o:'nx' は�
   {L:{x:1,c:9},R:{x:0,c:4},sol:-5},         // x+9=4
 ];
 const MAXT=9*Math.PI/180, CAP=30;
-const bal={i:0,S:null,hist:[],prop:null,ghosts:[],th:0,solvedT:-1e9,drag:null,pos:new Map(),zones:[],hits:[],G:null};
+const bal={i:0,P:null,rand:false,S:null,hist:[],prop:null,ghosts:[],th:0,solvedT:-1e9,drag:null,pos:new Map(),zones:[],hits:[],G:null};
 function mkSide(d){const it=[],o=d.o||"xn";
   const push=(k,n)=>{for(let j=0;j<Math.abs(n);j++)it.push({id:uid++,k,neg:n<0,born:-1e9});};
   if(o==="xn"){push("x",d.x);push("n",d.c);}else{push("n",d.c);push("x",d.x);}return{items:it,o};}
 function cnt(s){let x=0,c=0;for(const it of s.items){const v=it.neg?-1:1;if(it.k==="x")x+=v;else c+=v;}return{x,c};}
-function balDiff(){const a=cnt(bal.S[0]),b=cnt(bal.S[1]),s=BP[bal.i].sol;return (b.x-a.x)*s+(b.c-a.c);} // >0: right heavier
+function balDiff(){const a=cnt(bal.S[0]),b=cnt(bal.S[1]),s=bal.P.sol;return (b.x-a.x)*s+(b.c-a.c);} // >0: right heavier
 function balSolved(){if(bal.drag)return false;const a=cnt(bal.S[0]),b=cnt(bal.S[1]);
   return balDiff()===0&&((a.x===1&&a.c===0&&b.x===0)||(b.x===1&&b.c===0&&a.x===0));}
-function balReset(){const p=BP[bal.i];bal.S=[mkSide(p.L),mkSide(p.R)];bal.hist=[];bal.prop=null;bal.ghosts=[];bal.drag=null;bal.solvedT=-1e9;wasSolvedB=false;ui();kick();}
+function balLoad(p,rand){bal.P=p;bal.rand=rand;balReset();}
+function balReset(){const p=bal.P;bal.S=[mkSide(p.L),mkSide(p.R)];bal.hist=[];bal.prop=null;bal.ghosts=[];bal.drag=null;bal.solvedT=-1e9;wasSolvedB=false;ui();kick();}
 const snapB=()=>({S:JSON.parse(JSON.stringify(bal.S)),prop:bal.prop});
 function pushB(){bal.hist.push(snapB());}
 function ghost(it,mode2,now){const p=bal.pos.get(it.id);if(!p)return;bal.ghosts.push({k:it.k,neg:it.neg,x:p.x,y:p.y,t0:now,mode:mode2});}
@@ -290,10 +292,11 @@ const MP=[ // 教科書 p.97〜99 の式  [左辺, 右辺, 解]
   [[["x",9]],[["n",4],["x",-7]],Q(1,4)],            // 9x=4−7x
   [[["x",3],["n",9]],[["x",-1],["n",-11]],Q(-5)],   // 3x+9=−x−11
 ];
-const mv={i:0,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
+const mv={i:0,P:null,rand:false,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
 const cS=()=>mv.steps[mv.steps.length-1].S;
 const cloneS=S=>S.map(side=>side.map(t=>({id:t.id,k:t.k,v:{n:t.v.n,d:t.v.d}})));
-function mvReset(){const p=MP[mv.i];mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
+function mvLoad(p,rand){mv.P=p;mv.rand=rand;mvReset();}
+function mvReset(){const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
   mv.drag=null;mv.comb=null;mv.div=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
 function mvSolution(S){let A=Q(0),B=Q(0);
   for(const t of S[0]){if(t.k==="x")A=qadd(A,t.v);else B=qsub(B,t.v);}
@@ -394,22 +397,74 @@ function drawMv(now){
   return busy;}
 
 function mvPush(S,prop){mv.steps.push({S,prop});mvFit();const s=mvSolved(S);if(s)mv.solvedT=performance.now();
-  const sol=mvSolution(S);if(!sol||!qeq(sol,MP[mv.i][2]))console.error("invariant broken",JSON.stringify(S));ui();kick();}
+  const sol=mvSolution(S);if(!sol||!qeq(sol,mv.P[2]))console.error("invariant broken",JSON.stringify(S));ui();kick();}
 function mvComb(){if(mv.comb||mv.div||mv.drag)return;const G=combGroups();if(!G.length)return;
   mv.comb={t0:performance.now(),groups:G};kick();ui();
-  setTimeout(()=>{const S=cloneS(cS());
+  setTimeout(()=>mvCombApply(G),400);}
+function mvCombApply(G){const S=cloneS(cS());
     for(const g of G){const side=S[g.s],kp=side.find(t=>t.id===g.keep);let sum=Q(0);
       for(const id of g.ids)sum=qadd(sum,side.find(t=>t.id===id).v);
       kp.v=sum;S[g.s]=side.filter(t=>t.id===g.keep||!g.ids.includes(t.id));
       if(qz(sum))S[g.s]=S[g.s].filter(t=>t.id!==g.keep);
       const cur=mv.tp.get(g.keep);if(cur)cur.born=performance.now()-120;}
-    mv.comb=null;mvPush(S,{type:"comb"});},400);}
+    mv.comb=null;mvPush(S,{type:"comb"});}
 function mvDiv(){if(mv.comb||mv.div||mv.drag)return;const I=divInfo();if(!I)return;
   mv.div={t0:performance.now(),a:I.a};kick();ui();
-  setTimeout(()=>{const before=cloneS(cS()),S=cloneS(cS());
+  setTimeout(()=>mvDivApply(I),950);}
+function mvDivApply(I){const before=cloneS(cS()),S=cloneS(cS());
     for(const side of S)for(const t of side)t.v=qdiv(t.v,I.a);
-    mv.div=null;mvPush(S,{type:"div",a:I.a,before});},950);}
+    mv.div=null;mvPush(S,{type:"div",a:I.a,before});}
 function mvUndo(){if(mv.steps.length<2||mv.comb||mv.div||mv.drag)return;mv.steps.pop();mvFit();mv.solvedT=-1e9;ui();kick();}
+
+
+/* ---------- random problems ---------- */
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=A=>A[Math.floor(Math.random()*A.length)];
+const balKey=p=>[p.L.x,p.L.c,p.L.o,p.R.x,p.R.c,p.R.o].join(",");
+// 天びん: integer solution, ≤5 boxes and |constant| ≤10 per pan along the whole solving path, no −x balloons
+function genBal(prev){
+  for(let n=0;n<5000;n++){
+    const sol=Math.random()<0.1?ri(-4,-1):ri(1,6);
+    let L,R;
+    if(Math.random()<0.45){ // ax + b = c
+      const a=ri(1,5),b=(Math.random()<0.3?-1:1)*ri(1,10),c=a*sol+b;
+      if(c===0||Math.abs(c)>10)continue;L={x:a,c:b};R={x:0,c};
+    }else{ // ax + b = cx + d
+      const a=ri(2,5),c=ri(1,a-1),b=Math.random()<0.25?0:(Math.random()<0.3?-1:1)*ri(1,10),d=(a-c)*sol+b;
+      if(Math.abs(d)>10||(b===0&&d===0))continue;if(Math.abs(d-b)>10)continue;L={x:a,c:b};R={x:c,c:d};
+    }
+    if(Math.abs(L.c)+L.x>15||Math.abs(R.c)+R.x>15)continue;
+    L.o=Math.random()<0.3?"nx":"xn";R.o=Math.random()<0.3?"nx":"xn";
+    const p=Math.random()<0.5?{L,R,sol}:{L:R,R:L,sol};
+    if(p.L.x*sol+p.L.c!==p.R.x*sol+p.R.c)continue;
+    if(prev&&balKey(prev)===balKey(p))continue;
+    return p;}
+  return BP[0];}
+// 移項: ax+b=c, b=ax+c, ax+b=cx+d, ax=cx+d … coefficients −9..9 (≠0, a≠c), ~20% simple fractions
+const mvKey=p=>JSON.stringify([p[0],p[1]]);
+function genMv(prev){
+  const nz=(lo,hi)=>{let v=0;while(!v)v=ri(lo,hi);return v;};
+  const frac=Math.random()<0.2;               // decided once so fractions really are ~20%
+  for(let n=0;n<20000;n++){
+    const form=pick(["a","a","b","c","c","c","d"]);
+    const a=nz(-9,9);let c=form==="c"||form==="d"?nz(-9,9):0;if(c===a)continue;
+    const A=a-c,b=form==="d"?0:nz(-20,20);
+    let sol,d;
+    if(!frac){sol=Q((Math.random()<0.65?1:-1)*ri(1,9));d=A*sol.n+b;}
+    else{d=nz(-30,30);sol=Q(d-b,A);if(sol.d===1||sol.d>5||Math.abs(sol.n/sol.d)>10)continue;}
+    if(d===0||Math.abs(d)>40)continue;
+    let Ls,Rs;
+    if(form==="a"){Ls=[["x",a],["n",b]];Rs=[["n",d]];}               // ax + b = d
+    else if(form==="b"){Ls=[["n",d]];Rs=[["x",a],["n",b]];}          // d = ax + b
+    else if(form==="c"){Ls=[["x",a],["n",b]];Rs=[["x",c],["n",d]];}  // ax + b = cx + d
+    else{Ls=[["x",a]];Rs=[["x",c],["n",d]];}                          // ax = cx + d
+    for(const T of[Ls,Rs])if(T.length>1&&Math.random()<0.35)T.reverse();
+    let p=Math.random()<0.3&&form!=="b"?[Rs,Ls,sol]:[Ls,Rs,sol];
+    // verify with exact arithmetic
+    const S=[p[0].map(([k,v])=>({k,v:Q(v)})),p[1].map(([k,v])=>({k,v:Q(v)}))],chk=mvSolution(S);
+    if(!chk||!qeq(chk,sol)||mvSolved(S))continue;
+    if(prev&&mvKey(prev)===mvKey(p))continue;
+    return p;}
+  return MP[0];}
 
 /* ---------- drawing / loop ---------- */
 let raf=0;function kick(){if(!raf)raf=requestAnimationFrame(frame);}
@@ -420,7 +475,7 @@ function draw(now){now=now||performance.now();
   const busy=mode==="bal"?drawBal(now):drawMv(now);
   // corner label: which equation
   ctx.font=`700 ${Math.round(lab*0.95)}px ${SANS}`;ctx.fillStyle="#666";ctx.textAlign="left";ctx.textBaseline="top";
-  ctx.fillText(mode==="bal"?`${bal.i+1} / ${BP.length}`:`${mv.i+1} / ${MP.length}`,14,12);
+  ctx.fillText(mode==="bal"?(bal.rand?"ランダム":`${bal.i+1} / ${BP.length}`):(mv.rand?"ランダム":`${mv.i+1} / ${MP.length}`),14,12);
   return busy;}
 function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
   W=Math.max(1,r.width);H=Math.max(1,r.height);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
@@ -433,16 +488,19 @@ function ui(){
   document.querySelectorAll(".b").forEach(b=>b.classList.toggle("hide",mode!=="bal"));
   document.querySelectorAll(".m").forEach(b=>b.classList.toggle("hide",mode!=="mv"));
   const dv=$("bDiv");
-  if(mode==="bal"){const g=balGcd();dv.textContent=g>=2?"÷"+g:"÷";dv.disabled=g<2||!!bal.drag;$("bMul").disabled=!canMul();
-    $("bBack").disabled=!bal.hist.length;$("bPrev").disabled=bal.i===0;$("bNext").disabled=bal.i===BP.length-1;}
+  if(mode==="bal"){const g=balGcd();dv.textContent=g>=2?"÷"+g:"÷";dv.disabled=g<2||!!bal.drag;$("bMul").disabled=!canMul();$("bRand").disabled=false;
+    $("bBack").disabled=!bal.hist.length;$("bPrev").disabled=!bal.rand&&bal.i===0;$("bNext").disabled=!bal.rand&&bal.i===BP.length-1;}
   else{const I=divInfo(),busy=!!(mv.comb||mv.div);
     dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
     $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
-    $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=mv.i===0;$("bNext").disabled=mv.i===MP.length-1;}}
+    $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=!mv.rand&&mv.i===0;$("bNext").disabled=!mv.rand&&mv.i===MP.length-1;$("bRand").disabled=busy;}}
 $("tBal").onclick=()=>{mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
 $("tMv").onclick=()=>{mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
-$("bPrev").onclick=()=>{if(mode==="bal"){if(bal.i>0){bal.i--;balReset();}}else if(mv.i>0){mv.i--;mvReset();}};
-$("bNext").onclick=()=>{if(mode==="bal"){if(bal.i<BP.length-1){bal.i++;balReset();}}else if(mv.i<MP.length-1){mv.i++;mvReset();}};
+function step(d){ // ◀ ▶: textbook presets (from a random problem: the neighbouring preset)
+  if(mode==="bal"){const i=clamp(0,bal.i+d,BP.length-1);if(i===bal.i&&!bal.rand)return;bal.i=i;balLoad(BP[i],false);}
+  else{const i=clamp(0,mv.i+d,MP.length-1);if(i===mv.i&&!mv.rand)return;mv.i=i;mvLoad(MP[i],false);}}
+$("bPrev").onclick=()=>step(-1);$("bNext").onclick=()=>step(1);
+$("bRand").onclick=()=>{if(mode==="bal"){if(bal.drag)return;balLoad(genBal(bal.P),true);}else{if(mv.drag||mv.comb||mv.div)return;mvLoad(genMv(mv.P),true);}};
 $("bP1").onclick=()=>balOp("p1");$("bM1").onclick=()=>balOp("m1");$("bPX").onclick=()=>balOp("px");$("bMX").onclick=()=>balOp("mx");
 $("bMul").onclick=()=>balOp("mul");
 $("bDiv").onclick=()=>{if(mode==="bal")balOp("div");else mvDiv();};
@@ -488,13 +546,16 @@ function end(e){
       else{bal.ghosts.push({k:D.it.k,neg:D.it.neg,x:ix,y:iy,t0:now,mode:D.it.neg?"pop":"rise"});}} // taken off
     afterB(now);}
   if(mode==="mv"&&mv.drag){const D=mv.drag;mv.drag=null;const cx=D.x-D.ox,cy=D.y-D.oy,s=cx<W/2?0:1;
-    const S=cloneS(cS()),before=cloneS(cS());const from=S[D.from],j=from.findIndex(t=>t.id===D.t.id),t=from[j];from.splice(j,1);
-    const base=mvLayout(S,null);const idx=insIdx(S,s,cx,base);
-    const cur=mv.tp.get(t.id);if(cur){cur.x=cx;cur.y=cy;}
-    if(s===D.from){S[s].splice(idx,0,t);mv.steps[mv.steps.length-1].S=S;mvFit();}   // reorder on the same side
+    const cur=mv.tp.get(D.t.id);if(cur){cur.x=cx;cur.y=cy;}
+    const S0=cS().map(side=>side.filter(t=>t.id!==D.t.id));
+    mvMove(D.t.id,D.from,s,insIdx(S0,s,cx,mvLayout(S0,null)),now);}}
+function mvMove(id,from,s,idx,now){
+    const S=cloneS(cS()),before=cloneS(cS());const F0=S[from],j=F0.findIndex(t=>t.id===id),t=F0[j];F0.splice(j,1);
+    const cur=mv.tp.get(t.id);
+    if(s===from){S[s].splice(idx,0,t);mv.steps[mv.steps.length-1].S=S;mvFit();}   // reorder on the same side
     else{const v0=t.v;t.v=qneg(t.v);S[s].splice(idx,0,t);if(cur)cur.flashT=now;
-      mvPush(S,{type:"mv",k:t.k,v:v0,id:t.id,from:D.from,before});}
-    ui();kick();}}
+      mvPush(S,{type:"mv",k:t.k,v:v0,id:t.id,from,before});}
+    ui();kick();}
 cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
 cv.addEventListener("contextmenu",e=>e.preventDefault());
 window.addEventListener("resize",resize);window.addEventListener("orientationchange",()=>setTimeout(resize,200));
@@ -507,13 +568,40 @@ window.__eq={
   bal:()=>({i:bal.i,L:cnt(bal.S[0]),R:cnt(bal.S[1]),diff:balDiff(),th:bal.th,solved:balSolved(),eq:eqStr(bal.S.map(balTerms)),hist:bal.hist.length}),
   balItem:(side,k,neg)=>{const it=bal.S[side].items.filter(q=>q.k===k&&!!q.neg===!!neg).pop();return it?bal.pos.get(it.id):null;},
   balZone:s=>bal.zones[s],
-  mv:()=>({i:mv.i,eq:eqStr(cS()),steps:mv.steps.length,solved:mvSolved(),sol:qstr(mvSolution(cS())||Q(0)),ans:qstr(MP[mv.i][2]),F:mv.F,eqX:W/2,eqY:mv.eqY}),
+  mv:()=>({i:mv.i,eq:eqStr(cS()),steps:mv.steps.length,solved:mvSolved(),sol:qstr(mvSolution(cS())||Q(0)),ans:qstr(mv.P[2]),F:mv.F,eqX:W/2,eqY:mv.eqY}),
   tile:(s,j)=>{const t=cS()[s][j];const p=mv.lay&&mv.lay.pos.get(t.id);return p?{x:p.x,y:p.y,w:p.w,eq:eqStr([[t],[]]).split("=")[0]}:null;},
   drag:()=>mv.drag?{shown:mv.drag.shown,from:mv.drag.from}:null,
+
+  // fast solver through the real step engine + bounds check (tests)
+  balRandom:()=>{balLoad(genBal(bal.P),true);return balKey(bal.P);},
+  mvRandom:()=>{mvLoad(genMv(mv.P),true);return eqStr(cS());},
+  balSolve:()=>{const out={ok:true,steps:0,bad:[]};
+    const chk=()=>{draw(performance.now()+1e5);const G=bal.G,u=G.u;
+      for(const p of bal.pos.values())if(p.x-0.6*u<0||p.x+0.6*u>W||p.y-0.6*u<0||p.y+0.6*u>G.eqY-G.eqF*0.6)out.bad.push([eqStr(bal.S.map(balTerms)),Math.round(p.x),Math.round(p.y)]);
+      const w=Math.max(tw(sideToks(balTerms(bal.S[0])),G.eqF),tw(sideToks(balTerms(bal.S[1])),G.eqF))+G.eqF*0.6;if(w>W/2)out.bad.push(["eqwidth",w]);
+      if(balDiff()!==0)out.bad.push(["unbalanced"]);};
+    const op=o=>{balOp(o);out.steps++;bal.ghosts=[];chk();};
+    chk();let a=cnt(bal.S[0]),b=cnt(bal.S[1]);
+    const xs=a.x>=b.x?0:1,o=1-xs,k=cnt(bal.S[o]).x;          // cancel the smaller x count
+    for(let j=0;j<Math.abs(k);j++)op(k>0?"mx":"px");
+    const c=cnt(bal.S[xs]).c;for(let j=0;j<Math.abs(c);j++)op(c>0?"m1":"p1");
+    if(cnt(bal.S[xs]).x>1)op("div");
+    out.solved=balSolved();out.eq=eqStr(bal.S.map(balTerms));out.sol=bal.P.sol;
+    out.ok=out.solved&&out.eq===(xs===0?"x="+bal.P.sol:bal.P.sol+"=x")&&!out.bad.length;out.th=Math.abs(bal.th);return out;},
+  mvSolve:()=>{const out={bad:[],steps:0};
+    const chk=()=>{const lay=mvLayout(cS(),null);if(lay.ext[0][0]<0||lay.ext[1][1]>W)out.bad.push(["tiles",eqStr(cS()),lay.ext]);
+      const Fh=0.5*mv.F;for(const st of mv.steps){const w=Math.max(tw(sideToks(st.S[0]),Fh),tw(sideToks(st.S[1]),Fh))+Fh;if(w>W/2)out.bad.push(["hist",w]);}
+      draw(performance.now()+1e5);};
+    chk();const now=performance.now();
+    for(const t of cS()[1].filter(t=>t.k==="x")){mvMove(t.id,1,0,cS()[0].length,now);out.steps++;chk();}
+    for(const t of cS()[0].filter(t=>t.k==="n")){mvMove(t.id,0,1,cS()[1].length,now);out.steps++;chk();}
+    const G=combGroups();if(G.length){mvCombApply(G);out.steps++;chk();}
+    const I=divInfo();if(I){mvDivApply(I);out.steps++;chk();}
+    out.solved=mvSolved();out.eq=eqStr(cS());out.ans=qstr(mv.P[2]);out.ok=out.solved&&out.eq==="x="+out.ans&&!out.bad.length;return out;},
   checkAll:()=>MP.map(p=>{const S=[p[0].map(([k,v])=>({k,v:Q(v)})),p[1].map(([k,v])=>({k,v:Q(v)}))];return qstr(mvSolution(S))===qstr(p[2]);})
     .concat(BP.map(p=>p.L.x*p.sol+p.L.c===p.R.x*p.sol+p.R.c)),
 };
-balReset();mvReset();resize();ui();
+bal.P=BP[0];mv.P=MP[0];balReset();mvReset();resize();ui();
 </script>
 </body>
 </html>
