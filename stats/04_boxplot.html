@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>箱ひげ図</title>
+<style>
+html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#cv{flex:1 1 auto;min-height:0;width:100%;display:block;touch-action:none;cursor:default}
+#bar{flex:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #e4e4e4;background:#fff}
+button{min-width:64px;min-height:56px;padding:0 18px;font-family:inherit;font-weight:700;font-size:24px;line-height:1;color:#191919;background:#fff;border:3px solid #191919;border-radius:12px;cursor:pointer;touch-action:manipulation}
+button:active{background:#eee}
+button.main{background:#191919;color:#fff}
+button.main:active{background:#444}
+button.on{background:#191919;color:#fff}
+button:disabled{opacity:.3;cursor:default}
+.sep{flex:none;width:14px}
+@media (max-width:560px){button{font-size:19px;padding:0 12px}}
+#tip{position:fixed;left:50%;top:14px;transform:translateX(-50%);max-width:92vw;box-sizing:border-box;padding:12px 22px;background:#fff;border:3px solid #191919;border-radius:12px;font-weight:700;font-size:30px;line-height:1.35;color:#191919;text-align:center;display:none;z-index:5;pointer-events:none}
+#tip.show{display:block}
+@media (max-width:860px){#tip{font-size:24px}}
+</style>
+</head>
+<body>
+<div id="wrap">
+<canvas id="cv"></canvas>
+<div id="bar">
+  <button id="bAdd">＋点</button><button id="bDel">−点</button>
+  <span class="sep"></span><button id="bHist" class="on">ヒストグラム</button><button id="bQ">?</button><span class="sep"></span>
+  <button id="bRand" class="main">ばらばらに</button>
+  <button id="bReset">リセット</button>
+</div>
+</div>
+<div id="tip">箱の中に、中央値のまわりの約半数のデータが入る。</div>
+<script>
+"use strict";
+/* ===== 共通: 色・乱数・描画・スライダー ===== */
+const INK="#191919",GR="#666",LG="#e1e1e1",RED="#d0362b",OR="#f08a24",BL="#2f7dd1",GN="#2ea55a",PK="#d6478a",PU="#8a5cd6",YE="#e0b400";
+const DK={"#f08a24":"#a8611a","#2f7dd1":"#215892","#2ea55a":"#20743f","#d6478a":"#963261","#8a5cd6":"#613f96","#d0362b":"#922620","#e0b400":"#9d7e00","#191919":"#191919","#666":"#666"};
+const LT={"#2f7dd1":"#c9dff5","#f08a24":"#fbdcbd","#2ea55a":"#c4e9d0","#d6478a":"#f3cde0","#8a5cd6":"#dccff3","#d0362b":"#f3c9c5","#e0b400":"#f5eab3"};
+const FONT='"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP",sans-serif';
+const TAU=Math.PI*2;
+/* xoshiro128** (seeded by crypto) */
+const RNG=(()=>{const s=new Uint32Array(4);
+  const rotl=(x,k)=>(x<<k)|(x>>>(32-k));
+  function next(){const r=Math.imul(rotl(Math.imul(s[1],5),7),9)>>>0;const t=s[1]<<9;s[2]^=s[0];s[3]^=s[1];s[1]^=s[2];s[0]^=s[3];s[2]^=t;s[3]=rotl(s[3],11);return r;}
+  function seed(n){let x=n>>>0;for(let i=0;i<4;i++){x=(x+0x9e3779b9)>>>0;let z=x;z=Math.imul(z^(z>>>16),0x85ebca6b);z=Math.imul(z^(z>>>13),0xc2b2ae35);s[i]=(z^(z>>>16))>>>0;}if(!(s[0]|s[1]|s[2]|s[3]))s[0]=1;}
+  if(window.crypto&&crypto.getRandomValues){crypto.getRandomValues(s);if(!(s[0]|s[1]|s[2]|s[3]))s[0]=1;}else seed(Date.now());
+  let spare=null;
+  const R={seed,
+    random:()=>((next()>>>5)*67108864+(next()>>>6))/9007199254740992,
+    int:n=>Math.floor(R.random()*n),
+    normal:()=>{if(spare!==null){const v=spare;spare=null;return v;}let u=0;while(u===0)u=R.random();const v=R.random();const r=Math.sqrt(-2*Math.log(u));spare=r*Math.sin(TAU*v);return r*Math.cos(TAU*v);}};
+  return R;})();
+const rnd=RNG.random;
+/* canvas */
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+let W=1,H=1,dpr=1,M=1,L=30,SM=28,EQ=36,BIG=120,TK=24;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
+  L=clamp(0.0374*M,18,30);SM=L*0.95;EQ=L*1.2;BIG=clamp(0.12*M,44,120);TK=clamp(L*0.8,15,24);
+  if(typeof layout==="function")layout();redraw();}
+let _rq=false;
+function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
+function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle="#fff";ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
+const isLand=()=>W>=H*1.05;
+/* text */
+function T(s,x,y,o={}){const sz=o.size||L;ctx.font=(o.it?"italic 400 ":(o.w||700)+" ")+sz+"px "+(o.it?'"Times New Roman",Times,serif':FONT);
+  ctx.textAlign=o.a||"left";ctx.textBaseline=o.b||"middle";
+  if(o.halo){ctx.lineWidth=o.halo===true?Math.max(4,sz*0.12):o.halo;ctx.strokeStyle="#fff";ctx.lineJoin="round";ctx.strokeText(s,x,y);}
+  ctx.fillStyle=o.c||INK;ctx.fillText(s,x,y);return ctx.measureText(s).width;}
+function TW(s,o={}){const sz=o.size||L;ctx.font=(o.it?"italic 400 ":(o.w||700)+" ")+sz+"px "+(o.it?'"Times New Roman",Times,serif':FONT);return ctx.measureText(s).width;}
+/* 式: 部品列 [文字列 | {n,d} 分数 | {it:"n"} 変数]. 左端xから、中心yに描く。o.a="center"で中央 */
+function EQN(parts,x,y,o={}){const sz=o.size||EQ,c=o.c||INK,fs=sz*0.78;
+  const meas=p=>{if(typeof p==="string")return TW(p,{size:sz,w:o.w||700});if(p.it!==undefined)return TW(p.it,{size:sz*1.15,it:1})+sz*0.06;
+    return Math.max(TW(String(p.n),{size:fs}),TW(String(p.d),{size:fs}))+sz*0.3;};
+  const tot=parts.reduce((a,p)=>a+meas(p),0);let cx=o.a==="center"?x-tot/2:o.a==="right"?x-tot:x;
+  if(o.halo){ctx.fillStyle="rgba(255,255,255,.9)";ctx.fillRect(cx-6,y-sz*1.15,tot+12,sz*2.3);}
+  for(const p of parts){const w=meas(p);
+    if(typeof p==="string")T(p,cx,y,{size:sz,c,w:o.w||700});
+    else if(p.it!==undefined)T(p.it,cx+sz*0.03,y,{size:sz*1.15,c,it:1});
+    else{const m=cx+w/2,pc=p.c||c;T(String(p.n),m,y-fs*0.62,{size:fs,c:pc,a:"center"});T(String(p.d),m,y+fs*0.66,{size:fs,c:pc,a:"center"});
+      ctx.strokeStyle=pc;ctx.lineWidth=Math.max(2,sz*0.07);ctx.beginPath();ctx.moveTo(cx+sz*0.1,y);ctx.lineTo(cx+w-sz*0.1,y);ctx.stroke();}
+    cx+=w;}
+  return tot;}
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;};
+function red(n,d){const g=gcd(n,d);return{n:n/g,d:d/g};}
+function fmt(v,k=3){return Number.isFinite(v)?v.toFixed(k):"—";}
+function dot(x,y,r,c){ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=c;ctx.fill();}
+function line(x1,y1,x2,y2,c=INK,w=5,dash){ctx.setLineDash(dash||[]);ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+function rrect(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h);}
+function corner(s,x=16,y){T(s,x,y===undefined?SM*0.9+8:y,{size:SM,c:GR});}
+/* グラフ: r={x,y,w,h}; 目盛り */
+function niceStep(range,n=5){const r=range/n,p=Math.pow(10,Math.floor(Math.log10(r))),m=r/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function chart(r,o){const X=v=>r.x+(v-o.x0)/(o.x1-o.x0)*r.w,Y=v=>r.y+r.h-(v-o.y0)/(o.y1-o.y0)*r.h;
+  ctx.save();const tf=o.tk||TK;
+  const xs=o.xs||niceStep(o.x1-o.x0,o.xn||5),ys=o.ys||niceStep(o.y1-o.y0,o.yn||4);
+  const dec=s=>{const t=String(+s.toFixed(6));return t.includes(".")?Math.min(3,t.split(".")[1].length):0;};
+  if(o.grid!==false){for(let v=Math.ceil(o.y0/ys-1e-9)*ys;v<=o.y1+1e-9;v+=ys)line(r.x,Y(v),r.x+r.w,Y(v),LG,2);}
+  line(r.x,r.y+r.h,r.x+r.w,r.y+r.h,INK,3);if(o.yaxis!==false)line(r.x,r.y,r.x,r.y+r.h,INK,3);
+  if(o.xt!==false)for(let v=Math.ceil(o.x0/xs-1e-9)*xs;v<=o.x1+1e-9;v+=xs){const s=o.xf?o.xf(v):v.toFixed(dec(xs));T(s,X(v),r.y+r.h+tf*0.8,{size:tf,c:GR,a:"center"});}
+  if(o.yt!==false&&o.yaxis!==false)for(let v=Math.ceil(o.y0/ys-1e-9)*ys;v<=o.y1+1e-9;v+=ys){const s=o.yf?o.yf(v):v.toFixed(dec(ys));T(s,r.x-8,Y(v),{size:tf,c:GR,a:"right"});}
+  if(o.xl)T(o.xl,r.x+r.w,r.y+r.h-tf*0.8,{size:tf,c:GR,a:"right"});
+  if(o.yl)T(o.yl,r.x+8,r.y-tf*0.2,{size:tf,c:GR,b:"bottom"});
+  ctx.restore();return{X,Y};}
+function poly(pts,c,w=4,dash){if(pts.length<2)return;ctx.setLineDash(dash||[]);ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.setLineDash([]);}
+/* 折れ線の記録（点数が多くなったら間引く） */
+class Hist{constructor(max=3000){this.max=max;this.reset();}reset(){this.p=[];this.stride=1;this.c=0;}
+  push(x,y,force){this.c++;if(force||this.c%this.stride===0){this.p.push([x,y]);if(this.p.length>this.max){this.p=this.p.filter((_,i)=>i%2===0);this.stride*=2;}}}}
+/* スライダー（canvas） */
+const SL=[];
+class Slider{constructor(o){Object.assign(this,{min:0,max:1,step:1,label:"",f:v=>String(v),on:()=>{},vals:null},o);this.v=o.value;SL.push(this);this.x=0;this.y=0;this.w=100;this.show=true;}
+  place(x,y,w){this.x=x;this.y=y;this.w=w;}
+  get t(){if(this.vals){return this.vals.indexOf(this.v)/(this.vals.length-1);}return (this.v-this.min)/(this.max-this.min);}
+  set(t){let v;t=clamp(t,0,1);if(this.vals){v=this.vals[Math.round(t*(this.vals.length-1))];}else{v=this.min+Math.round(t*(this.max-this.min)/this.step)*this.step;v=+v.toFixed(6);}
+    if(v!==this.v){this.v=v;this.on(v);req();}}
+  setV(v){this.v=v;this.on(v);req();}
+  draw(){if(!this.show)return;const {x,y,w}=this,kx=x+this.t*w;
+    if(this.label!==null){const lab=this.label;let lx=x;
+      if(lab)lx+=T(lab,x,y-L*1.45,{size:L*1.12,it:1,c:INK})+6;T("= "+this.f(this.v),lx,y-L*1.45,{size:L,c:INK});}
+    line(x,y,x+w,y,"#d6d6d6",8);line(x,y,kx,y,INK,8);dot(kx,y,22,INK);dot(kx,y,8,"#fff");
+    const e0=this.vals?this.f(this.vals[0]):this.f(this.min),e1=this.vals?this.f(this.vals[this.vals.length-1]):this.f(this.max);
+    T(e0,x,y+L*1.3,{size:TK,c:GR,a:"center"});T(e1,x+w,y+L*1.3,{size:TK,c:GR,a:"center"});}
+  hit(px,py,tol){return this.show&&px>this.x-tol-10&&px<this.x+this.w+tol+10&&Math.abs(py-this.y)<tol+8;}}
+/* ポインタ */
+const drags=new Map();
+const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+cv.addEventListener("pointerdown",e=>{e.preventDefault();const p=pos(e),tol=e.pointerType==="mouse"?22:34;
+  for(const s of SL){if(s.hit(p.x,p.y,tol)){drags.set(e.pointerId,{s});s.set((p.x-s.x)/s.w);try{cv.setPointerCapture(e.pointerId);}catch(_){}return;}}
+  if(typeof onDown==="function"&&onDown(p,tol,e)!==false){drags.set(e.pointerId,{f:1});try{cv.setPointerCapture(e.pointerId);}catch(_){}}});
+cv.addEventListener("pointermove",e=>{const d=drags.get(e.pointerId);const p=pos(e);
+  if(!d){if(e.pointerType==="mouse")cv.style.cursor=SL.some(s=>s.hit(p.x,p.y,22))?"pointer":(typeof hover==="function"&&hover(p))?"pointer":"default";return;}
+  e.preventDefault();if(d.s)d.s.set((p.x-d.s.x)/d.s.w);else if(typeof onMove==="function")onMove(p,e);});
+function _end(e){const d=drags.get(e.pointerId);if(!d)return;drags.delete(e.pointerId);if(d.f&&typeof onUp==="function")onUp(pos(e),e);}
+cv.addEventListener("pointerup",_end);cv.addEventListener("pointercancel",_end);
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+/* ボタン */
+const $=id=>document.getElementById(id);
+function onClick(id,f){$(id).addEventListener("click",f);}
+function tabs(ids,cur){ids.forEach(i=>$(i).classList.toggle("on",i===cur));}
+onClick("bQ",()=>{const t=$("tip");t.classList.toggle("show");$("bQ").classList.toggle("on",t.classList.contains("show"));});
+/* 自動 */
+let AUTO=false,_af=null;
+function autoLoop(step){AUTO=!AUTO;$("bAuto").classList.toggle("on",AUTO);
+  if(AUTO){const go=()=>{if(!AUTO)return;step();req();_af=requestAnimationFrame(go);};go();}else cancelAnimationFrame(_af);}
+function stopAuto(){if(AUTO){AUTO=false;$("bAuto").classList.remove("on");cancelAnimationFrame(_af);}}
+window.addEventListener("resize",fit);window.addEventListener("orientationchange",()=>setTimeout(fit,200));
+if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);
+function niceUp(v){const p=Math.pow(10,Math.floor(Math.log10(v)));for(const m of [1,2,5,10])if(m*p>=v-1e-9)return m*p;return 10*p;}
+
+/* ===== 箱ひげ図 ===== */
+
+const XMAX=30,INIT=[4,7,9,11,12,14,15,15,17,20,23,27];
+let D=[],showH=true,drag=null,G={};
+function reset(){D=INIT.slice();req();}
+const med=a=>{const n=a.length;return n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2;};
+function stats(){const v=D.slice().sort((a,b)=>a-b),n=v.length;const lo=v.slice(0,Math.floor(n/2)),hi=v.slice(Math.ceil(n/2));
+  return{v,n,min:v[0],max:v[n-1],q1:med(lo),q2:med(v),q3:med(hi)};}
+function layout(){const land=isLand();G.x0=L*3;G.x1=W-L*2.5;G.land=land;
+  const top=L*2.4;G.ty=H-L*6.6;const av=G.ty-L*2-top-L*4.4;
+  if(!showH){G.hy=top;G.hh=0;}else{G.hy=top;G.hh=av*0.45;}const rest=av-G.hh;
+  G.dy=G.hy+G.hh+L*2.2;G.dh=rest*0.62;G.by=G.dy+G.dh+L*2.2;G.bh=Math.min(rest*0.38,L*3);}
+const X=v=>G.x0+v/XMAX*(G.x1-G.x0);
+function dotPos(){const cnt={},r=clamp((G.x1-G.x0)/XMAX*0.42,8,15),out=[];
+  D.forEach((v,i)=>{const c=cnt[v]=(cnt[v]||0)+1;out.push({i,x:X(v),y:G.dy+G.dh-r-(c-1)*r*2.05,r});});return out;}
+function draw(){const S=stats();corner("データ "+S.n+" 個");
+  const ax=(y)=>{line(G.x0,y,G.x1,y,INK,3);for(let v=0;v<=XMAX;v+=5){line(X(v),y,X(v),y+8,INK,3);T(String(v),X(v),y+TK*0.95,{a:"center",size:TK,c:GR});}};
+  // ヒストグラム
+  if(showH){const cnt=[0,0,0,0,0,0];D.forEach(v=>cnt[Math.min(5,Math.floor(v/5))]++);const ym=Math.max(4,...cnt);
+    const c=chart({x:G.x0,y:G.hy,w:G.x1-G.x0,h:G.hh},{x0:0,x1:XMAX,y0:0,y1:ym,ys:ym>8?2:1,xs:5,yl:"(個)"});
+    cnt.forEach((k,j)=>{if(!k)return;const a=c.X(j*5),b=c.X(j*5+5);ctx.fillStyle=LT[BL];ctx.fillRect(a,c.Y(k),b-a,c.Y(0)-c.Y(k));ctx.strokeStyle=BL;ctx.lineWidth=3;ctx.strokeRect(a,c.Y(k),b-a,c.Y(0)-c.Y(k));});}
+  // ドットプロット
+  ax(G.dy+G.dh);
+  for(const d of dotPos()){dot(d.x,d.y,d.r,drag&&drag.i===d.i?OR:INK);dot(d.x,d.y,d.r*0.38,"#fff");}
+  // 箱ひげ図
+  const yb=G.by+G.bh/2,h=G.bh;
+  [S.q1,S.q2,S.q3].forEach(q=>line(X(q),G.dy+G.dh,X(q),yb-h/2,"#9a9a9a",3,[10,8]));
+  line(X(S.min),yb,X(S.q1),yb,INK,5);line(X(S.q3),yb,X(S.max),yb,INK,5);
+  ctx.fillStyle=LT[OR];ctx.fillRect(X(S.q1),yb-h/2,X(S.q3)-X(S.q1),h);ctx.strokeStyle=INK;ctx.lineWidth=5;ctx.strokeRect(X(S.q1),yb-h/2,X(S.q3)-X(S.q1),h);
+  line(X(S.q2),yb-h/2,X(S.q2),yb+h/2,OR,6);line(X(S.min),yb-h*0.3,X(S.min),yb+h*0.3,INK,5);line(X(S.max),yb-h*0.3,X(S.max),yb+h*0.3,INK,5);
+  // 並べた値（前半・後半）
+  const n=S.n,cw=Math.min(L*1.9,(G.x1-G.x0+L*2)/n),tx0=(W-cw*n)/2,ty=G.ty,fs=clamp(cw*0.5,13,L);
+  const half=Math.floor(n/2);
+  S.v.forEach((v,i)=>{const cx=tx0+cw*(i+0.5);const mid=n%2&&i===half;
+    const col=mid?OR:i<half?BL:GN;
+    ctx.fillStyle=LT[col];rrect(cx-cw*0.45,ty-fs*0.8,cw*0.9,fs*1.6,6);ctx.fill();T(String(v),cx,ty,{a:"center",size:fs,c:DK[col]});});
+  // 区切りの印
+  const mark=(pos,col,lab,dy)=>{const x=tx0+cw*pos;line(x,ty-fs*1.1,x,ty+fs*1.1,col,4);};
+  if(n%2===0)mark(half,OR);
+  const qm=(m,off,col)=>{const p=off+m/2;mark(p,col);};
+  qm(half,0,BL);qm(half,Math.ceil(n/2),GN);
+  const rows=[["最小値",S.min,INK],["第1四分位数",S.q1,BL],["中央値",S.q2,OR],["第3四分位数",S.q3,GN],["最大値",S.max,INK]];
+  const ry=ty+fs*1.4+L*1.6,rw=Math.min((W-L*2)/5,280);
+  rows.forEach(([a,b,c],j)=>{const cx=W/2+(j-2)*rw;T(a,cx,ry,{a:"center",size:clamp(rw*0.12,13,TK),c:GR});T(String(b),cx,ry+L*1.3,{a:"center",size:L*1.1,c:DK[c]});});
+  EQN(["四分位範囲 = "+S.q3+" − "+S.q1+" = "+(S.q3-S.q1)],W/2,ry+L*3.1,{a:"center",size:L});}
+function hitDot(p,tol){let best=null,bd=1e9;for(const d of dotPos()){const e=Math.hypot(p.x-d.x,p.y-d.y);if(e<Math.max(tol,d.r+6)&&(e<bd||(e===bd)))best=d,bd=e;}return best;}
+function onDown(p,tol){const d=hitDot(p,tol);if(!d)return false;drag={i:d.i};req();return true;}
+function onMove(p){if(!drag)return;D[drag.i]=clamp(Math.round((p.x-G.x0)/(G.x1-G.x0)*XMAX),0,XMAX);req();}
+function onUp(){drag=null;req();}
+function hover(p){return !!hitDot(p,22);}
+onClick("bAdd",()=>{if(D.length<30){D.push(RNG.int(XMAX+1));req();}});
+onClick("bDel",()=>{if(D.length>4){D.pop();req();}});
+onClick("bHist",()=>{showH=!showH;$("bHist").classList.toggle("on",showH);layout();req();});
+onClick("bRand",()=>{D=D.map(()=>Math.round(clamp(15+RNG.normal()*6,0,XMAX)));req();});
+onClick("bReset",reset);
+reset();
+window.SIM={get:stats,set:a=>{D=a.slice();req();},dot:i=>dotPos()[i],xOf:X};
+
+fit();
+</script>
+</body>
+</html>
