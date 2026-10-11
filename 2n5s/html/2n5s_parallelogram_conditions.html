@@ -195,19 +195,24 @@ function draw(){
   const all=cs[0];
   el('polygon',{points:P.map(p=>X(p).join(',')).join(' '),fill:all?COL.lblue:'#eeeeee',stroke:COL.black,'stroke-width':5,'stroke-linejoin':'round'},g);
   const s=st.sel,[A,B,C,D]=P,c1=COL.red,c2=COL.blue;
-  if(s===0){parMark(g,A,B,1,c1);parMark(g,D,C,1,c1);parMark(g,A,D,2,c2);parMark(g,B,C,2,c2);}
-  if(s===1){tick(g,A,B,1,c1);tick(g,D,C,1,c1);tick(g,A,D,2,c2);tick(g,B,C,2,c2);}
-  if(s===2){angMark(g,P,0,1,c1,true);angMark(g,P,2,1,c1,true);angMark(g,P,1,2,c2,true);angMark(g,P,3,2,c2,true);}
+  // Matching marks and interior angles are meaningful only for a non-degenerate convex quadrilateral.
+  if(simple(P)){
+  const parallel=(a,b,c,d)=>crs(sub(b,a),sub(d,c))===0;
+  const equalLength=(a,b,c,d)=>Math.abs(d2(a,b)-d2(c,d))<1e-7;
+  if(s===0){if(parallel(A,B,D,C)){parMark(g,A,B,1,c1);parMark(g,D,C,1,c1);}if(parallel(A,D,B,C)){parMark(g,A,D,2,c2);parMark(g,B,C,2,c2);}}
+  if(s===1){if(equalLength(A,B,D,C)){tick(g,A,B,1,c1);tick(g,D,C,1,c1);}if(equalLength(A,D,B,C)){tick(g,A,D,2,c2);tick(g,B,C,2,c2);}}
+  if(s===2){const ac=Math.abs(angAt(P,0)-angAt(P,2))<1e-6?1:0,bd=Math.abs(angAt(P,1)-angAt(P,3))<1e-6?2:0;angMark(g,P,0,ac,c1,true);angMark(g,P,2,ac,c1,true);angMark(g,P,1,bd,c2,true);angMark(g,P,3,bd,c2,true);}
   if(s===3){const a=X(A),c=X(C),b=X(B),d=X(D);
     el('line',{x1:a[0],y1:a[1],x2:c[0],y2:c[1],stroke:COL.black,'stroke-width':3},g);el('line',{x1:b[0],y1:b[1],x2:d[0],y2:d[1],stroke:COL.black,'stroke-width':3},g);
     // intersection O
     const r=sub(C,A),q=sub(D,B),den=crs(r,q);
     if(den!==0){const t=crs(sub(B,A),q)/den,O=[A[0]+r[0]*t,A[1]+r[1]*t],o=X(O);
       el('circle',{cx:o[0],cy:o[1],r:7,fill:COL.black},g);T(g,o[0]+SZ(28),o[1]+SZ(6),'O',SZ('label'),COL.black);
-      tick(g,A,O,1,c1);tick(g,O,C,1,c1);tick(g,B,O,2,c2);tick(g,O,D,2,c2);}}
-  if(s===4){parMark(g,A,D,1,COL.green);parMark(g,B,C,1,COL.green);
+      if(equalLength(A,O,O,C)){tick(g,A,O,1,c1);tick(g,O,C,1,c1);}if(equalLength(B,O,O,D)){tick(g,B,O,2,c2);tick(g,O,D,2,c2);}}}
+  if(s===4){if(parallel(A,D,B,C)){parMark(g,A,D,1,COL.green);parMark(g,B,C,1,COL.green);}
     const a=X(A),b=X(B),c=X(C),d=X(D);
-    tick(g,A,[(A[0]+D[0])/2*1,(A[1]+D[1])/2],2,COL.green);tick(g,B,[(B[0]+C[0])/2,(B[1]+C[1])/2],2,COL.green);}
+    if(equalLength(A,D,B,C)){tick(g,A,[(A[0]+D[0])/2*1,(A[1]+D[1])/2],2,COL.green);tick(g,B,[(B[0]+C[0])/2,(B[1]+C[1])/2],2,COL.green);}}
+  }
   // vertices
   const cx=(A[0]+B[0]+C[0]+D[0])/4,cy=(A[1]+B[1]+C[1]+D[1])/4;
   P.forEach((p,i)=>{const q=X(p);DOT(g,q[0],q[1],COL.black);

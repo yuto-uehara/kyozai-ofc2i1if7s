@@ -294,11 +294,14 @@ const MP=[ // 教科書 p.97〜99 の式  [左辺, 右辺, 解]
 ];
 const SPD={k:1}; // animation time factor (tests only)
 const mv={i:0,merge:null,P:null,rand:false,steps:[],showProp:false,drag:null,comb:null,div:null,solvedT:-1e9,F:60,eqY:0,tp:new Map(),lay:null};
+let mvGeneration=0;
+function mvCancelPending(){mvGeneration++;mv.comb=null;mv.div=null;mv.merge=null;mv.drag=null;}
+function mvLater(fn,delay){const generation=mvGeneration;setTimeout(()=>{if(generation===mvGeneration)fn();},delay);}
 const cS=()=>mv.steps[mv.steps.length-1].S;
 const mvBusy=()=>!!(mv.comb||mv.div||mv.merge);
 const cloneS=S=>S.map(side=>side.map(t=>({id:t.id,k:t.k,v:{n:t.v.n,d:t.v.d}})));
 function mvLoad(p,rand){mv.P=p;mv.rand=rand;mvReset();}
-function mvReset(){const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
+function mvReset(){mvCancelPending();const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
   mv.drag=null;mv.comb=null;mv.div=null;mv.merge=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
 function mvSolution(S){let A=Q(0),B=Q(0);
   for(const t of S[0]){if(t.k==="x")A=qadd(A,t.v);else B=qsub(B,t.v);}
@@ -419,7 +422,7 @@ function mvPush(S,prop){mv.steps.push({S,prop});mvFit();const s=mvSolved(S);if(s
   const sol=mvSolution(S);if(!sol||!qeq(sol,mv.P[2]))console.error("invariant broken",JSON.stringify(S));ui();kick();}
 function mvComb(){if(mvBusy()||mv.drag)return;const G=combGroups();if(!G.length)return;
   mv.comb={t0:performance.now(),groups:G};kick();ui();
-  setTimeout(()=>mvCombApply(G),400*SPD.k);}
+  mvLater(()=>mvCombApply(G),400*SPD.k);}
 function mvCombApply(G){const S=cloneS(cS());
     for(const g of G){const side=S[g.s],kp=side.find(t=>t.id===g.keep);let sum=Q(0);
       for(const id of g.ids)sum=qadd(sum,side.find(t=>t.id===id).v);
@@ -429,7 +432,7 @@ function mvCombApply(G){const S=cloneS(cS());
     mv.comb=null;mvPush(S,{type:"comb"});}
 function mvDiv(){if(mvBusy()||mv.drag)return;const I=divInfo();if(!I)return;
   const id=cS()[I.side][0].id;mv.div={t0:performance.now(),a:I.a,side:I.side,id};kick();ui();
-  setTimeout(()=>mvDivApply(I),1400*SPD.k);}
+  mvLater(()=>mvDivApply(I),1400*SPD.k);}
 // coefficient of the single x tile (for the tap hint and the divide animation)
 function coefGeom(lay,id,F){const p=lay.pos.get(id),t=cS().flatMap(x=>x).find(q=>q.id===id);if(!p||!t)return null;
   const cw=t.v.n<0&&qone(qabs(t.v))?tw([{s:MI}],F):tw(termToks(t.k,t.v,true,{tile:true}),F)-tw([{s:"x",it:true}],F);
@@ -441,7 +444,7 @@ function mvDivApply(I){const before=cloneS(cS()),S=cloneS(cS());
 function mvHover(D,lay,WS){const cx=D.x-D.ox,cy=D.y-D.oy;if((cx<W/2?0:1)!==D.from)return null;
   for(const t of WS[D.from]){const p=lay.pos.get(t.id);if(p&&Math.abs(cx-p.x)<0.42*p.w&&Math.abs(cy-p.y)<0.75*mv.F)return{id:t.id,like:t.k===D.t.k};}
   return null;}
-function mvMergeStart(id,tid){mv.merge={id,tid,t0:performance.now()};ui();kick();setTimeout(()=>mvMergeApply(id,tid),320*SPD.k);}
+function mvMergeStart(id,tid){mv.merge={id,tid,t0:performance.now()};ui();kick();mvLater(()=>mvMergeApply(id,tid),320*SPD.k);}
 function mvMergeApply(id,tid){const S=cloneS(cS());
   for(let s=0;s<2;s++){const side=S[s],a=side.find(t=>t.id===id),b=side.find(t=>t.id===tid);if(!a||!b||a.k!==b.k)continue;
     b.v=qadd(b.v,a.v);S[s]=side.filter(t=>t.id!==id&&!(t.id===tid&&qz(b.v)));}
@@ -527,8 +530,8 @@ function ui(){
     dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
     $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
     $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=!mv.rand&&mv.i===0;$("bNext").disabled=!mv.rand&&mv.i===MP.length-1;$("bRand").disabled=busy;}}
-$("tBal").onclick=()=>{mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
-$("tMv").onclick=()=>{mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
+$("tBal").onclick=()=>{mvCancelPending();mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
+$("tMv").onclick=()=>{mvCancelPending();mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
 function step(d){ // ◀ ▶: textbook presets (from a random problem: the neighbouring preset)
   if(mode==="bal"){const i=clamp(0,bal.i+d,BP.length-1);if(i===bal.i&&!bal.rand)return;bal.i=i;balLoad(BP[i],false);}
   else{const i=clamp(0,mv.i+d,MP.length-1);if(i===mv.i&&!mv.rand)return;mv.i=i;mvLoad(MP[i],false);}}

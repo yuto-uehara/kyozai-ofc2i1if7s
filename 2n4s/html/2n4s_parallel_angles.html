@@ -208,13 +208,14 @@ svg.addEventListener('pointermove',e=>{
     const {P}=geom();
     let a=Math.atan2(-(p.y-P.y),p.x-P.x)/DEG; // math angle
     while(a>90)a-=180; while(a<=-90)a+=180;
-    a=Math.max(-60,Math.min(60,a));
+    // Keep the named angle sectors non-degenerate and in the same cyclic order.
+    a=Math.max(Math.max(-60,st.theta-175),Math.min(Math.min(60,st.theta-5),a));
     if(Math.abs(a)<1) a=0;
     st.phi=a;
   } else {
     let a=Math.atan2(-(p.y-Q.y),p.x-Q.x)/DEG;
     if(a<0) a+=180;               // use upward direction
-    st.theta=Math.max(30,Math.min(150,a));
+    st.theta=Math.max(Math.max(30,st.phi+5),Math.min(Math.min(150,st.phi+175),a));
   }
   render();
 });
