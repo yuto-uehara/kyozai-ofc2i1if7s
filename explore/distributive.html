@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分配法則｜かっこの中のそれぞれにかける</title>
+<style>
+:root{--ink:#192b40;--purple:#7643bd;--purple-light:#f1eafa;--blue:#2f7dd1;--blue-dark:#195c9f;--blue-light:#e9f3fd;--orange:#f08a24;--orange-dark:#a74e00;--orange-light:#fff1e0;--line:#d9e1e9;--muted:#57697c}
+*{box-sizing:border-box}body{margin:0;background:white;color:var(--ink);font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-weight:600}button,input{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{cursor:default;opacity:.35}button:focus-visible,input:focus-visible{outline:4px solid #7650b1;outline-offset:4px}main{max-width:980px;margin:auto;padding:24px 28px}h1{font-size:clamp(28px,3.5vw,38px);margin:0 0 8px;letter-spacing:.04em}.subtitle{margin:0 0 20px;font-size:clamp(16px,2.3vw,23px);line-height:1.7}.purple{color:var(--purple)}.blue{color:var(--blue-dark)}.orange{color:var(--orange-dark)}.panel{border:2px solid var(--ink);border-radius:18px;overflow:hidden}.step-top{padding:16px 22px 0}.lesson-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.lesson-step{padding:9px 5px;border:2px solid #e1e6ed;border-radius:9px;text-align:center;color:var(--muted);font-size:15px;white-space:nowrap}.lesson-step.current{border-color:var(--purple);background:var(--purple-light);color:var(--purple)}.lesson-step.done{border-color:#c7b0e0;color:var(--purple)}.step-count{display:block;text-align:center;margin-top:10px}.step-count{font-size:14px;font-weight:800;color:var(--muted);white-space:nowrap}.steps{display:flex;gap:7px}.dot{width:24px;height:7px;background:#e1e6ed;border-radius:4px}.dot.complete{background:var(--purple)}.step-message{text-align:center;font-size:clamp(18px,2.5vw,25px);min-height:38px;line-height:1.5;margin:12px 10px 0;font-weight:800}.original{display:block;width:100%;max-width:740px;height:auto;margin:0 auto;overflow:visible}.original text{font-family:inherit;font-weight:800}.arrow{fill:none;stroke:var(--purple);stroke-width:4.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}.arrow.draw{animation:draw .9s ease-out both}.flight{pointer-events:none;opacity:0}.flight.left{animation:fly-left 1.05s ease-in-out both}.flight.right{animation:fly-right 1.05s ease-in-out both}.source-ring{fill:var(--purple-light);stroke:var(--purple);stroke-width:2}.source-number{fill:var(--purple)}.term-line{stroke-width:5;stroke-linecap:round}.math{font-family:Arial,"Noto Sans JP",sans-serif;font-weight:700;font-variant-numeric:lining-nums tabular-nums}.expansion{padding:4px 24px 16px;background:#fbfcfe;border-top:1px solid var(--line)}.pair-labels{display:grid;grid-template-columns:1fr 34px 1fr;margin:9px auto 8px;max-width:600px;text-align:center;font-size:14px}.expansion-row{display:grid;grid-template-columns:1fr 34px 1fr;max-width:600px;margin:auto;align-items:center;text-align:center}.term-box{border:2px solid var(--line);border-radius:12px;min-height:75px;display:flex;align-items:center;justify-content:center;font-size:clamp(28px,5.1vw,48px);gap:.12em;background:white;white-space:nowrap}.term-box.left-ready{border-color:var(--blue);background:var(--blue-light)}.term-box.right-ready{border-color:var(--orange);background:var(--orange-light)}.term-box.reveal{animation:reveal .4s ease-out both}.pending{font-size:22px;color:#728297}.plus{font-size:34px}.combined{display:flex;align-items:center;justify-content:center;min-height:77px;margin:10px 0 0;font-size:clamp(35px,5.5vw,54px);gap:.18em}.combined.hidden{visibility:hidden}.combined.reveal{animation:reveal .45s ease-out both}.equation-caption{margin:7px 0 0;font-size:14px;line-height:1.6;text-align:center;color:var(--muted);min-height:23px}.nav-buttons{display:grid;grid-template-columns:1fr 1.15fr 1.4fr;gap:12px;margin-top:18px}button{border:2px solid #a8b6c5;background:white;border-radius:10px;min-height:52px;color:var(--ink);padding:10px 16px;font-size:18px;font-weight:800}button:hover:not(:disabled){background:#f3f6fa}.primary{background:var(--ink);color:white;border-color:var(--ink)}.primary:hover:not(:disabled){background:#304960}.play{color:var(--purple);border-color:#aa8aca}.play.is-playing{background:var(--purple-light)}.settings{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.control{border:2px solid var(--line);border-radius:12px;padding:11px 16px 7px}.control-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.control label{font-size:16px}.control output{font-size:28px;font-weight:800}.control:first-child{border-color:#c7b0e0}.control:first-child output{color:var(--purple)}.control:nth-child(2){border-color:#edc499}.control:nth-child(2) output{color:var(--orange-dark)}input[type=range]{width:100%;height:36px;display:block;margin:1px 0 0;accent-color:var(--purple);cursor:pointer}.control:nth-child(2) input{accent-color:var(--orange)}.bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}.reset{font-size:15px;min-height:46px;padding:9px 15px}.note{font-size:13px;color:var(--muted);line-height:1.6;margin:0}.visually-hidden{position:absolute;clip:rect(0 0 0 0);clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}@keyframes reveal{from{opacity:.3;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}@keyframes fly-left{0%{opacity:0;transform:translate(130px,110px)}12%{opacity:1}50%{transform:translate(190px,75px)}85%{opacity:1}100%{opacity:0;transform:translate(250px,110px)}}@keyframes fly-right{0%{opacity:0;transform:translate(130px,110px)}12%{opacity:1}50%{transform:translate(280px,30px)}85%{opacity:1}100%{opacity:0;transform:translate(430px,110px)}}
+@media(max-width:600px){main{padding:18px 14px 22px}h1{font-size:28px}.subtitle{font-size:17px;margin-bottom:16px}.panel{border-radius:13px}.step-top{padding:13px 12px 0}.lesson-steps{gap:5px}.lesson-step{font-size:13px;padding:8px 2px}.step-count{font-size:12px}.dot{width:18px}.step-message{font-size:18px;margin:12px 8px 0;min-height:54px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0 .15em}.original{margin:2px auto 5px}.expansion{padding:3px 12px 10px}.pair-labels{grid-template-columns:1fr 25px 1fr;font-size:13px}.expansion-row{grid-template-columns:1fr 25px 1fr}.term-box{font-size:clamp(26px,8.1vw,43px);min-height:65px;border-radius:9px;gap:.03em}.pending{font-size:20px}.plus{font-size:26px}.combined{min-height:64px;margin-top:9px;font-size:clamp(34px,10.7vw,46px)}.equation-caption{font-size:12px;min-height:20px}.nav-buttons{gap:7px;margin-top:14px;grid-template-columns:1fr 1.1fr 1.15fr}button{padding:9px 5px;font-size:15px;min-height:50px}.settings{grid-template-columns:1fr;gap:10px;margin-top:17px}.control{padding:8px 14px 5px}.control label{font-size:16px}.control output{font-size:26px}.bottom{align-items:flex-start}.reset{font-size:14px;padding:9px 12px}.note{font-size:12px;max-width:150px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.flight{display:none}}
+@media print{main{padding:0}.nav-buttons,.settings,.bottom{display:none}.panel{break-inside:avoid}}
+
+.products{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:6px;align-items:center;max-width:760px;margin:0 auto}.product{min-width:0}.product-label{text-align:center;font-family:inherit;font-size:14px;margin:8px 0}.products>.plus{margin-top:28px;text-align:center}.term-box{font-size:clamp(23px,4.2vw,42px);gap:0;padding:6px;min-width:0}.term-box span{white-space:nowrap}.products .term-box.long{font-size:clamp(21px,3.8vw,37px)}.settings{grid-template-columns:repeat(3,1fr)}.control:nth-child(2){border-color:#b1cdec}.control:nth-child(2) output{color:var(--blue-dark)}.control:nth-child(2) input{accent-color:var(--blue)}.control:nth-child(3){border-color:#edc499}.control:nth-child(3) output{color:var(--orange-dark)}.control:nth-child(3) input{accent-color:var(--orange)}.quick-actions{margin-top:12px}.utility{display:flex;gap:8px;flex-wrap:wrap}.random{font-size:16px;min-height:46px;padding:9px 15px;color:var(--purple);border-color:#aa8aca}.note{max-width:none}.equation-caption{overflow-wrap:anywhere}.step-message .signed-term{display:inline-block;border-radius:5px;padding:0 5px;white-space:nowrap}.step-message .signed-term.blue{background:var(--blue-light);border:1px solid #9ac3ed}.step-message .signed-term.orange{background:var(--orange-light);border:1px solid #edc499}.flight.move{animation:fly-dynamic 1.05s ease-in-out both}.original .term-highlight{stroke-width:2}.combined{font-size:clamp(31px,5.2vw,52px)}
+@keyframes fly-dynamic{0%{opacity:0;transform:translate(var(--start-x),110px)}12%{opacity:1}50%{transform:translate(var(--mid-x),var(--mid-y))}85%{opacity:1}100%{opacity:0;transform:translate(var(--end-x),110px)}}
+@media(max-width:600px){.products{grid-template-columns:minmax(0,1fr);gap:0;max-width:360px}.products>.plus{margin:1px 0;font-size:23px;line-height:1.05}.product-label{font-size:13px;margin:5px 0}.term-box,.products .term-box.long{font-size:clamp(25px,8.3vw,37px);min-height:55px;padding:5px}.settings{grid-template-columns:1fr}.bottom{display:block}.utility{display:grid;grid-template-columns:1fr 1fr}.note{margin-top:12px;font-size:12px}.random{font-size:15px;padding:9px 6px}.step-message{font-size:17px}.original{margin-top:0}.combined{font-size:clamp(30px,9.5vw,40px);min-height:59px}.expansion{padding-left:11px;padding-right:11px}}
+@media(prefers-reduced-motion:reduce){.flight.move{animation:none;display:none}}
+
+.product-result{display:block;min-height:50px;margin-top:4px;text-align:center;font-size:clamp(29px,4vw,39px);line-height:1.25;white-space:nowrap}.product-result[aria-hidden="true"]{visibility:hidden}.product-result.reveal{animation:reveal .4s ease-out both}
+@media(max-width:600px){.product-result{min-height:43px;font-size:clamp(28px,8.8vw,35px);margin-top:3px}}
+.opening-task{margin:16px 0 14px;padding:12px 16px;border:1px solid #dfe3e8;border-radius:12px;background:white;color:#191919}.opening-task p{margin:0 0 6px;font-size:14px}.opening-expression{font-size:clamp(26px,5vw,34px);font-weight:650;line-height:1.4;overflow-wrap:anywhere}@media(max-width:600px){.opening-task{padding:11px 13px;margin:12px 0}}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="教材の切り替え" style="display:flex;gap:18px;font-size:14px;margin-bottom:18px;flex-wrap:wrap"><a href="../" style="color:inherit;text-decoration:none">← 教材一覧</a><a href="sector.html" style="color:inherit">おうぎ形へ</a></nav>
+<h1>分配法則</h1>
+<section class="opening-task" aria-label="今回の課題"><p>この式のかっこをはずす</p><div id="task-expression" class="opening-expression">−2(3x−4)</div></section>
+<p class="subtitle"><span class="purple">かっこの前の数</span>を、<br><strong>符号もふくめた項</strong>それぞれにかける。</p>
+<section class="panel" aria-label="分配法則の手順">
+  <div class="step-top"><div class="lesson-steps" aria-label="3つの手順"><span id="phase-0" class="lesson-step current">① 前の数</span><span id="phase-1" class="lesson-step">② 中の項</span><span id="phase-2" class="lesson-step">③ 分配</span></div><span id="step-count" class="step-count">① かっこの前の数字を確認</span></div>
+  <p id="step-message" class="step-message"></p>
+  <svg id="original" class="original" viewBox="0 0 600 232" role="img" aria-labelledby="formula-title formula-desc">
+    <title id="formula-title">−2(3x−4)</title><desc id="formula-desc"></desc>
+    <defs><marker id="arrowhead" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto"><path d="M 0 0 L 6.5 3.5 L 0 7 Z" fill="#7643bd"/></marker></defs>
+    <g id="arrows"></g><g id="original-equation"></g><g id="moving-factor"></g>
+  </svg>
+  <div class="expansion">
+    <div class="products math" id="expansion-row">
+      <div class="product"><p class="product-label blue">左の項に</p><div id="left-term" class="term-box"></div><div id="left-product-result" class="product-result blue" aria-hidden="true"></div></div>
+      <span class="plus">＋</span>
+      <div class="product"><p class="product-label orange">右の項にも</p><div id="right-term" class="term-box"></div><div id="right-product-result" class="product-result orange" aria-hidden="true"></div></div>
+    </div>
+    <p id="equation-caption" class="equation-caption"></p>
+    <div id="combined" class="combined math hidden" aria-hidden="true"></div>
+  </div>
+</section>
+<div class="nav-buttons" aria-label="手順を進める"><button id="back" type="button">← 戻る</button><button id="play" class="play" type="button" aria-pressed="false">▶ 再生</button><button id="next" class="primary" type="button">次へ →</button></div>
+<div class="quick-actions"><div class="utility"><button id="random" class="random" type="button">↻ ランダム</button><button id="reset" class="reset" type="button">最初にもどす</button></div></div>
+<section class="settings" aria-label="式の数字を変える">
+  <div class="control"><div class="control-top"><label for="factor">かっこの前の数</label><output id="factor-value" for="factor">−2</output></div><input id="factor" type="range" min="-9" max="9" step="1" value="-2" aria-label="かっこの前の係数 a"></div>
+  <div class="control"><div class="control-top"><label for="coefficient">x の係数</label><output id="coefficient-value" for="coefficient">3</output></div><input id="coefficient" type="range" min="-9" max="9" step="1" value="3" aria-label="かっこの中の x の係数 b"></div>
+  <div class="control"><div class="control-top"><label for="constant">かっこの中の定数</label><output id="constant-value" for="constant">−4</output></div><input id="constant" type="range" min="-9" max="9" step="1" value="-4" aria-label="かっこの中の定数 c"></div>
+</section>
+<div class="bottom"><p class="note">ランダムでは 0 を除く正負の数が出ます。<br>x は文字のまま計算します。</p></div>
+<div id="live" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+</main>
+<script>
+(() => {
+'use strict';
+const $=id=>document.getElementById(id);
+const state={factor:-2,coefficient:3,constant:-4,step:0,playing:false};
+let timer=null,epoch=0;
+const purple=n=>`<span class="purple">${n}</span>`;
+const blue=n=>`<span class="blue">${n}</span>`;
+const orange=n=>`<span class="orange">${n}</span>`;
+const motionReduced=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const number=n=>n<0?'−'+Math.abs(n):String(n);
+const signedNumber=n=>n<0?'−'+Math.abs(n):'+'+n;
+function xTerm(n,explicitPositive=false){
+  if(n===0)return explicitPositive?'+0x':'0x';
+  return (n<0?'−':explicitPositive?'+':'')+(Math.abs(n)===1?'':Math.abs(n))+'x';
+}
+const asFactor=(text,negative)=>negative?'('+text+')':text;
+function simplified(k,d){
+  if(k===0)return number(d);
+  return xTerm(k)+(d===0?'':signedNumber(d));
+}
+function stop(){epoch++;if(timer!==null){clearTimeout(timer);timer=null;}state.playing=false;}
+function geometry(a,b,c){
+  const texts=[number(a),xTerm(b),signedNumber(c)];
+  const width=text=>text.length*49+24;
+  const wa=width(texts[0]),wb=width(texts[1]),wc=width(texts[2]);
+  let x=38;const ax=x+wa/2;x+=wa+17;const open=x+15;x+=43;const bx=x+wb/2;x+=wb+14;const cx=x+wc/2;x+=wc+15;const close=x+15;x+=50;
+  const W=Math.max(600,x);const shift=(W-x)/2;
+  return {texts,wa,wb,wc,ax:ax+shift,open:open+shift,bx:bx+shift,cx:cx+shift,close:close+shift,W};
+}
+function render(animate=false,announce=true){
+  const {factor:a,coefficient:b,constant:c,step:s,playing}=state;
+  const moving=animate&&!motionReduced(),phase=Math.min(2,s);
+  for(const key of ['factor','coefficient','constant']){$(key).value=state[key];$(key+'-value').value=number(state[key]);}
+  $('original').setAttribute('data-stage',String(s));
+  const stepNames=['① かっこの前の数字を確認','② 符号もふくめて項を確認','③ 分配してかけていく · 左へ','③ 分配してかけていく · 右へ','③ 分配してかけていく · 整理'];
+  $('step-count').textContent=stepNames[s];
+  for(let i=0;i<3;i++){$('phase-'+i).className='lesson-step'+(i===phase?' current':i<phase?' done':'');$('phase-'+i).setAttribute('aria-current',i===phase?'step':'false');}
+  const leftSigned=xTerm(b,true),rightSigned=signedNumber(c);
+  const leftChip=`<span class="signed-term blue">${leftSigned}</span>`,rightChip=`<span class="signed-term orange">${rightSigned}</span>`;
+  const messages=[`前にある数字は ${purple(number(a))}`,`項は ${leftChip} と ${rightChip}`,`${purple(number(a))} を ${leftChip} にかける`,`${purple(number(a))} を ${rightChip} にもかける`,'符号に気をつけて、整理する'];
+  $('step-message').innerHTML=messages[s];
+  const g=geometry(a,b,c),{wa,wb,wc,ax,open,bx,cx,close,W,texts}=g;
+  $('original').setAttribute('viewBox',`0 0 ${W} 246`);
+  const termHighlights=s>=1?`<rect data-term="left" x="${bx-wb/2}" y="129" width="${wb}" height="84" rx="12" class="term-highlight" fill="#e9f3fd" stroke="#2f7dd1"/><rect data-term="right" x="${cx-wc/2}" y="129" width="${wc}" height="84" rx="12" class="term-highlight" fill="#fff1e0" stroke="#f08a24"/>`:'';
+  $('original-equation').innerHTML=`<rect x="${ax-wa/2}" y="133" width="${wa}" height="80" rx="14" class="source-ring"/>${termHighlights}<text x="${ax}" y="200" text-anchor="middle" font-size="80" textLength="${wa-24}" lengthAdjust="spacingAndGlyphs" class="source-number">${texts[0]}</text><text x="${open}" y="200" text-anchor="middle" font-size="80" fill="#192b40">(</text><text data-term="left" x="${bx}" y="200" text-anchor="middle" font-size="80" textLength="${wb-24}" lengthAdjust="spacingAndGlyphs" fill="${s>=1?'#195c9f':'#192b40'}">${texts[1]}</text><text data-term="right" x="${cx}" y="200" text-anchor="middle" font-size="80" textLength="${wc-24}" lengthAdjust="spacingAndGlyphs" fill="${s>=1?'#a74e00':'#192b40'}">${texts[2]}</text><text x="${close}" y="200" text-anchor="middle" font-size="80" fill="#192b40">)</text>`;
+  let arrows='';
+  if(s>=2)arrows+=`<path d="M ${ax} 110 Q ${(ax+bx)/2} 40 ${bx} 110" class="arrow${moving&&s===2?' draw':''}" pathLength="1" marker-end="url(#arrowhead)"/>`;
+  if(s>=3)arrows+=`<path d="M ${ax} 110 Q ${(ax+cx)/2} -50 ${cx} 110" class="arrow${moving&&s===3?' draw':''}" pathLength="1" marker-end="url(#arrowhead)"/>`;
+  $('arrows').innerHTML=arrows;
+  const end=s===2?bx:cx;
+  $('moving-factor').innerHTML=moving&&(s===2||s===3)?`<g class="flight move" style="--start-x:${ax}px;--mid-x:${(ax+end)/2}px;--mid-y:${s===2?75:30}px;--end-x:${end}px"><rect x="-38" y="-23" width="76" height="46" rx="22" fill="white" stroke="#7643bd" stroke-width="2"/><text x="0" y="11" text-anchor="middle" font-size="32" fill="#7643bd">${number(a)}</text></g>`:'';
+  $('expansion-row').style.visibility=s>=2?'visible':'hidden';$('expansion-row').setAttribute('aria-hidden',String(s<2));
+  const outside=asFactor(number(a),a<0),leftFactor=asFactor(xTerm(b),b<0),rightFactor=asFactor(number(c),c<0);
+  const leftProduct=outside+'×'+leftFactor,rightProduct=outside+'×'+rightFactor;
+  $('left-term').className='term-box'+(s>=2?' left-ready':'')+(leftProduct.length>8?' long':'')+(moving&&s===2?' reveal':'');
+  $('right-term').className='term-box'+(s>=3?' right-ready':'')+(rightProduct.length>8?' long':'')+(moving&&s===3?' reveal':'');
+  $('left-term').innerHTML=s>=2?`${purple(outside)}<span>×</span>${blue(leftFactor)}`:'<span class="pending">…</span>';
+  $('right-term').innerHTML=s>=3?`${purple(outside)}<span>×</span>${orange(rightFactor)}`:'<span class="pending">…</span>';
+  const original=number(a)+'('+xTerm(b)+signedNumber(c)+')';
+  const captions=['かっこのすぐ前の数を、符号とセットで','＋や − も、それぞれの項の一部','右の項にも、同じ数をかける','2つの積を、＋でつなぐ','かっこをはずせた！'];
+  $('equation-caption').textContent=captions[s];
+  const k=a*b,d=a*c,result=simplified(k,d);
+  const leftResult=k===0?'0':xTerm(k),rightResult=d>0?signedNumber(d):number(d);
+  $('left-product-result').textContent='＝'+leftResult;
+  $('right-product-result').textContent='＝'+rightResult;
+  $('left-product-result').setAttribute('data-result',leftResult);
+  $('right-product-result').setAttribute('data-result',rightResult);
+  $('left-product-result').setAttribute('aria-hidden',String(s<2));
+  $('right-product-result').setAttribute('aria-hidden',String(s<3));
+  $('left-product-result').className='product-result blue'+(moving&&s===2?' reveal':'');
+  $('right-product-result').className='product-result orange'+(moving&&s===3?' reveal':'');
+  let resultHTML='';
+  if(k!==0)resultHTML+=blue(xTerm(k));
+  if(d!==0)resultHTML+=orange(k!==0?signedNumber(d):number(d));
+  if(k===0&&d===0)resultHTML='<span>0</span>';
+  $('combined').innerHTML='<span>＝</span>'+resultHTML;
+  $('combined').setAttribute('data-result',result);
+  $('combined').className='combined math'+(s===4?'':' hidden')+(moving&&s===4?' reveal':'');$('combined').setAttribute('aria-hidden',String(s!==4));
+  $('back').disabled=s===0;$('next').disabled=s===4;
+  $('play').textContent=playing?'■ 停止':'▶ 再生';$('play').className='play'+(playing?' is-playing':'');$('play').setAttribute('aria-pressed',String(playing));
+  $('task-expression').textContent=original;
+  $('formula-title').textContent=original;
+  const descriptions=[`手順1。${original} の、かっこの前の数は ${number(a)}。`,`手順2。かっこの中の項は、符号をふくめて ${leftSigned} と ${rightSigned}。`,`手順3。${number(a)} を左の項 ${leftSigned} にかけて、${leftProduct}＝${leftResult}。右の項はこれからです。`,`手順3。右の項 ${rightSigned} にもかけて、${rightProduct}＝${rightResult}。左の積は ${leftResult}。`,`手順3の整理。${original}＝${leftProduct}＋${rightProduct}＝${result}。`];
+  $('formula-desc').textContent=descriptions[s];
+  if(announce)$('live').textContent=descriptions[s]+(playing?' 自動再生中。':'');
+}
+function schedule(delay){const ticket=epoch;timer=setTimeout(()=>{if(ticket!==epoch||!state.playing)return;timer=null;state.step=Math.min(4,state.step+1);if(state.step===4)state.playing=false;render(true);if(state.playing)schedule(2100);},delay);}
+$('next').addEventListener('click',()=>{stop();state.step=Math.min(4,state.step+1);render(true);});
+$('back').addEventListener('click',()=>{stop();state.step=Math.max(0,state.step-1);render();});
+$('play').addEventListener('click',()=>{if(state.playing){stop();render();return;}stop();state.step=0;state.playing=true;render();schedule(1100);});
+$('reset').addEventListener('click',()=>{stop();Object.assign(state,{factor:-2,coefficient:3,constant:-4,step:0});render();});
+$('random').addEventListener('click',()=>{
+  stop();let pick;
+  const choose=()=>{const n=1+Math.floor(Math.random()*9);return Math.random()<.5?-n:n;};
+  for(let attempt=0;attempt<6;attempt++){
+    pick={factor:choose(),coefficient:choose(),constant:choose()};
+    if(pick.factor>0&&pick.coefficient>0&&pick.constant>0)pick.constant=-pick.constant;
+    if(pick.factor<0&&pick.coefficient<0&&pick.constant<0)pick.coefficient=-pick.coefficient;
+    if(pick.factor!==state.factor||pick.coefficient!==state.coefficient||pick.constant!==state.constant)break;
+    if(attempt===5)pick.constant=Math.sign(pick.constant)*(Math.abs(pick.constant)%9+1);
+  }
+  Object.assign(state,pick,{step:0});render();
+});
+for(const key of ['factor','coefficient','constant']){
+  $(key).addEventListener('input',e=>{stop();state[key]=Math.max(-9,Math.min(9,Math.round(Number(e.target.value))));state.step=0;render(false,false);});
+  $(key).addEventListener('change',()=>render());
+}
+window.addEventListener('pagehide',()=>{stop();render(false,false);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.playing){stop();render(false,false);}});
+render(false,false);
+})();
+</script>
+</body>
+</html>
