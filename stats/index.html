@@ -5,41 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>確率・統計シミュレーション</title>
 <style>
-html,body{margin:0;background:#fff;color:#191919;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
-main{max-width:1500px;margin:0 auto;padding:18px 24px 40px}
-.lab{font-weight:700;font-size:28px;color:#666;margin:0 0 6px}
-h2{font-size:30px;font-weight:700;margin:26px 0 12px;padding-left:14px;border-left:8px solid var(--c)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
-a.card{display:flex;align-items:center;gap:14px;min-height:84px;padding:12px 18px;border:3px solid #191919;border-radius:12px;text-decoration:none;color:#191919;font-weight:700;font-size:26px;line-height:1.25;background:#fff}
-a.card:active{background:#eee}
-a.card .n{flex:none;width:44px;height:44px;border-radius:50%;background:var(--c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
-@media (max-width:560px){a.card{font-size:21px}h2{font-size:26px}}
+:root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;
+  --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","BIZ UDPMincho",serif}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+main{max-width:1240px;margin:0 auto;padding:64px 40px 80px}
+.mast{border-bottom:1px solid var(--rule);padding-bottom:28px;margin-bottom:12px}
+.kick{font-size:12px;letter-spacing:.24em;color:var(--mute);text-transform:uppercase}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,5vw,56px);letter-spacing:.06em;margin:10px 0 8px}
+.lead{font-family:var(--serif);color:#5f5a50;font-size:17px;margin:0}
+section{margin-top:44px}
+section header{display:flex;align-items:baseline;gap:16px;margin-bottom:18px}
+h2{font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:.08em;margin:0}
+section header span{font-size:11px;letter-spacing:.22em;color:var(--mute);text-transform:uppercase}
+section header::after{content:"";flex:1;height:1px;background:var(--rule);align-self:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+a.card{position:relative;display:flex;flex-direction:column;gap:8px;min-height:128px;padding:22px 22px 20px;background:#fbfaf6;border:1px solid var(--rule);border-radius:6px;text-decoration:none;color:var(--ink);
+  transition:transform .2s,box-shadow .2s,border-color .2s}
+a.card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(60,50,30,.08);border-color:#cfc8bb}
+a.card::before{content:"";position:absolute;left:22px;top:0;width:28px;height:2px;background:var(--acc);opacity:.75}
+.no{font-family:var(--serif);font-size:14px;color:var(--mute);letter-spacing:.1em}
+a.card b{font-family:var(--serif);font-weight:500;font-size:21px;letter-spacing:.04em;line-height:1.35}
+a.card small{font-size:14px;color:var(--mute);line-height:1.5}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--rule);font-size:12px;letter-spacing:.12em;color:var(--mute)}
+@media (max-width:600px){main{padding:40px 20px 60px}}
 </style>
 </head>
 <body>
 <main>
-<p class="lab">確率・統計</p>
-<section style="--c:#2ea55a"><h2>中学</h2><div class="grid">
-<a class="card" href="01_rel_freq.html"><span class="n">1</span>相対度数の安定</a>
-<a class="card" href="02_dice2.html"><span class="n">2</span>さいころ2つ</a>
-<a class="card" href="03_kuji.html"><span class="n">3</span>くじ引きの順番</a>
-<a class="card" href="04_boxplot.html"><span class="n">4</span>箱ひげ図</a>
-</div></section>
-<section style="--c:#f08a24"><h2>有名な問題</h2><div class="grid">
-<a class="card" href="05_monty.html"><span class="n">5</span>モンティ・ホール</a>
-<a class="card" href="06_birthday.html"><span class="n">6</span>誕生日のパラドックス</a>
-<a class="card" href="07_buffon.html"><span class="n">7</span>ビュフォンの針</a>
-<a class="card" href="08_mc_pi.html"><span class="n">8</span>モンテカルロでπ</a>
-<a class="card" href="09_ruin.html"><span class="n">9</span>ギャンブラーの破産</a>
-</div></section>
-<section style="--c:#2f7dd1"><h2>高校・大学</h2><div class="grid">
-<a class="card" href="10_galton.html"><span class="n">10</span>ゴルトンボード</a>
-<a class="card" href="11_clt.html"><span class="n">11</span>大数の法則・中心極限定理</a>
-<a class="card" href="12_bayes.html"><span class="n">12</span>ベイズの定理（検査）</a>
-<a class="card" href="13_random_walk.html"><span class="n">13</span>ランダムウォーク</a>
-<a class="card" href="14_markov.html"><span class="n">14</span>マルコフ連鎖（天気）</a>
-</div></section>
+<div class="mast"><div class="kick">Probability &amp; Statistics</div><h1>確率・統計</h1><p class="lead">理論と実験を、同じ画面で。</p></div>
+<section><header><h2>中学</h2><span>Junior High</span></header><div class="grid"><a class="card" href="01_rel_freq.html"><span class="no">01</span><b>相対度数の安定</b><small>回数を増やすと、ある値に近づく</small></a><a class="card" href="02_dice2.html"><span class="no">02</span><b>さいころ2つ</b><small>36通りの表で確率を求める</small></a><a class="card" href="03_kuji.html"><span class="no">03</span><b>くじ引きの順番</b><small>何番目にひいても 1/3</small></a><a class="card" href="04_boxplot.html"><span class="no">04</span><b>箱ひげ図</b><small>点を動かして四分位数を見る</small></a></div></section>
+<section><header><h2>有名な問題</h2><span>Classic Puzzles</span></header><div class="grid"><a class="card" href="05_monty.html"><span class="no">05</span><b>モンティ・ホール</b><small>扉を変えると勝率は 2/3</small></a><a class="card" href="06_birthday.html"><span class="no">06</span><b>誕生日のパラドックス</b><small>23人で 50% をこえる</small></a><a class="card" href="07_buffon.html"><span class="no">07</span><b>ビュフォンの針</b><small>針を落として π を求める</small></a><a class="card" href="08_mc_pi.html"><span class="no">08</span><b>モンテカルロ法で π</b><small>点を打って π を求める</small></a><a class="card" href="09_ruin.html"><span class="no">09</span><b>ギャンブラーの破産</b><small>目標に届く確率は k/N</small></a></div></section>
+<section><header><h2>高校・大学</h2><span>High School & University</span></header><div class="grid"><a class="card" href="10_galton.html"><span class="no">10</span><b>ゴルトンボード</b><small>二項分布から正規分布へ</small></a><a class="card" href="11_clt.html"><span class="no">11</span><b>大数の法則と中心極限定理</b><small>標本平均は正規分布に近づく</small></a><a class="card" href="12_bayes.html"><span class="no">12</span><b>ベイズの定理</b><small>陽性でも病気とは限らない</small></a><a class="card" href="13_random_walk.html"><span class="no">13</span><b>ランダムウォーク</b><small>原点への回帰と √t の広がり</small></a><a class="card" href="14_markov.html"><span class="no">14</span><b>マルコフ連鎖</b><small>天気の定常分布</small></a></div></section>
+<footer>14 SIMULATIONS · OFFLINE</footer>
 </main>
 </body>
 </html>
