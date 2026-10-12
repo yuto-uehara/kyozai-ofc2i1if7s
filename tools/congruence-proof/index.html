@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fbfaf7">
+  <title>平行と合同｜合同の証明をつなぐ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <a class="back" style="display:inline-flex;align-items:center;min-height:44px;color:var(--muted);font-size:13px;text-decoration:none" href="../../index.html">‹ 教材一覧</a>
+  <p class="eyebrow">中2 · 平行と合同</p>
+  <h1>合同の証明をつなごう。</h1>
+  <nav class="modes" aria-label="進め方">
+    <button data-mode="choose" aria-pressed="true">根拠を選ぶ</button>
+    <button data-mode="read" aria-pressed="false">順に見る</button>
+  </nav>
+
+  <section class="given-card" aria-label="問題と仮定">
+    <p class="goal">ABとCDが等しい理由を説明しよう。</p>
+    <p class="minor">仮定：2直線ACとBDが点Oで交わる。</p>
+    <p class="given math">OA = OC <span>かつ</span> OB = OD</p>
+  </section>
+
+  <section class="work-card" aria-label="今考えること">
+    <p id="step-label" class="step-label" aria-live="polite"></p>
+    <div id="equation" class="equation math"></div>
+    <p id="near" class="near"></p>
+  </section>
+  <section class="diagram-card" aria-label="2つの三角形の図">
+    <div id="diagram"></div>
+    <p id="diagram-note" class="minor diagram-note"></p>
+  </section>
+
+  <section id="question-card" class="question-card" aria-label="根拠の選択">
+    <h2 id="question"></h2>
+    <div id="choices" class="choices"></div>
+    <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+  </section>
+  <section id="read-card" class="read-card" hidden>
+    <p id="reason" class="reason"></p>
+  </section>
+
+  <details id="vertical-reason" class="panel" hidden>
+    <summary>対頂角が等しい理由</summary>
+    <p class="minor">∠BOCを使うと、どちらの角も同じ式になります。</p>
+    <p class="angle-proof math">∠AOB = 180° − ∠BOC<br>∠COD = 180° − ∠BOC</p>
+    <p class="minor">A・O・C、B・O・Dが、それぞれ一直線だからです。</p>
+  </details>
+
+  <section id="summary-card" class="panel proof-card" hidden>
+    <h2>つながった証明</h2>
+    <p class="triangle-pair math">△AOBと△CODにおいて、</p>
+    <ol class="proof-list">
+      <li><span class="math">OA = OC</span><small>仮定</small></li>
+      <li><span class="math">OB = OD</span><small>仮定</small></li>
+      <li><span class="math">∠AOB = ∠COD</span><small>対頂角は等しい</small></li>
+    </ol>
+    <p class="proof-link">2組の辺とその間の角が<br>それぞれ等しいので、</p>
+    <p class="proof-result math">△AOB ≡ △COD</p>
+    <p class="proof-link">合同な図形の対応する辺は等しいので、</p>
+    <p class="proof-result math orange">AB = CD</p>
+    <p class="minor">図の見た目や長さの測定に頼らず、仮定から結論までつなぎました。</p>
+  </section>
+
+  <details id="shape-controls" class="panel">
+    <summary>図を変えて確かめる</summary>
+    <p class="minor">図を変えても、仮定と証明は変わりません。</p>
+    <div class="control-head"><label for="u-range">OA・OCの長さ</label><output id="u-value" class="math"></output></div>
+    <div class="slider"><button id="u-minus" aria-label="OAとOCを短くする">−</button><input id="u-range" type="range" min="1" max="5" step="1" value="3"><button id="u-plus" aria-label="OAとOCを長くする">＋</button></div>
+    <div class="control-head"><label for="v-range">OB・ODの長さ</label><output id="v-value" class="math"></output></div>
+    <div class="slider"><button id="v-minus" aria-label="OBとODを短くする">−</button><input id="v-range" type="range" min="1" max="5" step="1" value="2"><button id="v-plus" aria-label="OBとODを長くする">＋</button></div>
+    <div class="control-head"><label for="theta-range">∠BOCの大きさ</label><output id="theta-value" class="math"></output></div>
+    <div class="slider"><button id="theta-minus" aria-label="角BOCを小さくする">−</button><input id="theta-range" type="range" min="20" max="160" step="5" value="60"><button id="theta-plus" aria-label="角BOCを大きくする">＋</button></div>
+    <div class="direction" role="group" aria-label="図の向き"><button data-direction="1" aria-pressed="true">Bを上に</button><button data-direction="-1" aria-pressed="false">Bを下に</button></div>
+    <p class="minor">長さは1〜5、角度は20°〜160°。三角形がつぶれる図は作りません。図全体の表示倍率は自動で調整します。</p>
+  </details>
+  <div class="reset-row"><button id="reset" class="quiet">この図ではじめから</button></div>
+  <nav class="dock" aria-label="証明の段階">
+    <button id="prev">‹ 戻る</button><span id="count" class="minor"></span><button id="next">次へ ›</button>
+  </nav>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

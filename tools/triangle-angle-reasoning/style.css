@@ -1,0 +1,55 @@
+:root{--ink:#252525;--muted:#6d6962;--red:#b8202d;--orange:#c75000;--line:#dedad2;--paper:#fbfaf7}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:var(--paper);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:620px;margin:auto;padding:12px 17px 18px}
+.back{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);font-size:13px;text-decoration:none}
+.eyebrow{margin:11px 0 7px;color:var(--muted);font-size:12px;line-height:1.6}
+h1{font-size:27px;line-height:1.5;margin:0 0 17px;letter-spacing:.01em}
+h2{font-size:15px;line-height:1.6;margin:0 0 8px}
+.math{font-weight:650;font-variant-numeric:tabular-nums}
+.given-card,.work-card,.controls,.conclusion{background:white;border:1px solid var(--line);border-radius:15px;padding:14px;margin-top:13px}
+.given-card h2{font-size:12px;color:var(--muted);font-weight:500;text-align:center}
+.given{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:24px;text-align:center;line-height:1.7}
+.given span{white-space:nowrap}
+.goal{display:flex;align-items:center;justify-content:center;gap:14px;border-top:1px solid var(--line);margin-top:9px;padding-top:9px}
+.goal>span{font-size:12px;color:var(--muted)}
+.goal strong{font-size:23px}
+.work-card{padding:14px 10px 11px}
+.work-card>.eyebrow{margin:0 0 5px;text-align:center}
+.work-card h2{text-align:center;font-size:17px;margin-bottom:12px}
+.equation{min-height:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:31px;line-height:1.45}
+.equation .line{white-space:nowrap;max-width:100%}
+.equation .answer{font-size:38px}
+.equation .small{font-size:23px}
+.equation .focus{color:var(--red)}
+.equation .result{color:var(--orange)}
+.reason{font-size:14px;line-height:1.75;min-height:50px;text-align:center;margin:9px 6px 3px}
+.diagram svg{display:block;width:100%;height:auto}
+.diagram-note{font-size:12px;color:var(--muted);line-height:1.7;margin:1px 6px 0;text-align:center;min-height:41px}
+.conclusion{padding:14px}
+.conclusion h2{font-size:14px;text-align:center}
+.theorem{font-size:24px;text-align:center;margin:12px 0}
+.minor{font-size:12px;color:var(--muted);line-height:1.8;margin:10px 0 0}
+button{font:inherit;color:var(--ink);background:white;border:1px solid var(--line);border-radius:9px;min-height:44px;min-width:44px;padding:8px;font-weight:650;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.36;cursor:default}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+summary{min-height:44px;cursor:pointer;font-size:14px;font-weight:650;line-height:1.6}
+.controls{padding:10px 14px}
+.controls summary{padding-top:10px}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px}
+.presets button{font-size:13px}
+.presets button[aria-pressed=true]{background:var(--ink);color:white;border-color:var(--ink)}
+.angle-control{margin-top:17px}
+.angle-control label{display:flex;gap:13px;align-items:center;font-size:15px;font-weight:650}
+.angle-control output{font-size:24px;font-variant-numeric:tabular-nums}
+.slider{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:9px;align-items:center;margin-top:3px}
+.slider button{font-size:23px;font-weight:500;padding:0}
+.slider input{width:100%;min-width:0;height:44px;accent-color:var(--ink)}
+.range-note{font-size:11px;line-height:1.6;margin:0;color:var(--muted)}
+.reset{display:block;margin:14px auto 0;background:transparent;font-size:12px;font-weight:500}
+.dock{position:sticky;bottom:0;z-index:4;display:grid;grid-template-columns:1fr 58px 1fr;gap:8px;align-items:center;margin:15px -3px 0;padding:8px 11px calc(8px + env(safe-area-inset-bottom));border:1px solid var(--line);border-radius:14px;background:#fbfaf7f7;box-shadow:0 -3px 12px #2525250a}
+.dock button{font-size:14px}
+.dock button:last-child{background:var(--ink);color:white;border-color:var(--ink)}
+.count{text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+[hidden]{display:none!important}
+@media(max-width:350px){main{padding:10px 12px 16px}h1{font-size:25px}.given-card{padding:12px 10px}.given{font-size:21px}.work-card{padding:12px 8px 10px}.equation{font-size:28px}.equation .small{font-size:21px}.equation .answer{font-size:35px}.theorem{font-size:21px}.reason{font-size:13px;margin-left:2px;margin-right:2px}.goal strong{font-size:22px}}
