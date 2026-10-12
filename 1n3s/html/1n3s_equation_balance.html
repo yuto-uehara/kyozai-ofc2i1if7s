@@ -353,7 +353,7 @@ function drawTile(t,x,y,w,F,lead,o){
 let historyView=false;
 function closeHistory(){historyView=false;document.getElementById("bHistory").textContent="計算の履歴";}
 function drawMv(now){
-  if(historyView){const list=mv.steps.slice(-5),f=H<300?18:Math.max(18,Math.min(26,W*.055)),gap=Math.min(42,(H-40)/Math.max(1,list.length));ctx.font=`700 ${f}px ${SANS}`;ctx.textAlign="center";ctx.fillStyle="#666";ctx.fillText("計算の履歴",W/2,22);list.forEach((st,j)=>{const yy=54+j*gap;drawToks(sideToks(st.S[0]),W/2-f*.7,yy,f,"right",INK);drawToks([{s:"="}],W/2,yy,f,"center",INK);drawToks(sideToks(st.S[1]),W/2+f*.7,yy,f,"left",INK);});return false;}
+  if(historyView){const list=mv.steps.slice(-5),f=H<300?18:Math.max(18,Math.min(26,W*.055)),gap=Math.min(42,(H-40)/Math.max(1,list.length));ctx.font=`700 ${f}px ${SANS}`;ctx.textAlign="center";ctx.fillStyle="#666";ctx.textBaseline="middle";ctx.fillText("計算の履歴",W/2,22);list.forEach((st,j)=>{const yy=54+j*gap;drawToks(sideToks(st.S[0]),W/2-f*.7,yy,f,"right",INK);drawToks([{s:"="}],W/2,yy,f,"center",INK);drawToks(sideToks(st.S[1]),W/2+f*.7,yy,f,"left",INK);});return false;}
   let busy=false;const S=cS(),F=mv.F,D=mv.drag;
   // working sides (dragged tile removed)
   let WS=S;if(D)WS=S.map(side=>side.filter(t=>t.id!==D.t.id));
