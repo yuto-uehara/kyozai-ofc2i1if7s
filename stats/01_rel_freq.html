@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>相対度数の安定</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -75,11 +77,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -265,17 +268,18 @@ function tally(x,y,cnt,sz,col){// 正の字
   const per=sz*1.15,maxN=Math.min(cnt,50);for(let i=0;i<Math.ceil(maxN/5);i++){const c=Math.min(5,maxN-i*5),ox=x+(i%10)*per,oy=y+Math.floor(i/10)*per*1.2,u=sz*0.42;
     ctx.strokeStyle=col;rawLW(Math.max(1.2,sz*0.08));ctx.lineCap="round";const S=[[-u,-u,u,-u],[0,-u,0,u],[0,0,u*0.7,0],[-u*0.6,0,-u*0.6,u],[-u,u,u,u]];
     for(let j=0;j<c;j++){const q=S[j];ctx.beginPath();ctx.moveTo(ox+q[0],oy+q[1]);ctx.lineTo(ox+q[2],oy+q[3]);ctx.stroke();}}}
-function draw(){const K=KINDS[kind],land=isLand();
+function draw(){SF.part(0);const K=KINDS[kind],land=isLand();
   const pw=land?Math.min(W*0.34,520):W,ph=land?H:Math.min(H*0.4,470);
   // 机
-  const dx=land?L:L,dy=land?L:L,dw=land?pw-L*2:pw*0.48-L,dh=land?H*0.42:ph-L*2;
+  const dx=L,dy=L,dw=SF.active?W-2*L:land?pw-L*2:pw*0.48-L,dh=SF.active?H-2*L:land?H*0.42:ph-L*2;
   softShadow(()=>{ctx.fillStyle="#b48d63";rrect(dx,dy,dw,dh,8);ctx.fill();},18,6,.25);ctx.save();rrect(dx,dy,dw,dh,8);ctx.clip();wood(dx,dy,dw,dh,"#c49b6c",3);
   const vg=ctx.createRadialGradient(dx+dw/2,dy+dh*0.45,dw*0.1,dx+dw/2,dy+dh/2,dw*0.8);vg.addColorStop(0,"rgba(255,245,220,.18)");vg.addColorStop(1,"rgba(40,25,10,.22)");ctx.fillStyle=vg;ctx.fillRect(dx,dy,dw,dh);ctx.restore();
   T(K.name.toUpperCase?K.name:"",dx+14,dy+SM+8,{size:SM,c:"rgba(255,248,235,.8)",w:500,ls:"0.14em"});
   const s=Math.min(dw*0.5,dh*0.55);obj(dx+dw/2,dy+dh*0.58,s);
   if(last!==null&&!an){const res=kind==="tDie"?(last+" の目"):kind==="tCoin"?(last?"表":"裏"):(last?"表向き":"それ以外");T(res,dx+dw-14,dy+dh-L*0.9,{a:"right",size:L*0.95,c:"rgba(255,248,235,.92)",serif:1});}
+  SF.part(1);
   // ノート
-  const nx=land?dx:pw*0.5+L*0.2,ny=land?dy+dh+L*1.2:dy,nw=land?dw:pw*0.5-L*1.2,nh=land?H-ny-L:dh;
+  const nx=SF.active?L:land?dx:pw*0.5+L*0.2,ny=SF.active?L:land?dy+dh+L*1.2:dy,nw=SF.active?W-2*L:land?dw:pw*0.5-L*1.2,nh=SF.active?H-2*L:land?H-ny-L:dh;
   softShadow(()=>{ctx.fillStyle="#fdfcf7";rrect(nx,ny,nw,nh,4);ctx.fill();},10,3,.15);
   ctx.strokeStyle="rgba(79,109,138,.16)";rawLW(1);for(let yy=ny+L*1.6;yy<ny+nh-4;yy+=L*1.25){ctx.beginPath();ctx.moveTo(nx+8,yy);ctx.lineTo(nx+nw-8,yy);ctx.stroke();}
   line(nx+L*1.4,ny,nx+L*1.4,ny+nh,"rgba(140,58,63,.35)",1);
@@ -283,10 +287,11 @@ function draw(){const K=KINDS[kind],land=isLand();
   if(n<=50)tally(tx+L*0.5,ny+L*2.5,k,L*1.05,"#4a4a4a");else T(k+" 回",tx,ny+L*2.5,{size:L*1.1,c:"#4a4a4a",serif:1});
   const ly=ny+L*2.5+(n<=50?Math.ceil(Math.min(k,50)/50)*L*1.2+L*1.2:L*1.6);
   EQN([{n:k,d:n||"0",c:DK[K.col]}," = "],tx,ly+EQ*0.4,{size:EQ*0.9});
-  const bs=clamp(BIG*(land?0.85:0.6),36,96);T(n?fmt(k/n):"—",tx+TW(" = ",{size:EQ*0.9,serif:1})+Math.max(TW(String(k),{size:EQ*0.7,serif:1}),TW(String(n),{size:EQ*0.7,serif:1}))+EQ*0.4,ly+EQ*0.4,{size:bs,w:800});
+  const bs=SF.active?30:clamp(BIG*(land?0.85:0.6),36,96);T(n?fmt(k/n):"—",tx+TW(" = ",{size:EQ*0.9,serif:1})+Math.max(TW(String(k),{size:EQ*0.7,serif:1}),TW(String(n),{size:EQ*0.7,serif:1}))+EQ*0.4,ly+EQ*0.4,{size:bs,w:800});
   if(showTh){const yy=ly+EQ*0.4+bs*0.85;if(typeof K.th==="string")EQN(["目安 0.211"],tx,yy,{size:L,c:RED});else EQN(["確率 ",K.th," = "+fmt(K.p)],tx,yy,{size:L,c:RED});}
+  SF.part(2);
   // グラフ
-  const gx=land?pw+L*3:L*3.2,gy=land?L*2.5:ph+L*1.6,gw=W-gx-L*1.5,gh=(land?H-L*2.5:H-ph-L*1.6)-L*2.4;
+  const gx=land?pw+L*3:L*3.2,gy=SF.active?L*2.5:land?L*2.5:ph+L*1.6,gw=W-gx-L*1.5,gh=SF.active?H-L*5:(land?H-L*2.5:H-ph-L*1.6)-L*2.4;
   const xmax=niceUp(Math.max(10,n));
   const c=chart({x:gx,y:gy,w:gw,h:gh},{x0:0,x1:xmax,y0:0,y1:1,ys:0.1,yf:v=>v.toFixed(1),xl:"回数",yl:"相対度数",xf:v=>v>=10000?(v/10000)+"万":String(Math.round(v))});
   if(showTh){line(gx,c.Y(K.p),gx+gw,c.Y(K.p),RED,3,[10,8]);}
@@ -301,6 +306,7 @@ onClick("bAuto",()=>autoLoop(()=>trial(n<200?1:n<2000?10:n<20000?100:1000)));
 onClick("bReset",reset);
 window.SIM={get:()=>({n,k,r:k/n,p:KINDS[kind].p,kind})};
 
+SF.install();
 fit();
 </script>
 </body>

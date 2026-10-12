@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ベイズの定理（検査）</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -73,11 +75,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -261,7 +264,7 @@ function kit(x,y,h,pos){const w=h*0.36;softShadow(()=>{ctx.fillStyle="#f7f7f5";r
   ctx.fillStyle="#b23a54";ctx.fillRect(x+w*0.3,y+h*0.32,w*0.4,Math.max(1.5,h*0.035));if(pos){ctx.fillStyle="rgba(178,58,84,.85)";ctx.fillRect(x+w*0.3,y+h*0.5,w*0.4,Math.max(1.5,h*0.035));}
   if(h>40){T("C",x+w*0.13,y+h*0.335,{size:h*0.08,c:"#8a8579",a:"center"});T("T",x+w*0.13,y+h*0.515,{size:h*0.08,c:"#8a8579",a:"center"});}
   ctx.fillStyle="#e2ddd2";ctx.beginPath();ctx.arc(x+w/2,y+h*0.8,w*0.18,0,TAU);ctx.fill();}
-function draw(){const t=th();corner("検査で陽性 → 本当に病気？");
+function draw(){SF.part(0);const t=th();corner("検査で陽性 → 本当に病気？");
   const f=G.f;
   // 1000人での人数（期待値）
   const N=1000,ill=Math.round(N*t.p),tp=Math.round(ill*t.se),fn=ill-tp,fp=Math.round((N-ill)*(1-t.sp)),tn=N-ill-fp;
@@ -277,21 +280,25 @@ function draw(){const t=th();corner("検査で陽性 → 本当に病気？");
     R(x0,y0,wi,h*t.se,CTP);R(x0,y0+h*t.se,wi,h*(1-t.se),CFN);R(x0+wi,y0,w-wi,h*(1-t.sp),CFP);R(x0+wi,y0+h*(1-t.sp),w-wi,h*t.sp,CTN);
     ctx.strokeStyle=INK;ctx.lineWidth=5;ctx.strokeRect(x0,y0,w,h);line(x0+wi,y0,x0+wi,y0+h,INK,3);
     T("病気",x0+wi/2,y0+h+L*0.75,{a:"center",size:TK,c:DK[RED]});T("病気でない",x0+wi+(w-wi)/2,y0+h-L*0.8,{a:"center",size:TK,c:GR});}
+  SF.part(1);
   // 凡例と式
   const tx=G.tx,ty=G.ty,lg=[[CTP,"病気・陽性",tp],[CFP,"病気でない・陽性",fp],[CFN,"病気・陰性",fn],[CTN,"病気でない・陰性",tn]];
-  lg.forEach(([c,s,v],i)=>{const x=tx+(i%2)*G.tw/2,y=ty+Math.floor(i/2)*L*2.6;kit(x,y-L*1.05,L*2.1,i<2);
+  lg.forEach(([c,s,v],i)=>{const x=SF.active?(W>600?tx+(i%2)*G.tw/2:tx):tx+(i%2)*G.tw/2,y=SF.active?ty+(W>600?Math.floor(i/2):i)*48:ty+Math.floor(i/2)*L*2.6;kit(x,y-L*1.05,L*2.1,i<2);
     ctx.strokeStyle=i===0?"#8c3a3f":i===1?"#c08a3e":"rgba(0,0,0,0)";rawLW(2);ctx.beginPath();ctx.arc(x+L*1.55,y,L*0.38,0,TAU);ctx.stroke();if(i===2){ctx.fillStyle="rgba(140,58,63,.15)";ctx.fillRect(x+L*1.17,y-L*0.38,L*0.76,L*0.76);}
     T(s,x+L*2.2,y-L*0.35,{size:TK*0.95,c:GR});T(v+" 人",x+L*2.2,y+L*0.55,{size:L*0.9,c:INK,serif:1});});
-  const ey=ty+L*6.2;
+SF.part(2);
+    const ey=SF.active?44:ty+L*6.2;
   const ew=EQN(["陽性で病気 ",{n:tp,d:tp+"+"+fp,c:DK[RED]}," = "],tx,ey,{size:L});
-  T((t.ppv*100).toFixed(1)+"%",tx+ew+6,ey,{size:clamp(BIG*0.6,36,72),w:800,c:DK[RED],halo:8});
+  T((t.ppv*100).toFixed(1)+"%",tx+ew+6,ey,{size:SF.active?24:clamp(BIG*0.6,36,72),w:800,c:DK[RED],halo:8});
   EQN(["（式 ",{n:"P(病)P(陽|病)",d:"P(陽)"}," ）"],tx,ey+L*2.6,{size:TK,c:GR});
   if(ex)T("実験 "+ex.tp+"/"+(ex.tp+ex.fp)+" = "+(ex.tp+ex.fp?(ex.tp/(ex.tp+ex.fp)*100).toFixed(1)+"%":"—")+"  ("+ex.N+"人)",tx,ey+L*4.3,{size:L*0.85,c:DK[OR]});
-  [["有病率",sPr],["感度",sSe],["特異度",sSp]].forEach(([nm,s])=>{T(nm+" = "+s.f(s.v),s.x,s.y-L*1.45,{size:L});s.draw();});}
+SF.part(3);
+    [["有病率",sPr],["感度",sSe],["特異度",sSp]].forEach(([nm,s])=>{T(nm+" = "+s.f(s.v),s.x,s.y-L*1.45,{size:L});s.draw();});}
 onClick("vI",()=>{view="vI";tabs(["vI","vA"],"vI");req();});onClick("vA",()=>{view="vA";tabs(["vI","vA"],"vA");req();});
 onClick("b1000",()=>experiment(1000));onClick("bReset",()=>{sPr.v=1;sSe.v=90;sSp.v=91;ex=null;req();});
 window.SIM={th,ex:()=>ex,set:(p,se,sp)=>{sPr.v=p;sSe.v=se;sSp.v=sp;ex=null;req();},run:N=>experiment(N)};
 
+SF.install();
 fit();
 </script>
 </body>

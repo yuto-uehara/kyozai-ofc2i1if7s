@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>モンティ・ホール</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -74,11 +76,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -337,20 +340,21 @@ function drawStage(){const s=G.st;
   const vh=s.h*0.075;ctx.fillStyle=CURT;ctx.fillRect(s.x,s.y,s.w,vh*0.6);const nS=12;
   for(let k=0;k<nS;k++){const x=s.x+s.w*k/nS;ctx.beginPath();ctx.moveTo(x,s.y+vh*0.5);ctx.quadraticCurveTo(x+s.w/nS/2,s.y+vh*1.5,x+s.w/nS,s.y+vh*0.5);ctx.fillStyle=k%2?CURT:CURT2;ctx.fill();}
   ctx.strokeStyle=GOLD;rawLW(1);ctx.beginPath();ctx.moveTo(s.x,s.y+vh*0.55);ctx.lineTo(s.x+s.w,s.y+vh*0.55);ctx.stroke();}
-function draw(){layout();drawStage();for(let i=0;i<N;i++)drawDoor(i);
+function draw(){SF.part(0);layout();drawStage();for(let i=0;i<N;i++)drawDoor(i);
   const s=G.st;const msg={pick:"扉をひとつ選んでください",host:"司会者が、ヤギの扉を開けます…",decide:"変えますか？ 変えませんか？",reveal:"",done:final===car?"車！ おめでとうございます":"ヤギでした"}[phase];
   T(msg,s.x+s.w/2,s.y+s.h*0.9,{a:"center",size:clamp(L*1.25,18,30),c:"#f2ead9",serif:1});
   T("MONTY HALL · 扉 "+N,s.x+22,s.y+s.h*0.075+SM+10,{size:SM,c:"rgba(242,234,217,.6)",w:500,ls:"0.14em"});
+  SF.part(1);
   // 統計
-  const rx=G.land?s.w+L*2.5:L*2,rw=G.land?W-s.w-L*4.5:W-L*4,ry=G.land?L*4.5:s.h+L*3,rh=G.land?H*0.5:H-s.h-L*8;
+  const rx=SF.active?24:G.land?s.w+L*2.5:L*2,rw=SF.active?W-48:G.land?W-s.w-L*4.5:W-L*4,ry=SF.active?44:G.land?L*4.5:s.h+L*3,rh=SF.active?Math.max(40,H-140):G.land?H*0.5:H-s.h-L*8;
   T("勝率",rx,ry-L*1.9,{size:SM,c:GR,w:500,ls:"0.14em"});
   const c=chart({x:rx+L*2.4,y:ry,w:rw-L*2.4,h:rh},{x0:0,x1:2,y0:0,y1:1,ys:0.25,xt:false,yf:v=>v.toFixed(2)});
   [["変える","sw",GN,N-1,N],["変えない","st",OR,1,N]].forEach(([nm,k,col,a,b],j)=>{const [w,n]=S[k],r=n?w/n:0,x0=c.X(j+0.28),x1=c.X(j+0.72);
     ctx.fillStyle=LT[col];ctx.fillRect(x0,c.Y(r),x1-x0,c.Y(0)-c.Y(r));ctx.fillStyle=col;ctx.fillRect(x0,c.Y(r)-1.5,x1-x0,3);
     line(x0-12,c.Y(a/b),x1+12,c.Y(a/b),RED,3,[6,5]);
     T(nm,c.X(j+0.5),c.Y(0)+TK*1.4,{a:"center",size:L*0.85,c:DK[col],w:500});
-    if(n)T(r.toFixed(3),c.X(j+0.5),c.Y(Math.max(r,a/b))-L*2.3,{a:"center",size:L*1.5,c:DK[col],w:800});
-    if(n)T(w+" / "+n,c.X(j+0.5),c.Y(Math.max(r,a/b))-L*0.95,{a:"center",size:TK,c:GR,w:400});
+    if(n)T(r.toFixed(3),c.X(j+0.5),(SF.active?Math.max(22,c.Y(Math.max(r,a/b))-L*2.3):c.Y(Math.max(r,a/b))-L*2.3),{a:"center",size:L*1.5,c:DK[col],w:800});
+    if(n)T(w+" / "+n,c.X(j+0.5),(SF.active?Math.max(40,c.Y(Math.max(r,a/b))-L*0.95):c.Y(Math.max(r,a/b))-L*0.95),{a:"center",size:TK,c:GR,w:400});
     EQN(["理論 ",{n:a,d:b,c:RED}],c.X(j+0.5),c.Y(0)+TK*1.4+EQ*1.3,{a:"center",size:L,c:RED});});}
 function hit(p){for(let i=0;i<N;i++){const d=doorRect(i);if(p.x>d.x&&p.x<d.x+d.w&&p.y>d.y&&p.y<d.y+d.h)return i;}return -1;}
 function onDown(p){const i=hit(p);if(i>=0){choose(i);return true;}if(phase==="done"&&p.x<G.st.x+G.st.w&&p.y<G.st.y+G.st.h){newGame();return true;}return false;}
@@ -361,6 +365,7 @@ onClick("b100",()=>batch(100));onClick("b1000",()=>batch(1000));onClick("bReset"
 reset();
 window.SIM={get:()=>({N,phase,pick,other,car,final,sw:S.sw,st:S.st,open:op.slice()}),door:i=>{layout();const d=doorRect(i);return{x:d.x+d.w/2,y:d.y+d.h/2};}};
 
+SF.install();
 fit();
 </script>
 </body>

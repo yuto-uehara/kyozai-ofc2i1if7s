@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>等式の性質と移項</title>
 <style>
 html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -21,6 +21,7 @@ button i{font-family:"Times New Roman",Times,"Liberation Serif",serif;font-weigh
 .hide{display:none}
 @media (max-width:560px){button{font-size:19px;padding:0 12px}}
 </style>
+<link rel="stylesheet" href="../../shared/legacy-screen.css">
 </head>
 <body>
 <div id="wrap">
@@ -43,6 +44,7 @@ button i{font-family:"Times New Roman",Times,"Liberation Serif",serif;font-weigh
   <button id="bDiv" aria-label="両辺をわる">÷</button>
   <button id="bBack">もどす</button>
   <button id="bReset">リセット</button>
+  <button id="bHistory" class="m">計算の履歴</button>
 </div>
 </div>
 <script>
@@ -134,7 +136,7 @@ function balDiff(){const a=cnt(bal.S[0]),b=cnt(bal.S[1]),s=bal.P.sol;return (b.x
 function balSolved(){if(bal.drag)return false;const a=cnt(bal.S[0]),b=cnt(bal.S[1]);
   return balDiff()===0&&((a.x===1&&a.c===0&&b.x===0)||(b.x===1&&b.c===0&&a.x===0));}
 function balLoad(p,rand){bal.P=p;bal.rand=rand;balReset();}
-function balReset(){const p=bal.P;bal.S=[mkSide(p.L),mkSide(p.R)];bal.hist=[];bal.prop=null;bal.ghosts=[];bal.drag=null;bal.solvedT=-1e9;wasSolvedB=false;ui();kick();}
+function balReset(){closeHistory();const p=bal.P;bal.S=[mkSide(p.L),mkSide(p.R)];bal.hist=[];bal.prop=null;bal.ghosts=[];bal.drag=null;bal.solvedT=-1e9;wasSolvedB=false;ui();kick();}
 const snapB=()=>({S:JSON.parse(JSON.stringify(bal.S)),prop:bal.prop});
 function pushB(){bal.hist.push(snapB());}
 function ghost(it,mode2,now){const p=bal.pos.get(it.id);if(!p)return;bal.ghosts.push({k:it.k,neg:it.neg,x:p.x,y:p.y,t0:now,mode:mode2});}
@@ -167,13 +169,20 @@ let wasSolvedB=false;
 function balUndo(){if(!bal.hist.length||bal.drag)return;const h=bal.hist.pop();bal.S=h.S;bal.prop=h.prop;bal.ghosts=[];wasSolvedB=balSolved();ui();kick();}
 
 function balGeo(){
-  const eqF=clamp(30,0.06*m,54);
-  const Lb=W<H*1.1?Math.min((W/2-14)/1.62,0.5*H):Math.min(0.27*W,0.58*H), pw=1.18*Lb;
-  const u=clamp(24,Math.min(0.085*m,pw/6),72);
-  const postH=clamp(46,0.09*H,110), standH=clamp(60,0.12*H,150), above=6.6*u;
-  const block=above+postH+standH+eqF*1.75+lab*1.7;
-  const top=Math.max(lab*1.2,(H-block)/2);
-  const panY=top+above, pivotY=panY+postH, groundY=pivotY+standH, eqY=groundY+eqF*1.1, propY=eqY+eqF*0.62+lab*0.95;
+  // Fit the physical balance to its real item rows, not a fixed six-row reserve.
+  // Equations keep an independent readable type size on a short landscape screen.
+  const eqF=clamp(26,0.06*m,54),short=H<360;
+  const Lb=Math.min((W/2-16)/1.62,short?W*.24:0.5*H),pw=1.18*Lb;
+  let u=clamp(18,Math.min(0.085*m,pw/6),72);
+  const postH=short?24:clamp(36,0.09*H,110),standH=short?28:clamp(46,0.12*H,150);
+  const reserve=postH+standH+eqF*1.8+lab*1.7+20;
+  let above=0;
+  for(let tries=0;tries<14;tries++){
+    const g={u,pw};above=Math.max(...bal.S.map(s=>{const r=layoutSide(s,0,0,g);return Math.max(1.5*u,...r.out.map(o=>-o.y+o.h/2));}))+Lb*Math.sin(MAXT)+u*.6;
+    if(above+reserve<=H||u<=14)break;u=Math.max(14,u-1);
+  }
+  const block=above+reserve,top=Math.max(6,(H-block)/2),panY=top+above,pivotY=panY+postH,groundY=pivotY+standH;
+  const eqY=groundY+eqF*1.1,propY=eqY+eqF*.62+lab*.95;
   return{eqF,Lb,pw,u,postH,standH,panY,pivotY,groundY,eqY,propY,cx:W/2};}
 // layout of one pan: items (x boxes / 1g weights) in rows, balloons above
 function layoutSide(s,px,py,G){
@@ -301,7 +310,7 @@ const cS=()=>mv.steps[mv.steps.length-1].S;
 const mvBusy=()=>!!(mv.comb||mv.div||mv.merge);
 const cloneS=S=>S.map(side=>side.map(t=>({id:t.id,k:t.k,v:{n:t.v.n,d:t.v.d}})));
 function mvLoad(p,rand){mv.P=p;mv.rand=rand;mvReset();}
-function mvReset(){mvCancelPending();const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
+function mvReset(){closeHistory();mvCancelPending();const p=mv.P;mv.steps=[{S:[p[0].map(([k,v])=>({id:uid++,k,v:Q(v)})),p[1].map(([k,v])=>({id:uid++,k,v:Q(v)}))],prop:null}];
   mv.drag=null;mv.comb=null;mv.div=null;mv.merge=null;mv.solvedT=-1e9;mv.tp.clear();mv.Fp=0;mvFit();ui();kick();}
 function mvSolution(S){let A=Q(0),B=Q(0);
   for(const t of S[0]){if(t.k==="x")A=qadd(A,t.v);else B=qsub(B,t.v);}
@@ -314,7 +323,7 @@ function divInfo(S){S=S||cS();for(let k=0;k<2;k++){const a=S[k],b=S[1-k];
 function combGroups(S){S=S||cS();const G=[];S.forEach((side,s)=>{for(const k of["x","n"]){const L=side.filter(t=>t.k===k);if(L.length>1)G.push({s,k,ids:L.map(t=>t.id),keep:L[0].id});}});return G;}
 function tileW(k,v,lead,F){return tw(termToks(k,v,lead,{tile:true}),F)+0.56*F;}
 function mvFit(){
-  const F0=Math.min(clamp(36,0.1*m,90),mv.Fp||1e9),S=cS();let need=0;
+  const S=cS();if(S[0].length+S[1].length<=2)mv.Fp=0;const F0=Math.min(clamp(36,0.1*m,90),mv.Fp||1e9);let need=0;
   for(const side of S){let w=0,mx=0;side.forEach((t,i)=>{const tw1=tileW(t.k,t.v,i===0,F0);w+=tw1+(i?0.22*F0:0);mx=Math.max(mx,tileW(t.k,t.v,false,F0));});
     need=Math.max(need,w+0.35*mx);}
   need=2*need+2*0.62*F0;
@@ -341,7 +350,10 @@ function drawTile(t,x,y,w,F,lead,o){
   drawToks(termToks(t.k,o.v||t.v,lead,{tile:true,c:C.tx,sc:o.signRed?RED:C.tx}),0,0,F,"center",C.tx);
   ctx.restore();}
 
+let historyView=false;
+function closeHistory(){historyView=false;document.getElementById("bHistory").textContent="計算の履歴";}
 function drawMv(now){
+  if(historyView){const list=mv.steps.slice(-5),f=H<300?18:Math.max(18,Math.min(26,W*.055)),gap=Math.min(42,(H-40)/Math.max(1,list.length));ctx.font=`700 ${f}px ${SANS}`;ctx.textAlign="center";ctx.fillStyle="#666";ctx.fillText("計算の履歴",W/2,22);list.forEach((st,j)=>{const yy=54+j*gap;drawToks(sideToks(st.S[0]),W/2-f*.7,yy,f,"right",INK);drawToks([{s:"="}],W/2,yy,f,"center",INK);drawToks(sideToks(st.S[1]),W/2+f*.7,yy,f,"left",INK);});return false;}
   let busy=false;const S=cS(),F=mv.F,D=mv.drag;
   // working sides (dragged tile removed)
   let WS=S;if(D)WS=S.map(side=>side.filter(t=>t.id!==D.t.id));
@@ -354,8 +366,8 @@ function drawMv(now){
   if(mv.comb){const t=(now-mv.comb.t0)/380;for(const g of mv.comb.groups){const kp=lay.pos.get(g.keep);for(const id of g.ids){const p=lay.pos.get(id);if(p&&kp&&id!==g.keep)lay.pos.set(id,{...p,x:kp.x,y:kp.y});}}busy=true;}
   const eqX=lay.eqX,y=mv.eqY;
   // history (previous equations, "=" aligned)
-  const hs=mv.steps.slice(Math.max(0,mv.steps.length-5),-1),Fh=0.5*F;
-  hs.forEach((st,j)=>{const yy=y-1.22*F-(hs.length-1-j)*0.82*F,a=0.45+0.55*(j+1)/hs.length;ctx.globalAlpha=a;
+  const hs=mv.steps.slice(Math.max(0,mv.steps.length-(H<360?2:5)),-1),Fh=Math.max(14,0.5*F);
+  hs.forEach((st,j)=>{const yy=y-1.22*F-(hs.length-1-j)*Math.max(22,0.82*F),a=0.45+0.55*(j+1)/hs.length;ctx.globalAlpha=a;
     drawToks(sideToks(st.S[0]),eqX-0.45*Fh*1.5,yy,Fh,"right",GRAY);drawToks([{s:"="}],eqX,yy,Fh,"center",GRAY);
     drawToks(sideToks(st.S[1]),eqX+0.45*Fh*1.5,yy,Fh,"left",GRAY);ctx.globalAlpha=1;});
   // dashed boundary at "=" while dragging
@@ -530,8 +542,8 @@ function ui(){
     dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
     $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
     $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=!mv.rand&&mv.i===0;$("bNext").disabled=!mv.rand&&mv.i===MP.length-1;$("bRand").disabled=busy;}}
-$("tBal").onclick=()=>{mvCancelPending();mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
-$("tMv").onclick=()=>{mvCancelPending();mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
+$("tBal").onclick=()=>{closeHistory();mvCancelPending();mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
+$("tMv").onclick=()=>{closeHistory();mvCancelPending();mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
 function step(d){ // ◀ ▶: textbook presets (from a random problem: the neighbouring preset)
   if(mode==="bal"){const i=clamp(0,bal.i+d,BP.length-1);if(i===bal.i&&!bal.rand)return;bal.i=i;balLoad(BP[i],false);}
   else{const i=clamp(0,mv.i+d,MP.length-1);if(i===mv.i&&!mv.rand)return;mv.i=i;mvLoad(MP[i],false);}}
@@ -549,7 +561,7 @@ $("bReset").onclick=()=>{if(mode==="bal")balReset();else mvReset();};
 let pid=null;
 function pos(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};}
 cv.addEventListener("pointerdown",e=>{
-  if(pid!==null)return;const p=pos(e);e.preventDefault();
+  if(pid!==null||(mode==="mv"&&historyView))return;const p=pos(e);e.preventDefault();
   if(mode==="bal"){
     let h=null;for(let j=bal.hits.length-1;j>=0;j--){const q=bal.hits[j];if(p.x>=q.x0&&p.x<=q.x1&&p.y>=q.y0&&p.y<=q.y1){h=q;break;}}
     if(!h)return;const ps=bal.pos.get(h.it.id),side=bal.S[h.side],idx=side.items.indexOf(h.it);
@@ -605,6 +617,7 @@ if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);
 
 // test hook
 const eqStr=S=>S.map(side=>side.length?side.map((t,i)=>{const a=qabs(t.v),sg=t.v.n<0?"-":(i?"+":"");return sg+(t.k==="x"?(qone(a)?"":qstr(a))+"x":qstr(a));}).join(""):"0").join("=");
+document.getElementById("bHistory").onclick=()=>{mvCancelPending();bal.drag=null;if(pid!==null){try{cv.releasePointerCapture(pid);}catch(e){}pid=null;}historyView=!historyView;document.getElementById("bHistory").textContent=historyView?"計算に戻る":"計算の履歴";draw();};
 window.__eq={
   mode:()=>mode,
   bal:()=>({i:bal.i,L:cnt(bal.S[0]),R:cnt(bal.S[1]),diff:balDiff(),th:bal.th,solved:balSolved(),eq:eqStr(bal.S.map(balTerms)),hist:bal.hist.length}),
@@ -652,5 +665,6 @@ window.__eq={
 };
 bal.P=BP[0];mv.P=MP[0];balReset();mvReset();resize();ui();
 </script>
+<script src="../../shared/legacy-screen.js"></script>
 </body>
 </html>

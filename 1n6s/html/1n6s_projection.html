@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>投影図</title>
 <style>
 html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -24,6 +24,7 @@ text{font-weight:700}
 .row text{fill:#191919;dominant-baseline:central;pointer-events:none}
 .row.on rect{fill:#191919}.row.on text{fill:#fff}
 </style>
+<link rel="stylesheet" href="../../shared/legacy-screen.css">
 </head>
 <body>
 <div id="wrap">
@@ -103,8 +104,8 @@ svg.addEventListener('pointerdown',e=>{const p=svgPt(e);
   for(const h of HITS){const m=h(p);if(m){DRAG=m;svg.setPointerCapture(e.pointerId);e.preventDefault();m(p);return;}}});
 svg.addEventListener('pointermove',e=>{if(!DRAG)return;e.preventDefault();DRAG(svgPt(e));});
 svg.addEventListener('pointerup',()=>{DRAG=null;});svg.addEventListener('pointercancel',()=>{DRAG=null;});
-document.addEventListener('gesturestart',e=>e.preventDefault());
-document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+
+
 // slider drawing: n steps, idx; geometry stored for hit test
 function SLIDER(p,x,y,len,n,idx,label){
   el('line',{x1:x,y1:y,x2:x+len,y2:y,stroke:'#d6d6d6','stroke-width':8,'stroke-linecap':'round'},p);
@@ -264,5 +265,6 @@ addEventListener('resize',layout);
 init();layout();
 
 </script>
+<script src="../../shared/legacy-screen.js"></script>
 </body>
 </html>

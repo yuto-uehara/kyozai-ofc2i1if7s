@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>誕生日のパラドックス</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -72,11 +74,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -296,17 +299,17 @@ function drawPerson(i){const p=P[i],{cx,cy}=seat(i),s=Math.min(G.cw*1.2,G.chh*1.
   // 机
   const dw=G.cw*0.78,dh=s*0.2;ctx.fillStyle="#dcc7a2";rrect(cx-dw/2,deskY,dw,dh,3);ctx.fill();ctx.fillStyle="#c4a97c";ctx.fillRect(cx-dw/2,deskY+dh-2,dw,2);
   ctx.strokeStyle="#bfa478";rawLW(1);rrect(cx-dw/2,deskY,dw,dh,3);ctx.stroke();
-  T(md(p.bd),cx,deskY+dh*0.5,{a:"center",size:clamp(s*0.14,9,17),c:gcol||"#5a4a35",w:gcol?700:400});
+  T(md(p.bd),cx,deskY+dh*0.5,{a:"center",size:clamp(s*0.14,SF.active?12:9,17),c:gcol||"#5a4a35",w:gcol?700:400});
   ctx.restore();}
-function draw(){const r=G.room;
+function draw(){SF.part(0);const r=G.room;
   // 教室
   const wg=ctx.createLinearGradient(0,r.y,0,r.y+r.h);wg.addColorStop(0,"#ece5d6");wg.addColorStop(1,"#e4d9c5");ctx.fillStyle=wg;ctx.fillRect(r.x,r.y,r.w,r.h);
   ctx.strokeStyle="rgba(150,120,80,.10)";rawLW(1);for(let k=1;k<14;k++){const y=G.gy+(r.h-G.gy)*k/14;ctx.beginPath();ctx.moveTo(r.x,y);ctx.lineTo(r.x+r.w,y);ctx.stroke();}
   const b=G.bb;ctx.fillStyle="#8a6a48";rrect(b.x-6,b.y-6,b.w+12,b.h+12,4);ctx.fill();ctx.fillStyle="#2f3d38";ctx.fillRect(b.x,b.y,b.w,b.h);
   ctx.fillStyle="rgba(255,255,255,.04)";ctx.fillRect(b.x,b.y,b.w,b.h*0.5);
-  const fs=clamp(b.h*0.36,13,30);T(n+" 人のクラス",b.x+b.w*0.05,b.y+b.h/2,{size:fs,c:"rgba(240,236,224,.88)",serif:1});
+  const fs=clamp(b.h*0.36,13,30);T(n+" 人のクラス",b.x+b.w*0.05,b.y+(SF.active?12:b.h/2),{size:fs,c:"rgba(240,236,224,.88)",serif:1});
   const dup=groups.length>0;
-  T(dup?"同じ誕生日がいる！":"同じ誕生日はいない",b.x+b.w*0.95,b.y+b.h/2,{a:"right",size:fs,c:dup?"#f0d58a":"rgba(240,236,224,.55)",serif:1});
+  T(dup?"同じ誕生日がいる！":"同じ誕生日はいない",b.x+b.w*0.95,b.y+(SF.active?31:b.h/2),{a:"right",size:fs,c:dup?"#f0d58a":"rgba(240,236,224,.55)",serif:1});
   for(let i=n;i<G.cols*G.rows;i++){const {cx,cy}=seat(i),s=Math.min(G.cw*1.2,G.chh*1.12),dw=G.cw*0.78;ctx.fillStyle="rgba(220,199,162,.45)";rrect(cx-dw/2,cy+s*0.16,dw,s*0.2,3);ctx.fill();}
   for(let i=0;i<n;i++)drawPerson(i);
   // 同じ誕生日を結ぶ線
@@ -314,6 +317,7 @@ function draw(){const r=G.room;
     for(let j=1;j<a.length;j++){const p=seat(a[j-1]),q=seat(a[j]),s=Math.min(G.cw*1.2,G.chh*1.12),y1=p.cy+s*0.16-s*0.4,y2=q.cy+s*0.16-s*0.4;
       ctx.beginPath();ctx.moveTo(p.cx,y1);ctx.quadraticCurveTo((p.cx+q.cx)/2,Math.min(y1,y2)-s*0.6,q.cx,y2);ctx.stroke();}
     ctx.setLineDash([]);ctx.globalAlpha=1;});
+  SF.part(1);
   // パネル
   const pn=G.pan,land=G.land;
   T("理論",pn.x,pn.y+L*0.6,{size:SM,c:GR,w:500,ls:"0.14em"});
@@ -323,12 +327,14 @@ function draw(){const r=G.room;
   T("実験",pn.x,pn.y+L*3.6+BIG*1.15,{size:SM,c:GR,w:500,ls:"0.14em"});
   T(e===null?"—":(e*100).toFixed(1)+"%",pn.x,pn.y+L*4.8+BIG*1.15,{size:L*1.6,w:800,c:GN});
   if(tr[n])T(hit[n]+" / "+tr[n]+" クラス",pn.x+TW((e*100).toFixed(1)+"%",{size:L*1.6,w:800})+12,pn.y+L*5+BIG*1.15,{size:TK,c:GR,w:400});
-  const k=chart(G.ch,{x0:0,x1:NMAX,y0:0,y1:1,ys:0.25,xs:10,xl:"人数",yf:v=>(v*100)+"%"});
+SF.part(2);
+    const k=chart(G.ch,{x0:0,x1:NMAX,y0:0,y1:1,ys:0.25,xs:10,xl:"人数",yf:v=>(v*100)+"%"});
   line(k.X(0),k.Y(0.5),k.X(NMAX),k.Y(0.5),"#c9c1b2",1,[4,4]);
   poly(PT.map((p,i)=>[k.X(i),k.Y(p)]).slice(1),RED,1.5);
   for(let i=2;i<=NMAX;i++)if(tr[i])dot(k.X(i),k.Y(hit[i]/tr[i]),i===n?4.5:2.6,i===n?GN:"rgba(47,111,106,.55)");
   line(k.X(n),k.Y(0),k.X(n),k.Y(PT[n]),"#b9b1a2",1,[3,3]);dot(k.X(n),k.Y(PT[n]),4,RED);
-  sl.draw();}
+SF.part(3);
+    sl.draw();}
 onClick("bNew",()=>newClass(true));
 onClick("bAuto",()=>{AUTO=!AUTO;$("bAuto").classList.toggle("on",AUTO);if(AUTO)go();});
 onClick("b1000",()=>{trials(1000,n);req();});
@@ -337,6 +343,7 @@ P=[];for(let i=0;i<NMAX;i++)P.push(person());newClass(true);tr[n]=0;hit[n]=0;
 window.SIM={get:()=>({n,th:PT[n],exp:hit[n]/tr[n],tr:tr[n],P23:PT[23],groups:groups.length,dupPeople:groups.reduce((a,g)=>a+g.length,0),raised:P.slice(0,n).filter(p=>p.hand>0.95).length,seated:P.slice(0,n).filter(p=>p.t>=1).length}),
   setN:v=>sl.setV(v),slider:()=>({x:sl.x,y:sl.y,w:sl.w}),reroll:()=>newClass(true)};
 
+SF.install();
 fit();
 </script>
 </body>

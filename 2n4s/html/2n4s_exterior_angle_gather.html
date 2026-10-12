@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>外角を中心に集める</title>
 <style>
 html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -18,6 +18,7 @@ button.on{background:#191919;color:#fff}
 button:disabled{opacity:.3;cursor:default}
 @media (max-width:560px){button{font-size:19px;padding:0 12px}}
 </style>
+<link rel="stylesheet" href="../../shared/legacy-screen.css">
 </head>
 <body>
 <div id="wrap">
@@ -52,13 +53,13 @@ function resize(){
   W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   const m=Math.min(W,H);
-  k=m*0.42; ox=W/2; oy=H/2;
-  R=Math.max(38,Math.min(95,m*0.11));
+  R=Math.max(30,Math.min(95,m*0.11));
+  k=Math.max(18,m/2-R-38); ox=W/2; oy=H/2;
   draw();
 }
 const toS=p=>({x:ox+p.x*k,y:oy+p.y*k});
 const toM=(x,y)=>({x:(x-ox)/k,y:(y-oy)/k});
-function clampM(p){const mx=(W/2-22)/k,my=(H/2-22)/k;return{x:Math.max(-mx,Math.min(mx,p.x)),y:Math.max(-my,Math.min(my,p.y))};}
+function clampM(p){const mx=Math.max(.2,(W/2-R-38)/k),my=Math.max(.2,(H/2-R-38)/k);return{x:Math.max(-mx,Math.min(mx,p.x)),y:Math.max(-my,Math.min(my,p.y))};}
 
 /* ---------- geometry ---------- */
 function centroid(Q){ // area centroid (falls back to vertex mean)
@@ -145,6 +146,7 @@ function draw(){
     const big=Math.round(Math.max(44,Math.min(120,Math.min(W,H)*0.12)));
     ctx.font=`800 ${big}px "Hiragino Sans","Noto Sans CJK JP","Noto Sans JP",sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";
     let y=cS.y-R-(showDeg?fs*2.2:30)-big*0.5; if(y-big*0.5<4) y=cS.y+R+(showDeg?fs*2.2:30)+big*0.5;
+    y=Math.max(big*.6,Math.min(H-big*.6,y));
     ctx.lineWidth=10;ctx.strokeStyle="#fff";ctx.strokeText("360°",cS.x,y);ctx.fillStyle=INK;ctx.fillText("360°",cS.x,y);
   }
   // buttons
@@ -234,5 +236,6 @@ if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);
 window.__ext={setPoly:a=>{if(mode!=="idle")return;P=a.map(([x,y])=>({x,y}));draw();},get:()=>({n:P.length,mode,s,P:P.map(p=>[p.x,p.y]),...(()=>{const A=analyze(P);return{convex:A.convex,sumDeg:A.ex.reduce((a,e)=>a+e.t,0)*DEG,ex:A.ex.map(e=>e.t*DEG)}})()}),toScreen:(x,y)=>toS({x,y}),R:()=>R,center:()=>toS(C)};
 reset(); resize();
 </script>
+<script src="../../shared/legacy-screen.js"></script>
 </body>
 </html>

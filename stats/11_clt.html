@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>大数の法則と中心極限定理</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -73,11 +75,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -260,8 +263,8 @@ function sample(k){const D=DIST[dk],n=sn.v;for(let j=0;j<k;j++){let s=0;const xs
 function layout(){const land=isLand();G.land=land;
   if(land){G.p={x:L*3,y:L*2.8,w:W*0.3,h:H*0.24};G.r={x:W*0.3+L*7.5,y:L*2.8,w:W*0.7-L*9.5,h:H*0.24};G.h={x:L*3,y:H*0.24+L*7.6,w:W*0.64,h:H-H*0.24-L*10.4};sn.place(W*0.64+L*6,H-L*2.4,W*0.36-L*8);G.tray={x:W*0.64+L*4,y:H*0.24+L*7.6,w:W*0.36-L*5.5,h:H*0.22};G.tx=W*0.64+L*4;G.ty=G.tray.y+G.tray.h+L*1.7;}
   else{G.p={x:L*3,y:L*2.8,w:W*0.42,h:H*0.16};G.r={x:W*0.42+L*7,y:L*2.8,w:W*0.58-L*8.5,h:H*0.16};G.h={x:L*3,y:H*0.16+L*7.6,w:W-L*5,h:H*0.3};sn.place(L*2.5,H-L*2.2,W-L*5);G.tray={x:L*1.5,y:H*0.46+L*9.4,w:W*0.5-L*2,h:H-H*0.46-L*15};G.tx=W*0.52+L;G.ty=G.tray.y+L*1.4;}}
-function draw(){const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
-  gridPaper(G.p.x-L*0.6,G.p.y-L*1.6,G.p.w+L*1.2,G.p.h+L*3,10);gridPaper(G.h.x-L*0.6,G.h.y-L*1.6,G.h.w+L*1.2,G.h.h+L*3,10);
+function draw(){SF.part(0);const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
+  if(!SF.active){gridPaper(G.p.x-L*0.6,G.p.y-L*1.6,G.p.w+L*1.2,G.p.h+L*3,10);gridPaper(G.h.x-L*0.6,G.h.y-L*1.6,G.h.w+L*1.2,G.h.h+L*3,10);}
   corner("母集団: "+D.nm);
   // 母集団
   const pm=D.disc?0.3:dk==="dE"?1.1:dk==="dA"?3:1.4;
@@ -271,12 +274,14 @@ function draw(){const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
   line(c1.X(D.mu),G.p.y,c1.X(D.mu),G.p.y+G.p.h,RED,3,[10,8]);
   if(lastS)for(const x of lastS.xs)if(x<=D.b)dot(c1.X(x),c1.Y(0)-8,5,INK);
   T("μ = "+D.mu.toFixed(2)+"   σ² = "+(dk==="dD"?"35/12":dk==="dU"?"1/12":dk==="dA"?"1/8":"1"),G.p.x,G.p.y-L*0.9,{size:TK,c:DK[PU]});
+  SF.part(1);
   // 大数の法則
   const xm=niceUp(Math.max(10,draws)),dev=Math.sqrt(D.s2)*1.2;
   const c2=chart(G.r,{x0:0,x1:xm,y0:D.mu-dev,y1:D.mu+dev,yn:3,xn:G.land?5:2,xf:v=>v>=10000?(v/10000)+"万":String(v),xl:"個数"});
   T("平均の変化",G.r.x,G.r.y-L*0.9,{size:TK,c:GR});
   line(G.r.x,c2.Y(D.mu),G.r.x+G.r.w,c2.Y(D.mu),RED,3,[10,8]);
   ctx.save();ctx.beginPath();ctx.rect(G.r.x,G.r.y,G.r.w,G.r.h);ctx.clip();poly(run.p.map(([a,b])=>[c2.X(a),c2.Y(b)]),BL,3);ctx.restore();
+  SF.part(2);
   // 標本平均の分布
   const bw=binW(),dens=hc.map(c=>m?c/m/bw:0),peak=1/(sd*Math.sqrt(TAU));
   const ymax=Math.max(peak,...dens)*1.1;
@@ -284,6 +289,7 @@ function draw(){const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
   T("標本平均の分布 ("+m+" 回)",G.h.x,G.h.y-L*0.6,{size:TK,c:GR});
   hc.forEach((c,i)=>{if(!c)return;const x=binX(i);const x0=c3.X(x-bw/2),x1=c3.X(x+bw/2);ctx.fillStyle=OR;ctx.globalAlpha=.82;ctx.fillRect(x0+0.5,c3.Y(dens[i]),Math.max(1,x1-x0-1),c3.Y(0)-c3.Y(dens[i]));ctx.globalAlpha=1;});
   if(showC){const pts=[];for(let i=0;i<=300;i++){const x=D.a+(D.b-D.a)*i/300;pts.push([c3.X(x),c3.Y(peak*Math.exp(-((x-D.mu)**2)/(2*sd*sd)))]);}poly(pts,BL,4);}
+  SF.part(3);
   // 抜き取った標本のトレイ
   const tr=G.tray;softShadow(()=>{ctx.fillStyle="#7d5f40";rrect(tr.x,tr.y,tr.w,tr.h,10);ctx.fill();},14,5,.25);wood(tr.x,tr.y,tr.w,tr.h,"#8a6a48",4);
   const ii=Math.min(tr.w,tr.h)*0.06,fg=ctx.createRadialGradient(tr.x+tr.w/2,tr.y+tr.h/2,5,tr.x+tr.w/2,tr.y+tr.h/2,tr.w*0.7);fg.addColorStop(0,"#3d6e62");fg.addColorStop(1,"#244a41");ctx.fillStyle=fg;rrect(tr.x+ii,tr.y+ii,tr.w-2*ii,tr.h-2*ii,6);ctx.fill();
@@ -295,11 +301,13 @@ function draw(){const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
     T("x̄ = "+lastS.mean.toFixed(3),tr.x+tr.w-ii-6,tr.y+tr.h-ii-L*0.6,{a:"right",size:L*0.9,c:"#f3ecd9",serif:1});}
   else T("「1回」で n 個を取り出す",tr.x+tr.w/2,tr.y+tr.h/2,{a:"center",size:L*0.8,c:"rgba(243,236,217,.7)"});
   T("取り出した "+n+" 個",tr.x,tr.y-L*0.6,{size:TK,c:GR});
+  SF.part(4);
   // 数値
   const tx=G.tx,ty=G.ty,em=m?sum/m:NaN,es=m>1?Math.sqrt((sum2-m*em*em)/(m-1)):NaN;
   EQN(["理論  ",{it:"σ"},"/√",{it:"n"}," = "+sd.toFixed(3)],tx,ty,{size:L,c:BL});
   if(m>1){T("実験 平均 "+em.toFixed(3),tx,ty+L*2,{size:L*0.9,c:DK[OR]});T("実験 標準偏差 "+es.toFixed(3),tx,ty+L*3.5,{size:L*0.9,c:DK[OR]});}
-  sn.draw();}
+SF.part(5);
+    sn.draw();}
 ["dU","dE","dD","dA"].forEach(id=>onClick(id,()=>{dk=id;tabs(["dU","dE","dD","dA"],id);clr();}));
 onClick("bCur",()=>{showC=!showC;$("bCur").classList.toggle("on",showC);req();});
 onClick("b1",()=>sample(1));onClick("b100",()=>sample(100));onClick("b1000",()=>sample(1000));
@@ -309,6 +317,7 @@ window.SIM={get:()=>{const D=DIST[dk],em=sum/m;return{dk,n:sn.v,m,mean:em,sd:Mat
   // 正規近似の当てはまり: 平均±1σに入る割合
   in1:null};},setN:v=>sn.setV(v),hist:()=>({hc,m})};
 
+SF.install();
 fit();
 </script>
 </body>

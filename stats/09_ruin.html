@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ギャンブラーの破産</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -72,11 +74,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -279,22 +282,26 @@ function scene(x,y,w,h){const N=sN.v,P=RP?paths[paths.length-1].p:(paths.length?
 function layout(){const land=isLand();G.land=land;
   if(land){G.sc={x:L*1.2,y:L*0.8,w:W*0.62+L*2.2,h:H*0.44};G.c={x:L*3.4,y:H*0.44+L*3,w:W*0.62,h:H*0.56-L*5.6};const sx=W*0.62+L*7,sw=W-sx-L*2.5;[sK,sN,sP].forEach((s,i)=>s.place(sx,H*0.48+i*L*4.6,sw));G.tx=sx+sw/2;G.ty=L*3;}
   else{G.sc={x:L,y:L*0.8,w:W-2*L,h:H*0.25};G.c={x:L*3.4,y:H*0.25+L*3,w:W-L*5,h:H*0.2};[sK,sN,sP].forEach((s,i)=>s.place(L*2.5,H-L*1.8-(2-i)*L*4.4,W-L*5));G.tx=W/2;G.ty=H*0.45+L*5.4;}}
-function draw(){const N=sN.v,k=sK.v,th=theory();scene(G.sc.x,G.sc.y,G.sc.w,G.sc.h);
-  const tmax=Math.max(20,...paths.map(o=>o.p.length));
+function draw(){SF.part(0);const N=sN.v,k=sK.v,th=theory();scene(G.sc.x,G.sc.y,G.sc.w,G.sc.h);
+SF.part(1);
+    const tmax=Math.max(20,...paths.map(o=>o.p.length));
   const c=chart(G.c,{x0:0,x1:niceUp(tmax),y0:0,y1:N,ys:N>10?2:1,xl:"回",yl:"所持金"});
   line(G.c.x,c.Y(N),G.c.x+G.c.w,c.Y(N),GN,3,[10,8]);
   ctx.save();ctx.beginPath();ctx.rect(G.c.x,G.c.y-6,G.c.w,G.c.h+12);ctx.clip();
   paths.forEach((o,i)=>{const last=i===paths.length-1;ctx.globalAlpha=last?1:0.35;poly((last&&RP?o.p.slice(0,RP.i+1):o.p).map((v,t)=>[c.X(t),c.Y(v)]),o.w?GN:RED,i===paths.length-1?5:2.5);});ctx.globalAlpha=1;ctx.restore();
-  const tx=G.tx,ty=G.ty,fair=Math.abs(sP.v-0.5)<1e-9;
+SF.part(2);
+    const tx=G.tx,ty=G.ty,fair=Math.abs(sP.v-0.5)<1e-9;
   if(fair){const f=red(k,N);EQN(["勝つ確率 ",{n:k,d:N,c:DK[GN]}," = "+fmt(th.w)],tx,ty,{a:"center",size:L*1.05,c:DK[GN]});}
   else EQN(["勝つ確率 ",{n:"1−(q/p)"+"ᵏ",d:"1−(q/p)ᴺ",c:DK[GN]}," = "+fmt(th.w)],tx,ty,{a:"center",size:L*1.05,c:DK[GN]});
   if(games)T("実験 "+fmt(wins/games)+" ("+wins+"/"+games+")",tx,ty+L*2.4,{a:"center",c:DK[GN],size:L});
   T("平均の回数  理論 "+th.t.toFixed(1)+(games?"  実験 "+(steps/games).toFixed(1):""),tx,ty+L*4,{a:"center",c:GR,size:L*0.8});
-  [sK,sN,sP].forEach(s=>s.draw());}
+SF.part(3);
+    [sK,sN,sP].forEach(s=>s.draw());}
 onClick("b1",()=>play(1));onClick("b100",()=>play(100));onClick("b1000",()=>play(1000));
 onClick("bReset",()=>{sN.v=10;sK.max=9;sK.v=3;sP.v=0.5;clr();});
 window.SIM={get:()=>({games,wins,r:wins/games,th:theory(),mean:steps/games}),set:(k,N,p)=>{sN.setV(N);sK.max=N-1;sK.setV(k);sP.setV(p);}};
 
+SF.install();
 fit();
 </script>
 </body>

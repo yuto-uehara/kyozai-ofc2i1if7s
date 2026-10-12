@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ランダムウォーク</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -73,11 +75,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -276,7 +279,7 @@ function street(r){const R=Math.max(8,Math.abs(X[0])+3),cx=r.x+r.w/2,u=r.w/(2*R+
   // 足あと
   const p=paths[0];for(let j=Math.max(0,p.length-12);j<p.length-1;j++){const x=cx+p[j][1]*u,al=(j-(p.length-12))/12;ctx.fillStyle=`rgba(60,50,40,${0.25*al})`;ctx.beginPath();ctx.ellipse(x+(j%2?3:-3),fy+(j%2?3:-1),4,2,0,0,TAU);ctx.fill();}
   walker(cx+X[0]*u,fy,r.h*0.42,t*1.3);ctx.restore();}
-function draw(){const a0=G.a;let a=a0;
+function draw(){SF.part(0);const a0=G.a;let a=a0;
   if(dim===1){const sh=Math.min(a0.h*0.32,H*0.26);street({x:a0.x-L*2,y:a0.y-L*1.2,w:a0.w+L*2.5,h:sh});a={x:a0.x,y:a0.y-L*1.2+sh+L*1.8,w:a0.w,h:a0.h-sh-L*0.6};}
   else corner(dim+"次元  "+NW+"人");
   let s2=0,nb=0;for(let i=0;i<NW;i++){s2+=X[i]*X[i]+Y[i]*Y[i];nb+=back[i];}const rms=Math.sqrt(s2/NW);
@@ -299,12 +302,14 @@ function draw(){const a0=G.a;let a=a0;
       for(const sd of [-1,1]){const mx=cx+((x1+x2)/2)*k+Math.cos(ang+Math.PI/2)*sd*fs*0.7+Math.cos(ang)*sd*k*0.2,my=cy-((y1+y2)/2)*k+Math.sin(ang+Math.PI/2)*sd*fs*0.7+Math.sin(ang)*sd*k*0.2;ctx.fillStyle=`rgba(90,60,35,${al})`;ctx.beginPath();ctx.ellipse(mx,my,fs,fs*0.5,ang,0,TAU);ctx.fill();}}
     ctx.setLineDash([10,8]);ctx.strokeStyle=RED;ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,Math.sqrt(t)*k,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.restore();
     {const px=cx+X[0]*k,py=cy-Y[0]*k;ctx.save();ctx.strokeStyle=ACC;rawLW(2);ctx.shadowColor=ACC;ctx.shadowBlur=8;ctx.beginPath();ctx.arc(px,py,16,0,TAU);ctx.stroke();ctx.restore();dot(px+2,py+3,11,"rgba(0,0,0,.2)");dot(px,py,11,WK.shirt);head(px,py,7,WK);}}
+  SF.part(1);
   // 数値
   const tx=G.tx,ty=G.ty;T("t = "+t,tx,ty,{size:L});
   EQN(["遠さ(2乗平均)  "+rms.toFixed(2)],tx,ty+L*1.7,{size:L*0.9,c:DK[BL]});EQN(["理論 √t = "+Math.sqrt(t).toFixed(2)],tx,ty+L*3.1,{size:L*0.9,c:RED});
+  SF.part(2);
   // 戻った割合
   const F=TH[dim],tm=niceUp(Math.max(20,t)),c=chart(G.b,{x0:0,x1:tm,y0:0,y1:1,ys:0.25,xl:"t",xn:G.land?4:5});
-  T("原点にもどった割合  "+(nb/NW*100).toFixed(1)+"%  (理論 "+(F[Math.floor(t/2)]*100).toFixed(1)+"%)",G.b.x-L*1.5,G.b.y-L*1.1,{size:TK,c:GR});
+  if(SF.active){T("原点にもどった割合 "+(nb/NW*100).toFixed(1)+"%",24,16,{size:13,c:GR});T("理論 "+(F[Math.floor(t/2)]*100).toFixed(1)+"%",24,34,{size:13,c:RED});}else T("原点にもどった割合  "+(nb/NW*100).toFixed(1)+"%  (理論 "+(F[Math.floor(t/2)]*100).toFixed(1)+"%)",G.b.x-L*1.5,G.b.y-L*1.1,{size:TK,c:GR});
   const pts=[];for(let n=0;2*n<=tm&&n<F.length;n++)pts.push([c.X(2*n),c.Y(F[n])]);poly(pts,RED,3,[10,8]);
   poly(retH.p.map(([x,y])=>[c.X(x),c.Y(y)]),BL,4);}
 onClick("t1",()=>{dim=1;tabs(["t1","t2"],"t1");reset();});onClick("t2",()=>{dim=2;tabs(["t1","t2"],"t2");reset();});
@@ -313,6 +318,7 @@ onClick("bAuto",()=>autoLoop(()=>step(t<100?1:t<1000?5:20)));onClick("bReset",re
 reset();
 window.SIM={get:()=>{let s2=0,nb=0;for(let i=0;i<NW;i++){s2+=X[i]*X[i]+Y[i]*Y[i];nb+=back[i];}return{dim,t,rms:Math.sqrt(s2/NW),th:Math.sqrt(t),ret:nb/NW,thRet:TH[dim][Math.floor(t/2)]};}};
 
+SF.install();
 fit();
 </script>
 </body>

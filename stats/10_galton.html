@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ゴルトンボード</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -72,11 +74,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -267,7 +270,7 @@ function ballPat(d){if(PAT&&PATd===d)return PAT;const c=document.createElement("
   x.fillStyle="#3a3f45";x.fillRect(0,0,q,q);const g=x.createRadialGradient(q*0.38,q*0.35,q*0.05,q/2,q/2,q/2);g.addColorStop(0,"#ffffff");g.addColorStop(0.35,"#c9ced3");g.addColorStop(1,"#5e646b");x.fillStyle=g;x.beginPath();x.arc(q/2,q/2,q*0.47,0,TAU);x.fill();
   PAT=ctx.createPattern(c,"repeat");PAT.setTransform(new DOMMatrix().scale(1/(window.devicePixelRatio||1)));PATd=d;return PAT;}
 function steel(x,y,r){const g=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.1,x,y,r);g.addColorStop(0,"#ffffff");g.addColorStop(0.35,"#cfd4d9");g.addColorStop(1,"#4f555c");ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();}
-function draw(){const {n,dx,dy}=geo(),p=sp.v;
+function draw(){SF.part(0);const {n,dx,dy}=geo(),p=sp.v;
   // 木の盤
   const fx=G.bx-(n/2+1.1)*dx,fw=(n+2.2)*dx,fy=G.top-L*1.4,fh=G.hy+G.hh+TK*1.8-fy,fr=Math.max(10,dx*0.3);
   softShadow(()=>{ctx.fillStyle="#6e4e30";rrect(fx-fr,fy-fr,fw+2*fr,fh+2*fr,8);ctx.fill();},20,7,.3);wood(fx-fr,fy-fr,fw+2*fr,fh+2*fr,"#7a5434",12,true);
@@ -284,20 +287,22 @@ function draw(){const {n,dx,dy}=geo(),p=sp.v;
   const Y=v=>G.hy+G.hh-v/ymax*G.hh;
   for(let k=0;k<=n;k++){const x=G.bx+(k-n/2)*dx;
     const r=total?cnt[k]/total:0;if(r>0){ctx.fillStyle=ballPat(Math.max(5,Math.min(bw/3,12)));ctx.fillRect(x-bw/2,Y(r),bw,G.hy+G.hh-Y(r));}
-    T(String(k),x,G.hy+G.hh+TK*0.9,{a:"center",size:Math.min(TK,dx*0.5),c:"#5a4630",serif:1});}
+    if(!SF.active||k%Math.ceil((n+1)/8)===0||k===n)T(String(k),x,G.hy+G.hh+TK*0.9,{a:"center",size:SF.active?12:Math.min(TK,dx*0.5),c:"#5a4630",serif:1});}
   for(let k=0;k<=n+1;k++){const x=G.bx+(k-n/2-0.5)*dx;ctx.fillStyle="#8a6440";ctx.fillRect(x-2,G.hy-dy*0.2,4,G.hh+dy*0.2);}
   // ガラス
   const gl=ctx.createLinearGradient(fx,fy,fx+fw,fy+fh);gl.addColorStop(0,"rgba(255,255,255,.18)");gl.addColorStop(0.3,"rgba(255,255,255,.02)");gl.addColorStop(0.55,"rgba(255,255,255,.12)");gl.addColorStop(0.6,"rgba(255,255,255,0)");gl.addColorStop(1,"rgba(255,255,255,.08)");ctx.fillStyle=gl;ctx.fillRect(fx,fy,fw,fh);
   ctx.strokeStyle="rgba(255,255,255,.35)";rawLW(1);ctx.strokeRect(fx+3,fy+3,fw-6,fh-6);
   for(let k=0;k<=n;k++){const x=G.bx+(k-n/2)*dx;if(showC)line(x-bw/2-3,Y(pmf(k)),x+bw/2+3,Y(pmf(k)),RED,4);}
-  T("玉 "+total,fx-fr,fy-fr-L*0.5,{size:SM,c:GR,w:500});
+  T("玉 "+total,fx-fr,(SF.active?14:fy-fr-L*0.5),{size:SM,c:GR,w:500});
   if(showC&&n>=2){const mu=n*p,sg=Math.sqrt(n*p*(1-p)),pts=[];for(let i=0;i<=200;i++){const x=-0.5+(n+1)*i/200;pts.push([G.bx+(x-n/2)*dx,Y(Math.exp(-((x-mu)**2)/(2*sg*sg))/(sg*Math.sqrt(TAU)))]);}poly(pts,BL,4);}
-  const mu=n*p,v=n*p*(1-p);
+SF.part(1);
+    const mu=n*p,v=n*p*(1-p);
   const ex=total?cnt.reduce((a,c,k)=>a+c*k,0)/total:NaN,ev=total?cnt.reduce((a,c,k)=>a+c*k*k,0)/total-ex*ex:NaN;
   EQN([{it:"np"}," = "+mu.toFixed(2)],G.tx,G.ty,{size:L,c:RED});
   EQN([{it:"np"},"(1−",{it:"p"},") = "+v.toFixed(2)],G.tx,G.ty+L*1.8,{size:L,c:RED});
   if(total)T("実験 平均 "+ex.toFixed(2)+"  分散 "+ev.toFixed(2),G.tx,G.ty+L*3.6,{size:L*0.85,c:DK[OR]});
-  sn.draw();sp.draw();}
+SF.part(2);
+    sn.draw();sp.draw();}
 onClick("bCur",()=>{showC=!showC;$("bCur").classList.toggle("on",showC);req();});
 onClick("b1",()=>launch(1,true));onClick("b10",()=>launch(10,true));onClick("b100",()=>launch(100,false));onClick("b1000",()=>launch(1000,false));
 onClick("bAuto",()=>autoLoop(()=>{if(balls.length<60)launch(1,true);}));
@@ -305,6 +310,7 @@ onClick("bReset",()=>{stopAuto();sn.v=10;sp.v=0.5;clr();});
 clr();
 window.SIM={get:()=>({n:sn.v,p:sp.v,total,cnt:cnt.slice(),pmf:cnt.map((_,k)=>pmf(k)),balls:balls.length}),set:(n,p)=>{sn.setV(n);sp.setV(p);}};
 
+SF.install();
 fit();
 </script>
 </body>

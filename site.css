@@ -3,3 +3,8 @@
 .duration{display:inline-block;margin-top:9px;font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted);background:#edf2f4;padding:2px 7px;border-radius:4px}
 
 .site-nav{display:flex;gap:10px;align-items:center;max-width:1200px;margin:auto;padding:0 24px 20px}.site-nav>a{display:block;padding:10px 16px;border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--accent);font-weight:700;background:#fff}.site-nav>a[aria-current]{background:var(--accent);color:#fff}.site-nav span{font-size:13px;font-weight:400;margin-left:10px}@media(max-width:720px){.site-nav{padding:0 16px 18px;align-items:stretch}.site-nav span{display:none}}
+
+/* The player consumes the available viewport; video pixels keep their aspect ratio. */
+#m{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;justify-items:center;align-items:stretch;gap:4px;padding:max(4px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:visible}
+.player-head{min-width:0;padding:0;gap:12px}.player-head h2{line-height:1.4;overflow-wrap:anywhere}.player-head button{flex:none}#mv{display:block;align-self:stretch;width:100%;height:100%;max-height:none;min-height:0;object-fit:contain}#direct-video{display:flex;align-items:center;justify-content:center;min-height:44px;padding:4px 12px;line-height:1.3}
+@media(max-height:400px){.player-head h2{font-size:16px}#m{gap:0}}

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ビュフォンの針</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -72,11 +74,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -255,7 +258,7 @@ let animT=0;function animFor(ms){const end=performance.now()+ms;const f=()=>{req
 function layout(){const land=isLand();G.land=land;
   if(land){G.f={x:L*1.5,y:L*2,w:H*0.85,h:H-L*3.2};G.c={x:H*0.85+L*7,y:L*7,w:W-H*0.85-L*8.5,h:H*0.5};sl.place(H*0.85+L*7,H-L*2,W-H*0.85-L*10);}
   else{G.f={x:L*1.5,y:L*2,w:W-L*3,h:H*0.42};G.c={x:L*4,y:H*0.42+L*8,w:W-L*5.5,h:H*0.58-L*15};sl.place(L*2.5,H-L*2,W-L*5);}}
-function draw(){const f=G.f,l=sl.v;
+function draw(){SF.part(0);const f=G.f,l=sl.v;
   const d=f.h/LINES,sx=f.w/1.6;ctx.save();ctx.beginPath();ctx.rect(f.x,f.y-4,f.w,f.h+8);ctx.clip();
   const PL=["#c8a172","#bf9668","#cfa97b","#c49c6d","#ba9063","#cba578"];
   for(let i=0;i<LINES;i++)wood(f.x,f.y+i*d,f.w,d,PL[i%6],i+20);
@@ -273,19 +276,25 @@ function draw(){const f=G.f,l=sl.v;
   // 床の縁
   ctx.restore();ctx.strokeStyle="#5a4630";rawLW(1.2);ctx.strokeRect(f.x,f.y,f.w,f.h);
   T("板の幅 d = 1　針の長さ ℓ = "+l.toFixed(2),f.x,f.y-L*0.55,{size:SM,c:GR,w:500});
+  SF.part(1);
   // 式と値
+  if(SF.active){T("π ≈ 2 × "+sl.v.toFixed(2)+" × "+n+" / "+h,W/2,45,{a:"center",size:16});T(h?fmt(2*sl.v*n/h,4):"—",W/2,105,{a:"center",size:38,c:OR});}else{
   const tx=G.land?G.c.x+G.c.w/2:W/2,ty=G.land?L*2.6:f.y+f.h+L*2;
   EQN([{it:"π"}," ≈ ",{n:"2ℓ×"+n,d:"d×"+h}," = "],tx-BIG*1.4,ty+(G.land?L*1.2:L*0.6),{a:"right",size:L});
   T(h?fmt(2*l*n/h,4):"—",tx-BIG*1.4,ty+(G.land?L*1.2:L*0.6),{size:clamp(BIG*0.8,40,90),w:800,halo:10});
+  }
+  SF.part(2);
   // グラフ
   const xmax=niceUp(Math.max(10,n)),c=chart(G.c,{x0:0,x1:xmax,y0:2,y1:4.4,ys:0.4,xl:"本数",yl:"πの推定",xf:v=>v>=10000?(v/10000)+"万":String(v)});
   line(G.c.x,c.Y(Math.PI),G.c.x+G.c.w,c.Y(Math.PI),RED,3,[10,8]);T("π",G.c.x+G.c.w+6,c.Y(Math.PI),{c:RED,it:1});
   ctx.save();ctx.beginPath();ctx.rect(G.c.x,G.c.y,G.c.w,G.c.h);ctx.clip();poly(hist.p.filter(p=>isFinite(p[1])).map(([x,y])=>[c.X(x),c.Y(y)]),BL,3);ctx.restore();
-  sl.draw();}
+SF.part(3);
+    sl.draw();}
 onClick("b1",()=>drop(1));onClick("b10",()=>drop(10));onClick("b100",()=>drop(100));onClick("b1000",()=>drop(1000));
 onClick("bAuto",()=>autoLoop(()=>drop(n<500?5:n<20000?200:2000)));onClick("bReset",()=>{sl.v=0.8;reset();});
 window.SIM={get:()=>({n,h,est:2*sl.v*n/h,l:sl.v})};
 
+SF.install();
 fit();
 </script>
 </body>

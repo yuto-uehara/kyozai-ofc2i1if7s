@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>くじ引きの順番</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -73,11 +75,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -278,9 +281,9 @@ function scene(x,y,w,h){ // 教室の机と箱、3人
   softShadow(()=>{ctx.fillStyle="#b5824a";ctx.fillRect(bx,by,bw,bw*0.72);},10,3,.2);ctx.fillStyle="#c9955a";ctx.fillRect(bx,by,bw,bw*0.18);ctx.fillStyle="#5a3e22";rrect(bx+bw*0.3,by+bw*0.06,bw*0.4,bw*0.06,3);ctx.fill();
   T("くじ",bx+bw/2,by+bw*0.45,{a:"center",size:bw*0.2,c:"#fbf3e4",serif:1});
   T("3本のうち1本があたり",x+14,y+SM+10,{size:SM,c:GR,w:500,ls:"0.12em"});}
-function draw(){const land=isLand();
-  const sc=land?{x:W*0.5,y:L*0.8,w:W*0.5-L,h:H*0.46}:{x:L,y:L*0.8,w:W-2*L,h:H*0.3};
-  const bb=land?{x:L*1.2,y:L*1.2,w:W*0.5-L*3.2,h:H-L*2.6}:{x:L*1.2,y:sc.y+sc.h+L*1.2,w:W-L*2.4,h:H*0.34};
+function draw(){SF.part(0);const land=isLand();
+  const sc=SF.active?{x:16,y:16,w:W-32,h:H-32}:land?{x:W*0.5,y:L*0.8,w:W*0.5-L,h:H*0.46}:{x:L,y:L*0.8,w:W-2*L,h:H*0.3};
+  const bb=SF.active?{x:16,y:16,w:W-32,h:H-32}:land?{x:L*1.2,y:L*1.2,w:W*0.5-L*3.2,h:H-L*2.6}:{x:L*1.2,y:sc.y+sc.h+L*1.2,w:W-L*2.4,h:H*0.34};
   blackboard(bb.x,bb.y,bb.w,bb.h);
   const x0=bb.x+bb.w*0.13,dx=bb.w*0.32,top=bb.y+L*2.6,rowH=(bb.h-L*3.4)/6;
   ["1番目","2番目","3番目"].forEach((t,i)=>T(t,x0+dx*i,top-L*1.3,{a:"center",c:i===who?CHALKY:CHALK2,size:TK,w:500}));
@@ -294,11 +297,14 @@ function draw(){const land=isLand();
     if(i%2===0)lab(0,x0,yA);lab(1,x0+dx,y3);lab(2,x0+dx*2,y3);
     if(hit)T("○",x0+dx*2+L*1.7,y3,{a:"center",c:CHALKY,size:L});
     if(i===lp){ctx.strokeStyle=CHALKP;rawLW(1.5);ctx.setLineDash([6,5]);rrect(x0-L*1.3,y3-rowH*0.42,dx*2+L*3.8,rowH*0.84,10);ctx.stroke();ctx.setLineDash([]);}});
-  scene(sc.x,sc.y,sc.w,sc.h);
+SF.part(1);
+    scene(sc.x,sc.y,sc.w,sc.h);
+  SF.part(2);
   // 結果
-  const rx=land?sc.x:L,rw=land?sc.w:W-2*L,ry=land?sc.y+sc.h+L*2.2:bb.y+bb.h+L*2.4,f=red(good,6);
+  const rx=land?sc.x:L,rw=land?sc.w:W-2*L,ry=SF.active?H/2:land?sc.y+sc.h+L*2.2:bb.y+bb.h+L*2.4,f=red(good,6);
   EQN([(who+1)+"番目があたる確率  ",{n:good,d:6,c:DK[OR]}," = ",{n:f.n,d:f.d,c:DK[OR]}],rx+rw/2,ry,{a:"center",size:EQ});
-  const by=ry+EQ*1.6,bh=H-by-L*2.2;
+SF.part(3);
+    const by=SF.active?40:ry+EQ*1.6,bh=H-by-L*2.2;
   const c=chart({x:rx+L*2.2,y:by,w:rw-L*2.2,h:bh},{x0:0,x1:3,y0:0,y1:Math.max(0.6,Math.ceil(Math.max(...win.map(w=>n?w/n:0))*5)/5),ys:0.2,xt:false,yf:v=>v.toFixed(1)});
   line(c.X(0),c.Y(1/3),c.X(3),c.Y(1/3),RED,3,[10,8]);
   for(let j=0;j<3;j++){const r=n?win[j]/n:0,bx=c.X(j+0.25),bwid=c.X(j+0.75)-bx;
@@ -310,6 +316,7 @@ function draw(){const land=isLand();
 onClick("b1",()=>draws(1));onClick("b100",()=>draws(100));onClick("b1000",()=>draws(1000));onClick("bReset",reset);
 window.SIM={get:()=>({n,win,r:win.map(w=>w/n)})};
 
+SF.install();
 fit();
 </script>
 </body>

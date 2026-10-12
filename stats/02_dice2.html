@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>さいころ2つ</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -73,11 +75,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -263,7 +266,7 @@ function tray(x,y,w,h){softShadow(()=>{ctx.fillStyle="#7d5f40";rrect(x,y,w,h,10)
   let p=fx(0);die3d(p[0],p[1],ds,v(0,a),{color:"#b8343c",pip:"#fbf3ea",rot:(1-e)*7+0.12});
   p=fx(1);die3d(p[0],p[1],ds,v(1,b),{rot:(1-e)*-6-0.1});
   T("A",x+w*0.34,y+h-i*0.5,{a:"center",size:TK,c:"rgba(255,240,220,.75)",w:500});T("B",x+w*0.66,y+h-i*0.5,{a:"center",size:TK,c:"rgba(255,240,220,.75)",w:500});}
-function draw(){const {cs,x,y}=G;
+function draw(){SF.part(0);const {cs,x,y}=G;
   // 印刷されたカード
   softShadow(()=>{ctx.fillStyle="#fdfbf4";rrect(x-cs*0.15,y-cs*0.1,cs*7.35,cs*7.3,6);ctx.fill();},18,5,.18);
   T("さいころ2つの目",x+cs*0.1,y+cs*0.2,{size:SM,c:GR,w:500,ls:"0.14em"});
@@ -272,18 +275,20 @@ function draw(){const {cs,x,y}=G;
     ctx.fillStyle=o?"#e9d3b6":"#fdfbf4";ctx.fillRect(X,Y,cs,cs);
     if(o){ctx.fillStyle="rgba(181,130,74,.55)";ctx.beginPath();ctx.arc(X+cs/2,Y+cs*0.42,cs*0.3,0,TAU);ctx.fill();}
     T((a+1)+", "+(b+1),X+cs/2,Y+cs*0.42,{a:"center",size:clamp(cs*0.2,12,24),c:o?"#4a3420":GR,serif:1});
-    if(n)T(String(cnt[c]),X+cs/2,Y+cs*0.8,{a:"center",size:clamp(cs*0.15,10,16),w:400,c:o?"#7d5a33":"#aaa397"});}
+    if(n)T(String(cnt[c]),X+cs/2,Y+cs*0.8,{a:"center",size:clamp(cs*0.15,SF.active?12:10,16),w:400,c:o?"#7d5a33":"#aaa397"});}
   ctx.strokeStyle="#ddd5c6";rawLW(1);for(let i=2;i<=6;i++){ctx.beginPath();ctx.moveTo(x+cs,y+cs*i);ctx.lineTo(x+cs*7,y+cs*i);ctx.moveTo(x+cs*i,y+cs);ctx.lineTo(x+cs*i,y+cs*7);ctx.stroke();}
   ctx.strokeStyle="#8a8579";rawLW(1.2);ctx.strokeRect(x+cs,y+cs,cs*6,cs*6);
   if(last!==null&&!an){const X=x+cs*(last%6+1),Y=y+cs*(Math.floor(last/6)+1);ctx.save();ctx.strokeStyle=RED;rawLW(2);ctx.shadowColor=RED;ctx.shadowBlur=8;ctx.strokeRect(X+3,Y+3,cs-6,cs-6);ctx.restore();}
+  SF.part(1);
   // トレイと数値
-  const land=G.land,rx=land?x+cs*7.6:L,rw=land?W-rx-L:W*0.48-L,ry=land?H*0.06:y+cs*7.6,rh=land?H*0.36:H-ry-L;
+  const land=G.land,rx=SF.active?16:land?x+cs*7.6:L,rw=SF.active?W-32:land?W-rx-L:W*0.48-L,ry=SF.active?16:land?H*0.06:y+cs*7.6,rh=SF.active?H-32:land?H*0.36:H-ry-L;
   tray(rx,ry,rw,land?rh:Math.min(rh,rw*0.8));
-  const tx=land?rx+rw/2:W*0.75,ty=land?H*0.58:ry+L*1.8,m=on.size,f=red(m,36);
+SF.part(2);
+    const tx=SF.active?W/2:land?rx+rw/2:W*0.75,ty=SF.active?50:land?H*0.58:ry+L*1.8,m=on.size,f=red(m,36);
   T("理論",tx,ty-EQ*1.5,{a:"center",c:GR,size:SM,w:500,ls:"0.14em"});
   const parts=[{n:m,d:36}];if(f.d!==36&&m)parts.push(" = ",{n:f.n,d:f.d});parts.push(" ≈ "+fmt(m/36));
   EQN(parts,tx,ty,{a:"center",c:DK[OR],size:EQ*1.15});
-  const ey=land?H*0.82:ty+EQ*4;
+  const ey=SF.active?Math.min(H-50,155):land?H*0.82:ty+EQ*4;
   T("実験",tx,ey-EQ*1.5,{a:"center",c:GR,size:SM,w:500,ls:"0.14em"});
   EQN([{n:k,d:n},n?" ≈ ":"",n?fmt(k/n):""],tx,ey,{a:"center",size:EQ*1.15,c:GN});
   T(n+" 回",tx,ey+EQ*1.9,{a:"center",c:GR,size:L*0.8});}
@@ -297,6 +302,7 @@ onClick("b1",()=>roll(1));onClick("b100",()=>roll(100));onClick("b1000",()=>roll
 preset("pSum");
 window.SIM={get:()=>({n,k,m:on.size,r:k/n,p:on.size/36}),cell:(a,b)=>{const {cs,x,y}=G;return{x:x+cs*(b+0.5),y:y+cs*(a+0.5)};}};
 
+SF.install();
 fit();
 </script>
 </body>

@@ -1,0 +1,22 @@
+/* Focused panels retain the original simulations and their drawing coordinates. */
+#sf-nav,#sf-dock{display:none}
+html.sf-fit #wrap{height:100dvh;box-sizing:border-box;padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+html.sf-fit #sf-nav{display:flex;gap:6px;align-items:center;flex:none;padding:4px 8px;border-bottom:1px solid var(--rule);min-height:44px;box-sizing:border-box}
+#sf-nav select{min-width:0;flex:1;height:44px;font:16px var(--sans);color:var(--ink);border:1px solid #cfc8bb;border-radius:8px;background:var(--paper);padding:0 8px}
+#sf-nav button{height:44px;padding:0 12px}
+html.sf-fit #sf-dock{display:flex;flex:none;gap:6px;justify-content:center;padding:4px 8px calc(4px + env(safe-area-inset-bottom));border-top:1px solid var(--rule);background:var(--paper)}
+#sf-dock button{min-height:44px;padding:0 10px;font-size:15px;white-space:nowrap}
+html.sf-fit #bar{display:none}
+html.sf-fit #bar.sf-open{display:grid;position:absolute;inset:52px 0 54px;align-content:center;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px;z-index:4;border:0;box-sizing:border-box}
+html.sf-fit #bar button{height:44px;min-width:0;font-size:15px;padding:0 4px;letter-spacing:0}
+html.sf-fit #bar .sep{display:none}
+html.sf-fit #tip{top:60px;max-width:calc(100vw - 24px);width:600px;padding:12px;font:16px/1.55 var(--sans);z-index:8;pointer-events:auto}
+html.sf-fit #tip:not(.show){visibility:hidden}
+html.sf-fit #cv{width:100%;height:0;flex:1;min-height:0}
+html.sf-fit button:focus-visible,select:focus-visible{outline:3px solid #b5824a;outline-offset:1px}
+@media (orientation:landscape) and (max-height:560px){html.sf-fit #bar.sf-open{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:8px}html.sf-fit #sf-nav{padding:2px 8px;min-height:48px}html.sf-fit #sf-dock{padding-top:2px;padding-bottom:calc(2px + env(safe-area-inset-bottom))}html.sf-fit #tip{top:52px;font-size:15px;padding:8px}}
+html.sf-fit #bar select,html.sf-fit #bar input{box-sizing:border-box;min-width:0;width:100%;height:44px;font:15px var(--sans);border:1px solid #cfc8bb;border-radius:8px;background:var(--paper);color:var(--ink)}
+html:not(.sf-fit) #bar select,html:not(.sf-fit) #bar input{display:none}
+html:not(.sf-fit) #bar .sf-extra{display:none}
+.sf-tip-close{display:none}
+html.sf-fit .sf-tip-close{display:block;min-height:44px;margin:8px 0 0 auto;font-size:15px}

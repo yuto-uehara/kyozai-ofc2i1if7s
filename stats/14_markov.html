@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>マルコフ連鎖（天気）</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
@@ -29,6 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
+<link rel="stylesheet" href="screen-fit.css">
+<script src="screen-fit.js"></script>
 </head>
 <body>
 <div id="wrap">
@@ -72,11 +74,12 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function fit(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;W=Math.max(1,r.width);H=Math.max(1,r.height);
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);M=Math.min(W,H);
   L=clamp(0.03*M,15,24);SM=clamp(L*0.62,11,14);EQ=L*1.45;BIG=clamp(0.11*M,40,104);TK=clamp(L*0.68,11,15);
+  if(SF.active){L=16;SM=13;TK=13;EQ=23;BIG=48;}
   if(typeof layout==="function")layout();redraw();}
 let _rq=false;
 function req(){if(_rq)return;_rq=true;requestAnimationFrame(()=>{_rq=false;redraw();});}
 function redraw(){ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=PAPER;ctx.fillRect(0,0,W,H);ctx.lineJoin="round";ctx.lineCap="round";if(typeof draw==="function")draw();}
-const isLand=()=>W>=H*1.05;
+const isLand=()=>SF.active?false:W>=H*1.05;
 /* text */
 function fontOf(o,sz){if(o.it)return "italic 400 "+sz+"px "+'"Times New Roman",Times,serif';if(o.serif||(o.w||0)>=800)return (o.w>=800?300:(o.sw||400))+" "+sz+"px "+SERIF;const w=o.w||700;return (w>=700?500:w)+" "+sz+"px "+FONT;}
 function T(s,x,y,o={}){const sz=o.size||L;ctx.font=fontOf(o,sz);ctx.letterSpacing=o.ls||"0px";
@@ -282,7 +285,8 @@ function calendar(c){const k=Math.max(7,Math.min(21,Math.floor(c.w/(c.h*0.85))))
     ctx.fillStyle="#8c3a3f";ctx.fillRect(x,c.y,w,c.h*0.18);
     if(i>=off){const s_=list[i-off];T(String(dd),x+w/2,c.y+c.h*0.32,{a:"center",size:Math.min(c.h*0.18,w*0.3),c:GR,serif:1});const r=Math.min(w,c.h)*0.3;s_?rainI(x+w/2,c.y+c.h*0.68,r):sunI(x+w/2,c.y+c.h*0.68,r);
       if(i===k-1){ctx.strokeStyle=ACC;rawLW(2);ctx.strokeRect(x-1,c.y-1,w+2,c.h+2);}}}}
-function draw(){const a=sa.v,b=sb.v,pi=b/(a+b);windowScene(G.win);if(st===1)rainLoop();calendar(G.cal);
+function draw(){SF.part(0);const a=sa.v,b=sb.v,pi=b/(a+b);windowScene(G.win);if(st===1)rainLoop();SF.part(2);calendar(G.cal);
+  SF.part(1);
   // 状態図
   const d=G.d,r=Math.min(d.w*0.09,d.h*0.24),y=d.y+d.h*0.5,x1=d.x+d.w*0.3,x2=d.x+d.w*0.7;
   const arc=(xa,xb,dy,lab,c)=>{ctx.strokeStyle=c;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(xa,y+dy*0.35);ctx.quadraticCurveTo((xa+xb)/2,y+dy*1.4,xb,y+dy*0.35);ctx.stroke();
@@ -293,17 +297,21 @@ function draw(){const a=sa.v,b=sb.v,pi=b/(a+b);windowScene(G.win);if(st===1)rain
   self(x1,-1,(1-a).toFixed(2),DK[OR]);self(x2,1,(1-b).toFixed(2),DK[BL]);
   [[x1,"晴",OR,0],[x2,"雨",BL,1]].forEach(([x,s,c,k])=>{dot(x,y,r,st===k?c:"#fff");ctx.strokeStyle=c;ctx.lineWidth=5;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.stroke();T(s,x,y,{a:"center",size:r*0.8,c:st===k?"#fff":DK[c]});});
   // 最近の天気
+  SF.part(3);
   // 式
   const f=red(Math.round(b*20),Math.round((a+b)*20)),tx=G.tx,ty=G.ty;
-  EQN(["晴れの割合  理論 ",{n:"b",d:"a+b",c:RED}," = ",{n:f.n,d:f.d,c:RED}," = "+fmt(pi)],tx,ty+L*0.4,{size:L,c:RED});
+  EQN([SF.active?"理論 ":"晴れの割合  理論 ",{n:"b",d:"a+b",c:RED}," = ",{n:f.n,d:f.d,c:RED}," = "+fmt(pi)],tx,ty+L*0.4,{size:L,c:RED});
   if(days)T("実験 "+sun+"/"+days+" = "+fmt(sun/days),tx,ty+L*2.8,{size:L,c:DK[OR]});
-  const c=chart(G.c,{x0:0,x1:niceUp(Math.max(10,days)),y0:0,y1:1,ys:0.25,xl:"日",yl:"晴れの割合",xf:v=>v>=10000?(v/10000)+"万":String(v)});
+SF.part(4);
+    const c=chart(G.c,{x0:0,x1:niceUp(Math.max(10,days)),y0:0,y1:1,ys:0.25,xl:"日",yl:"晴れの割合",xf:v=>v>=10000?(v/10000)+"万":String(v)});
   line(G.c.x,c.Y(pi),G.c.x+G.c.w,c.Y(pi),RED,3,[10,8]);poly(hist.p.map(([x,y])=>[c.X(x),c.Y(y)]),OR,4);
-  sa.draw();sb.draw();}
+SF.part(5);
+    sa.draw();sb.draw();}
 onClick("b1",()=>step(1));onClick("b10",()=>step(10));onClick("b100",()=>step(100));onClick("b1000",()=>step(1000));
 onClick("bAuto",()=>autoLoop(()=>step(days<100?1:days<3000?20:500)));onClick("bReset",()=>{stopAuto();sa.v=0.3;sb.v=0.6;clr();});
 window.SIM={get:()=>({days,sun,r:sun/days,th:sb.v/(sa.v+sb.v)})};
 
+SF.install();
 fit();
 </script>
 </body>
