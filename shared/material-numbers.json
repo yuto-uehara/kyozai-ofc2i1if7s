@@ -61,14 +61,6 @@
       ]
     },
     {
-      "number": 12,
-      "key": "1n4s/video/1n4s_proportion_multiplier_720p.mp4",
-      "title": "比例・反比例の倍率を比べる",
-      "aliases": [
-        "tools/proportion-multiplier/"
-      ]
-    },
-    {
       "number": 13,
       "key": "1n4s/video/1n4s_proportion_from_point_720p.mp4",
       "title": "1組の値から比例・反比例の式を求める",
@@ -287,5 +279,8 @@
       "key": "stats/14_markov.html",
       "title": "マルコフ連鎖"
     }
+  ],
+  "retiredNumbers": [
+    12
   ]
 }
