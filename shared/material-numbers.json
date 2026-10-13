@@ -54,28 +54,43 @@
     },
     {
       "number": 11,
-      "key": "tools/coordinate-walk/",
-      "title": "座標をたどって点の位置を決める"
+      "key": "1n4s/video/1n4s_coordinate_walk_720p.mp4",
+      "title": "座標をたどって点の位置を決める",
+      "aliases": [
+        "tools/coordinate-walk/"
+      ]
     },
     {
       "number": 12,
-      "key": "tools/proportion-multiplier/",
-      "title": "比例・反比例の倍率を比べる"
+      "key": "1n4s/video/1n4s_proportion_multiplier_720p.mp4",
+      "title": "比例・反比例の倍率を比べる",
+      "aliases": [
+        "tools/proportion-multiplier/"
+      ]
     },
     {
       "number": 13,
-      "key": "tools/proportion-from-point/",
-      "title": "1組の値から比例・反比例の式を求める"
+      "key": "1n4s/video/1n4s_proportion_from_point_720p.mp4",
+      "title": "1組の値から比例・反比例の式を求める",
+      "aliases": [
+        "tools/proportion-from-point/"
+      ]
     },
     {
       "number": 14,
-      "key": "tools/rectangle-relations/",
-      "title": "固定する量で比例・反比例を比べる"
+      "key": "1n4s/video/1n4s_rectangle_relations_720p.mp4",
+      "title": "固定する量で比例・反比例を比べる",
+      "aliases": [
+        "tools/rectangle-relations/"
+      ]
     },
     {
       "number": 15,
-      "key": "tools/proportion-table-check/",
-      "title": "表の商と積を比べる"
+      "key": "1n4s/video/1n4s_proportion_table_check_720p.mp4",
+      "title": "表の商と積を比べる",
+      "aliases": [
+        "tools/proportion-table-check/"
+      ]
     },
     {
       "number": 16,
