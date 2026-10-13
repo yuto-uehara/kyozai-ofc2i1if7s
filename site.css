@@ -8,3 +8,6 @@
 #m{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;justify-items:center;align-items:stretch;gap:4px;padding:max(4px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:visible}
 .player-head{min-width:0;padding:0;gap:12px}.player-head h2{line-height:1.4;overflow-wrap:anywhere}.player-head button{flex:none}#mv{display:block;align-self:stretch;width:100%;height:100%;max-height:none;min-height:0;object-fit:contain}#direct-video{display:flex;align-items:center;justify-content:center;min-height:44px;padding:4px 12px;line-height:1.3}
 @media(max-height:400px){.player-head h2{font-size:16px}#m{gap:0}}
+
+/* Stable material labels. */
+.material-number{display:inline-block;flex:none;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;font-size:12px!important;font-weight:750;line-height:1.5;letter-spacing:0;font-variant-numeric:tabular-nums;vertical-align:middle;padding:2px 6px;border:1px solid #9badb6;border-radius:4px;background:#edf3f6;color:#173f53;box-sizing:border-box}.tt{flex-wrap:wrap}.tt b{flex-basis:100%}#bar>.material-number{align-self:center}#sf-nav>.material-number,.screen-tools>.material-number{font-size:11px!important;padding-inline:4px}
