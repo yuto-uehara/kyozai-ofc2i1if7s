@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 57,
+  "nextNumber": 60,
   "materials": [
     {
       "number": 1,
@@ -288,6 +288,21 @@
       "number": 56,
       "key": "tools/prime-factorization/",
       "title": "素数・素因数分解と約数を図でつなぐ"
+    },
+    {
+      "number": 57,
+      "key": "tools/quantity-relations/",
+      "title": "数量の関係を等式・不等式で表す"
+    },
+    {
+      "number": 58,
+      "key": "tools/reference-mean/",
+      "title": "基準との差で平均を求める"
+    },
+    {
+      "number": 59,
+      "key": "tools/ratio-equation/",
+      "title": "比例式と2つの積を確かめる"
     }
   ],
   "retiredNumbers": [
