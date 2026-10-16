@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 69,
+  "nextNumber": 70,
   "materials": [
     {
       "number": 1,
@@ -348,6 +348,11 @@
       "number": 68,
       "key": "tools/signed-powers/",
       "title": "負号とかっこの累乗"
+    },
+    {
+      "number": 69,
+      "key": "tools/construction-distance/",
+      "title": "作図を等距離で確かめる"
     }
   ],
   "retiredNumbers": [
