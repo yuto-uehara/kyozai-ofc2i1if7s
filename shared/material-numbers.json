@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 75,
+  "nextNumber": 79,
   "materials": [
     {
       "number": 1,
@@ -378,6 +378,30 @@
       "number": 74,
       "key": "tools/negative-order-check/",
       "title": "数の大小を確認する",
+      "kind": "q"
+    },
+    {
+      "number": 75,
+      "key": "tools/prime-check/",
+      "title": "素数と素因数分解を確認する",
+      "kind": "q"
+    },
+    {
+      "number": 76,
+      "key": "tools/quantity-relations-check/",
+      "title": "数量の関係を確認する",
+      "kind": "q"
+    },
+    {
+      "number": 77,
+      "key": "tools/reference-mean-check/",
+      "title": "基準と平均を確認する",
+      "kind": "q"
+    },
+    {
+      "number": 78,
+      "key": "tools/matchstick-check/",
+      "title": "図と文字式を確認する",
       "kind": "q"
     }
   ],
