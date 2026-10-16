@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 66,
+  "nextNumber": 68,
   "materials": [
     {
       "number": 1,
@@ -333,6 +333,16 @@
       "number": 65,
       "key": "tools/solid-surface-area/",
       "title": "面の面積を足して表面積へ"
+    },
+    {
+      "number": 66,
+      "key": "tools/equation-scaling/",
+      "title": "かっこ・分数・小数の方程式"
+    },
+    {
+      "number": 67,
+      "key": "tools/equation-situations/",
+      "title": "数量図から方程式をつくる"
     }
   ],
   "retiredNumbers": [
