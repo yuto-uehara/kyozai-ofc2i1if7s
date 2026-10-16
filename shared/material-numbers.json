@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 79,
+  "nextNumber": 81,
   "materials": [
     {
       "number": 1,
@@ -403,6 +403,16 @@
       "key": "tools/matchstick-check/",
       "title": "図と文字式を確認する",
       "kind": "q"
+    },
+    {
+      "number": 79,
+      "key": "tools/algebra-notation/",
+      "title": "文字式の表し方"
+    },
+    {
+      "number": 80,
+      "key": "tools/point-plane-distance/",
+      "title": "点から平面までの距離"
     }
   ],
   "retiredNumbers": [
