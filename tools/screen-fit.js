@@ -6,13 +6,14 @@ const head=document.createElement('header');head.className='fit-head';if(back)he
 const stage=document.createElement('div');stage.className='fit-stage';stage.setAttribute('aria-label','学習画面');
 const foot=document.createElement('div');foot.className='fit-footer';
 const switcher=document.createElement('nav');switcher.className='fit-switch';switcher.setAttribute('aria-label','表示する画面');
-switcher.innerHTML='<button type="button" aria-label="前の画面">‹</button><select aria-label="表示する内容"></select><button type="button" aria-label="次の画面">›</button>';
-const context=document.createElement('div');context.className='fit-context';context.setAttribute('aria-label','元の問題と条件');foot.append(context,switcher);const selector=switcher.querySelector('select'),arrows=switcher.querySelectorAll('button');
+switcher.innerHTML='<button type="button" aria-label="前の画面">‹</button><span class="fit-page-label" role="status" aria-live="polite"></span><button type="button" aria-label="次の画面">›</button>';
+const context=document.createElement('div');context.className='fit-context';context.setAttribute('aria-label','元の問題と条件');foot.append(context,switcher);const pageLabel=switcher.querySelector('.fit-page-label'),arrows=switcher.querySelectorAll('button');
 // Flatten the old decorative header while retaining its introductory text.
 const oldHeader=main.querySelector(':scope > header');if(oldHeader){while(oldHeader.firstChild)main.insertBefore(oldHeader.firstChild,oldHeader);oldHeader.remove()}
-const children=[...main.children],panels=[];
+const lessonNext=main.querySelector('#next'),lessonPrev=main.querySelector('#prev'),lessonDock=lessonNext?.closest('.dock');const resetButton=main.querySelector('#reset');if(resetButton)foot.append(resetButton);const children=[...main.children],panels=[];
 for(const el of children){if(el===head||el.matches('script'))continue;if(el.classList.contains('eyebrow')){head.setAttribute('title',el.textContent.trim());el.remove();continue}
-if(el.classList.contains('dock')&&el.querySelector('#next,#prev')){foot.insertBefore(el,switcher);continue}
+if(el.classList.contains('reset-row')&&!el.children.length){el.remove();continue}
+if(el.classList.contains('dock')&&el.querySelector('#next,#prev')){el.classList.add('fit-native-steps');foot.insertBefore(el,switcher);continue}
 el.dataset.fitPanel='';panels.push(el);stage.append(el);if(el.tagName==='DETAILS'){el.open=true;el.querySelector('summary')?.setAttribute('tabindex','-1')}}
 main.classList.add('fit-shell');main.append(head,stage,foot);
 function label(el,i){if(el.matches('.given-card,.task'))return'問題・元の条件';if(el.matches('.formula-card,.work-card'))return'式・考え方';if(el.matches('.graph-panel,.diagram-card'))return'図で確かめる';if(el.id==='question-card')return'根拠を選ぶ';if(el.id==='summary-card')return'つながった証明';if(el.id==='read-card')return'理由を読む';if(el.classList.contains('dock'))return'値を変える';if(el.matches('.modes,.presets'))return'条件・モード';if(el.id==='compare')return'表をまとめて比べる';if(el.matches('.reset-row,#reset'))return'はじめから';const t=el.querySelector('summary,h2,label')?.textContent?.trim();return t|| (el.querySelector('table')?'表で確かめる':el.textContent.trim().slice(0,22))||`画面 ${i+1}`}
@@ -33,11 +34,11 @@ const height=Math.max(160,stage.clientHeight);stage.style.setProperty('--fit-gra
 const all=units(el);pages=[];let group=[];
 for(const u of all){const trial=[...group,u];visibleUnits(el,all,trial);if(el.getBoundingClientRect().height>height+1&&group.length){pages.push(group);group=[u]}else group=trial}
 if(group.length)pages.push(group);if(!pages.length)pages=[all];part=Math.min(part,pages.length-1);visibleUnits(el,all,pages[part]);
-selector.replaceChildren(...available.map(p=>{const o=document.createElement('option');o.value=panels.indexOf(p);o.textContent=label(p,panels.indexOf(p))+(p===el&&pages.length>1?` · ${part+1}/${pages.length}`:'');return o}));selector.value=String(active);
-arrows[0].disabled=available.indexOf(el)===0&&part===0;arrows[1].disabled=available.indexOf(el)===available.length-1&&part===pages.length-1;
+pageLabel.textContent=(available.indexOf(el)+1)+' / '+available.length+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');if(el.matches('.work-card,.formula-card')&&lessonDock?.querySelector('#count'))pageLabel.textContent='手順 '+lessonDock.querySelector('#count').textContent+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');pageLabel.setAttribute('aria-label',label(el,active)+(pages.length>1?'、'+(part+1)+'段階目':''));pageLabel.title=label(el,active);
+arrows[0].disabled=available.indexOf(el)===0&&part===0&&!(el.matches('.work-card,.formula-card')&&lessonPrev&&!lessonPrev.disabled);arrows[1].disabled=available.indexOf(el)===available.length-1&&part===pages.length-1&&!(el.matches('.work-card,.formula-card')&&lessonNext&&!lessonNext.disabled);
 }catch(e){console.error('Screen layout:',e)}finally{observe();busy=false}}
-function move(dir){const available=panels.filter(p=>!p.hidden),el=panels[active];if(dir>0&&part+1<pages.length)part++;else if(dir<0&&part>0)part--;else{const target=available[available.indexOf(el)+dir];if(!target)return;active=panels.indexOf(target);part=dir<0?Number.MAX_SAFE_INTEGER:0}layout()}
-arrows[0].addEventListener('click',()=>move(-1));arrows[1].addEventListener('click',()=>move(1));selector.addEventListener('change',()=>{active=Number(selector.value);part=0;layout()});
+function move(dir){const available=panels.filter(p=>!p.hidden),el=panels[active];const lessonButton=dir>0?lessonNext:lessonPrev;if(el.matches('.work-card,.formula-card')&&lessonButton&&!lessonButton.disabled&&(dir>0?part===pages.length-1:part===0)){lessonButton.click();layout();return;}if(dir>0&&part+1<pages.length)part++;else if(dir<0&&part>0)part--;else{const target=available[available.indexOf(el)+dir];if(!target)return;active=panels.indexOf(target);part=dir<0?Number.MAX_SAFE_INTEGER:0}layout()}
+arrows[0].addEventListener('click',()=>move(-1));arrows[1].addEventListener('click',()=>move(1));if(resetButton)resetButton.addEventListener('click',()=>{active=panels.findIndex(p=>!p.hidden);part=0;lastAction=null;layout();});
 main.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!switcher.contains(b)){lastAction=b.id;schedule()}});main.addEventListener('input',schedule);
 window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);document.fonts?.ready.then(schedule);layout();
 })();
