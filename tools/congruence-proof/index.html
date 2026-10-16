@@ -23,33 +23,33 @@
     <p class="given math">OA = OC <span>かつ</span> OB = OD</p>
   </section>
 
-  <section class="work-card" aria-label="今考えること">
+  <section data-fit-lesson class="work-card" aria-label="今考えること">
     <p id="step-label" class="step-label" aria-live="polite"></p>
     <div id="equation" class="equation math"></div>
     <p id="near" class="near"></p>
   </section>
-  <section class="diagram-card" aria-label="2つの三角形の図">
+  <section data-fit-lesson class="diagram-card" aria-label="2つの三角形の図">
     <div id="diagram"></div>
     <p id="diagram-note" class="minor diagram-note"></p>
   </section>
 
-  <section id="question-card" class="question-card" aria-label="根拠の選択">
+  <section data-fit-lesson id="question-card" class="question-card" aria-label="根拠の選択">
     <h2 id="question"></h2>
     <div id="choices" class="choices"></div>
     <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
   </section>
-  <section id="read-card" class="read-card" hidden>
+  <section data-fit-lesson id="read-card" class="read-card" hidden>
     <p id="reason" class="reason"></p>
   </section>
 
-  <details id="vertical-reason" class="panel" hidden>
+  <details data-fit-lesson id="vertical-reason" class="panel" hidden>
     <summary>対頂角が等しい理由</summary>
     <p class="minor">∠BOCを使うと、どちらの角も同じ式になります。</p>
     <p class="angle-proof math">∠AOB = 180° − ∠BOC<br>∠COD = 180° − ∠BOC</p>
     <p class="minor">A・O・C、B・O・Dが、それぞれ一直線だからです。</p>
   </details>
 
-  <section id="summary-card" class="panel proof-card" hidden>
+  <section data-fit-lesson id="summary-card" class="panel proof-card" hidden>
     <h2>つながった証明</h2>
     <p class="triangle-pair math">△AOBと△CODにおいて、</p>
     <ol class="proof-list">
@@ -82,5 +82,5 @@
   </nav>
 </main>
 <script src="app.js?rev=20261016arrows"></script>
-<script src="../screen-fit.js?rev=20261016arrows"></script><script src="../../shared/material-numbers.js?rev=20261013numbers"></script></body>
+<script src="../screen-fit.js?rev=20261017steps"></script><script src="../../shared/material-numbers.js?rev=20261013numbers"></script></body>
 </html>

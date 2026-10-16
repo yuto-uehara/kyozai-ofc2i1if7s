@@ -26,6 +26,17 @@ function units(el){let result=[];const cs=[...el.children].filter(c=>!c.hidden&&
 function visibleUnits(el,all,chosen){el.querySelectorAll('.fit-part-off').forEach(n=>n.classList.remove('fit-part-off'));for(const group of all)for(const n of group)if(n!==el&&!chosen.includes(group))n.classList.add('fit-part-off');for(const table of el.querySelectorAll('table')){const rows=[...table.tBodies].flatMap(b=>[...b.rows]);if(rows.length&&rows.every(r=>r.classList.contains('fit-part-off')))table.classList.add('fit-part-off')}}
 function prepareFigures(){const box=stage.querySelector('#diagram');if(!box)return;const svg=box.querySelector(':scope > svg');if(svg?.getAttribute('viewBox')==='0 0 330 535'){const frames=[[0,255],[255,280]].map(([y,h],i)=>{const copy=svg.cloneNode(true);copy.setAttribute('viewBox',`0 ${y} 330 ${h}`);copy.setAttribute('aria-label',`比較する三角形 ${i+1}`);return copy});box.replaceChildren(...frames);box.classList.add('fit-split-figures')}else if(svg&&svg.getAttribute('viewBox')!=='0 0 330 255')box.classList.remove('fit-split-figures')}
 
+// A lesson may span several reading panels. Keep page fragments and lesson steps reversible.
+function controller(el){
+ const nextSelector=el.dataset.fitStepNext,rangeSelector=el.dataset.fitStepRange;
+ if(nextSelector){const next=main.querySelector(nextSelector),prev=main.querySelector(el.dataset.fitStepPrev);return {group:[el],first:prev.disabled,last:next.disabled,blocked:false,advance:dir=>(dir>0?next:prev).click()};}
+ if(rangeSelector){const range=main.querySelector(rangeSelector);return {group:[el],first:+range.value===+range.min,last:+range.value===+range.max,blocked:false,advance:dir=>{range.value=+range.value+dir;range.dispatchEvent(new Event('input',{bubbles:true}));}};}
+ const explicit=panels.filter(p=>p.hasAttribute('data-fit-lesson'));
+ const group=explicit.length?explicit.filter(p=>!p.hidden):panels.filter(p=>p.matches('.work-card,.formula-card')&&!p.hidden);
+ if(!group.includes(el)||!lessonNext||!lessonPrev)return null;
+ const count=lessonDock?.querySelector('#count')?.textContent.match(/(\d+)\s*\/\s*(\d+)/),last=count?+count[1]===+count[2]:lessonNext.disabled;
+ return {group,first:lessonPrev.disabled,last,blocked:lessonNext.disabled&&!last,advance:dir=>(dir>0?lessonNext:lessonPrev).click()};
+}
 function layout(){if(busy)return;busy=true;observer.disconnect();
 try{updateContext();prepareFigures();for(const d of stage.querySelectorAll('details'))d.open=true;const previous=panels[active];const available=panels.filter(p=>!p.hidden);if(!available.includes(previous)){active=panels.indexOf(available[0]);part=0}
 if(lastAction){const id=lastAction;lastAction=null;let dest;if(['next','prev'].includes(id))dest=panels.find(p=>p.matches('.work-card,.formula-card'));if(id==='compare')dest=panels.find(p=>p.id==='conclusion');if(dest&&!dest.hidden){active=panels.indexOf(dest);part=0}}
@@ -35,9 +46,18 @@ const all=units(el);pages=[];let group=[];
 for(const u of all){const trial=[...group,u];visibleUnits(el,all,trial);if(el.getBoundingClientRect().height>height+1&&group.length){pages.push(group);group=[u]}else group=trial}
 if(group.length)pages.push(group);if(!pages.length)pages=[all];part=Math.min(part,pages.length-1);visibleUnits(el,all,pages[part]);
 pageLabel.textContent=(available.indexOf(el)+1)+' / '+available.length+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');if(el.matches('.work-card,.formula-card')&&lessonDock?.querySelector('#count'))pageLabel.textContent='手順 '+lessonDock.querySelector('#count').textContent+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');pageLabel.setAttribute('aria-label',label(el,active)+(pages.length>1?'、'+(part+1)+'段階目':''));pageLabel.title=label(el,active);
-arrows[0].disabled=available.indexOf(el)===0&&part===0&&!(el.matches('.work-card,.formula-card')&&lessonPrev&&!lessonPrev.disabled);arrows[1].disabled=available.indexOf(el)===available.length-1&&part===pages.length-1&&!(el.matches('.work-card,.formula-card')&&lessonNext&&!lessonNext.disabled);
+const ctl=controller(el),atStart=ctl&&el===ctl.group[0]&&part===0,atEnd=ctl&&el===ctl.group.at(-1)&&part===pages.length-1;arrows[0].disabled=available.indexOf(el)===0&&part===0&&!(atStart&&!ctl.first);arrows[1].disabled=(atEnd&&ctl.blocked)||(available.indexOf(el)===available.length-1&&part===pages.length-1&&!(atEnd&&!ctl.last));
 }catch(e){console.error('Screen layout:',e)}finally{observe();busy=false}}
-function move(dir){const available=panels.filter(p=>!p.hidden),el=panels[active];const lessonButton=dir>0?lessonNext:lessonPrev;if(el.matches('.work-card,.formula-card')&&lessonButton&&!lessonButton.disabled&&(dir>0?part===pages.length-1:part===0)){lessonButton.click();layout();return;}if(dir>0&&part+1<pages.length)part++;else if(dir<0&&part>0)part--;else{const target=available[available.indexOf(el)+dir];if(!target)return;active=panels.indexOf(target);part=dir<0?Number.MAX_SAFE_INTEGER:0}layout()}
+function move(dir){const available=panels.filter(p=>!p.hidden),el=panels[active],ctl=controller(el);
+ if(dir>0&&part+1<pages.length){part++;layout();return;}
+ if(dir<0&&part>0){part--;layout();return;}
+ if(ctl&&((dir>0&&el===ctl.group.at(-1)&&!ctl.last)||(dir<0&&el===ctl.group[0]&&!ctl.first))){
+  if(dir>0&&ctl.blocked)return;
+  ctl.advance(dir);lastAction=null;
+  const updated=controller(ctl.group[0]);active=panels.indexOf(dir>0?updated.group[0]:updated.group.at(-1));part=dir<0?Number.MAX_SAFE_INTEGER:0;layout();return;
+ }
+ const target=available[available.indexOf(el)+dir];if(!target)return;active=panels.indexOf(target);part=dir<0?Number.MAX_SAFE_INTEGER:0;layout();
+}
 arrows[0].addEventListener('click',()=>move(-1));arrows[1].addEventListener('click',()=>move(1));if(resetButton)resetButton.addEventListener('click',()=>{active=panels.findIndex(p=>!p.hidden);part=0;lastAction=null;layout();});
 main.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!switcher.contains(b)){lastAction=b.id;schedule()}});main.addEventListener('input',schedule);
 window.addEventListener('resize',schedule);window.visualViewport?.addEventListener('resize',schedule);document.fonts?.ready.then(schedule);layout();
