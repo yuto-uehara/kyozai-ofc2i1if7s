@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 68,
+  "nextNumber": 69,
   "materials": [
     {
       "number": 1,
@@ -343,6 +343,11 @@
       "number": 67,
       "key": "tools/equation-situations/",
       "title": "数量図から方程式をつくる"
+    },
+    {
+      "number": 68,
+      "key": "tools/signed-powers/",
+      "title": "負号とかっこの累乗"
     }
   ],
   "retiredNumbers": [
