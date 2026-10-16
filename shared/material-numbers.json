@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 55,
+  "nextNumber": 56,
   "materials": [
     {
       "number": 1,
@@ -278,6 +278,11 @@
       "number": 54,
       "key": "stats/14_markov.html",
       "title": "マルコフ連鎖"
+    },
+    {
+      "number": 55,
+      "key": "tools/signed-number-line/",
+      "title": "数直線で大小と絶対値を確かめる"
     }
   ],
   "retiredNumbers": [
