@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 62,
+  "nextNumber": 64,
   "materials": [
     {
       "number": 1,
@@ -313,6 +313,16 @@
       "number": 61,
       "key": "tools/representative-values/",
       "title": "代表値と分布を比べる"
+    },
+    {
+      "number": 62,
+      "key": "tools/matchstick-expressions/",
+      "title": "図の数え方を文字式へ"
+    },
+    {
+      "number": 63,
+      "key": "tools/space-positions/",
+      "title": "直線と平面の位置関係"
     }
   ],
   "retiredNumbers": [
