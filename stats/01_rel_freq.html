@@ -34,7 +34,7 @@ button:disabled{opacity:.32;cursor:default}
 <link rel="stylesheet" href="../shared/material-numbers.css?rev=20261013numbers"></head>
 <body>
 <div id="wrap">
-<canvas id="cv"></canvas>
+<p id="model-note" style="flex:none;margin:0;padding:6px 12px;border-bottom:1px solid var(--rule);font:12px/1.5 var(--sans)">キャップの0.211は、この教材のモデル設定値です。実測値や、どのキャップにも共通する確率ではありません。</p><canvas id="cv"></canvas>
 <div id="bar">
   <button id="tCap" class="on">キャップ</button><button id="tDie">さいころ</button><button id="tCoin">コイン</button>
   <span class="sep"></span>
@@ -288,7 +288,7 @@ function draw(){SF.part(0);const K=KINDS[kind],land=isLand();
   const ly=ny+L*2.5+(n<=50?Math.ceil(Math.min(k,50)/50)*L*1.2+L*1.2:L*1.6);
   EQN([{n:k,d:n||"0",c:DK[K.col]}," = "],tx,ly+EQ*0.4,{size:EQ*0.9});
   const bs=SF.active?30:clamp(BIG*(land?0.85:0.6),36,96);T(n?fmt(k/n):"—",tx+TW(" = ",{size:EQ*0.9,serif:1})+Math.max(TW(String(k),{size:EQ*0.7,serif:1}),TW(String(n),{size:EQ*0.7,serif:1}))+EQ*0.4,ly+EQ*0.4,{size:bs,w:800});
-  if(showTh){const yy=ly+EQ*0.4+bs*0.85;if(typeof K.th==="string")EQN(["目安 0.211"],tx,yy,{size:L,c:RED});else EQN(["確率 ",K.th," = "+fmt(K.p)],tx,yy,{size:L,c:RED});}
+  if(showTh){const yy=ly+EQ*0.4+bs*0.85;if(typeof K.th==="string")EQN(["モデル値 0.211"],tx,yy,{size:L,c:RED});else EQN(["確率 ",K.th," = "+fmt(K.p)],tx,yy,{size:L,c:RED});}
   SF.part(2);
   // グラフ
   const gx=land?pw+L*3:L*3.2,gy=SF.active?L*2.5:land?L*2.5:ph+L*1.6,gw=W-gx-L*1.5,gh=SF.active?H-L*5:(land?H-L*2.5:H-ph-L*1.6)-L*2.4;
@@ -299,7 +299,7 @@ function draw(){SF.part(0);const K=KINDS[kind],land=isLand();
   poly(hist.p.map(([x,y])=>[c.X(x),c.Y(y)]),K.col,4);ctx.restore();
   if(n)dot(c.X(n),c.Y(k/n),5,DK[K.col]);
 }
-["tCap","tDie","tCoin"].forEach(id=>onClick(id,()=>{kind=id;tabs(["tCap","tDie","tCoin"],id);reset();}));
+["tCap","tDie","tCoin"].forEach(id=>onClick(id,()=>{kind=id;document.getElementById("model-note").hidden=id!=="tCap";tabs(["tCap","tDie","tCoin"],id);reset();fit();}));
 onClick("bTh",()=>{showTh=!showTh;$("bTh").classList.toggle("on",showTh);req();});
 onClick("b1",()=>trial(1));onClick("b10",()=>trial(10));onClick("b100",()=>trial(100));onClick("b1000",()=>trial(1000));
 onClick("bAuto",()=>autoLoop(()=>trial(n<200?1:n<2000?10:n<20000?100:1000)));

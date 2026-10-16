@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 70,
+  "nextNumber": 72,
   "materials": [
     {
       "number": 1,
@@ -353,6 +353,16 @@
       "number": 69,
       "key": "tools/construction-distance/",
       "title": "作図を等距離で確かめる"
+    },
+    {
+      "number": 70,
+      "key": "tools/number-sets/",
+      "title": "計算と数の範囲"
+    },
+    {
+      "number": 71,
+      "key": "tools/function-domain/",
+      "title": "関数の対応と変域"
     }
   ],
   "retiredNumbers": [
