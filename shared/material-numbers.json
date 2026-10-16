@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 60,
+  "nextNumber": 62,
   "materials": [
     {
       "number": 1,
@@ -303,6 +303,16 @@
       "number": 59,
       "key": "tools/ratio-equation/",
       "title": "比例式と2つの積を確かめる"
+    },
+    {
+      "number": 60,
+      "key": "tools/data-distribution/",
+      "title": "データを表・分布・割合で比べる"
+    },
+    {
+      "number": 61,
+      "key": "tools/representative-values/",
+      "title": "代表値と分布を比べる"
     }
   ],
   "retiredNumbers": [
