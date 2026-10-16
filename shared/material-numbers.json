@@ -377,7 +377,8 @@
     {
       "number": 74,
       "key": "tools/negative-order-check/",
-      "title": "負の数の大小を確認する"
+      "title": "数の大小を確認する",
+      "kind": "q"
     }
   ],
   "retiredNumbers": [
