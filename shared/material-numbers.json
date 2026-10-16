@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 72,
+  "nextNumber": 75,
   "materials": [
     {
       "number": 1,
@@ -282,7 +282,7 @@
     {
       "number": 55,
       "key": "tools/signed-number-line/",
-      "title": "数直線で大小と絶対値を確かめる"
+      "title": "数直線で大小を比べる"
     },
     {
       "number": 56,
@@ -363,6 +363,21 @@
       "number": 71,
       "key": "tools/function-domain/",
       "title": "関数の対応と変域"
+    },
+    {
+      "number": 72,
+      "key": "tools/reference-signs/",
+      "title": "基準と反対の向き"
+    },
+    {
+      "number": 73,
+      "key": "tools/absolute-distance/",
+      "title": "絶対値を距離で確かめる"
+    },
+    {
+      "number": 74,
+      "key": "tools/negative-order-check/",
+      "title": "負の数の大小を確認する"
     }
   ],
   "retiredNumbers": [
