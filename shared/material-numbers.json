@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 132,
+  "nextNumber": 133,
   "materials": [
     {
       "number": 1,
@@ -668,6 +668,11 @@
       "number": 131,
       "key": "tools/polynomial-add/",
       "title": "多項式の加法"
+    },
+    {
+      "number": 132,
+      "key": "tools/polynomial-subtract/",
+      "title": "多項式の減法"
     }
   ],
   "retiredNumbers": [
