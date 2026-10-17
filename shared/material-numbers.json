@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 177,
+  "nextNumber": 179,
   "materials": [
     {
       "number": 1,
@@ -893,6 +893,16 @@
       "number": 176,
       "key": "tools/proof-condition-review/",
       "title": "証明で使う条件・外せる条件"
+    },
+    {
+      "number": 177,
+      "key": "tools/parallel-equal-area/",
+      "title": "平行線と同じ底辺の三角形の面積"
+    },
+    {
+      "number": 178,
+      "key": "tools/quadrilateral-area-transform/",
+      "title": "四角形を等積な三角形に変える"
     }
   ],
   "retiredNumbers": [
