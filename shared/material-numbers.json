@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 164,
+  "nextNumber": 165,
   "materials": [
     {
       "number": 1,
@@ -828,6 +828,11 @@
       "number": 163,
       "key": "tools/congruence-proof-plan/",
       "title": "結論から合同の証明を組み立てる"
+    },
+    {
+      "number": 164,
+      "key": "tools/bisector-congruence-reason/",
+      "title": "角の二等分線の作図を合同で説明"
     }
   ],
   "retiredNumbers": [
