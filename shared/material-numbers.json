@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 186,
+  "nextNumber": 187,
   "materials": [
     {
       "number": 1,
@@ -938,6 +938,11 @@
       "number": 185,
       "key": "tools/data-comparison-decisions/",
       "title": "目的に合わせてデータを比べる"
+    },
+    {
+      "number": 186,
+      "key": "tools/polynomial-monomial-multiply/",
+      "title": "多項式と単項式の乗法"
     }
   ],
   "retiredNumbers": [
