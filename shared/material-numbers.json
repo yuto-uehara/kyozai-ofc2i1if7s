@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 119,
+  "nextNumber": 120,
   "materials": [
     {
       "number": 1,
@@ -603,6 +603,11 @@
       "number": 118,
       "key": "tools/proportion-dense-points/",
       "title": "比例の点から直線へ"
+    },
+    {
+      "number": 119,
+      "key": "tools/signed-terms/",
+      "title": "符号を含めて項をまとめる"
     }
   ],
   "retiredNumbers": [
