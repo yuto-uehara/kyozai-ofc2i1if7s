@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 111,
+  "nextNumber": 112,
   "materials": [
     {
       "number": 1,
@@ -563,6 +563,11 @@
       "number": 110,
       "key": "tools/equidistant-on-line/",
       "title": "指定直線上の等距離点"
+    },
+    {
+      "number": 111,
+      "key": "tools/equation-solution-check/",
+      "title": "代入して解を確かめる"
     }
   ],
   "retiredNumbers": [
