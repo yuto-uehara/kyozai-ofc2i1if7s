@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 150,
+  "nextNumber": 153,
   "materials": [
     {
       "number": 1,
@@ -758,6 +758,21 @@
       "number": 149,
       "key": "tools/chained-equality/",
       "title": "A＝B＝Cを2つの等式へ"
+    },
+    {
+      "number": 150,
+      "key": "tools/word-count-cost/",
+      "title": "個数と代金から連立方程式へ"
+    },
+    {
+      "number": 151,
+      "key": "tools/word-travel-times/",
+      "title": "速さ・時間・道のりから立式する"
+    },
+    {
+      "number": 152,
+      "key": "tools/word-mixture/",
+      "title": "割合の基準量から立式する"
     }
   ],
   "retiredNumbers": [
