@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 184,
+  "nextNumber": 186,
   "materials": [
     {
       "number": 1,
@@ -928,6 +928,16 @@
       "number": 183,
       "key": "tools/boxplot-comparison/",
       "title": "箱ひげ図で中心と散らばりを比べる"
+    },
+    {
+      "number": 184,
+      "key": "tools/distribution-information/",
+      "title": "箱ひげ図とヒストグラムの情報差"
+    },
+    {
+      "number": 185,
+      "key": "tools/data-comparison-decisions/",
+      "title": "目的に合わせてデータを比べる"
     }
   ],
   "retiredNumbers": [
