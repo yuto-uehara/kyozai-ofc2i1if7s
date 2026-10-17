@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 242,
+  "nextNumber": 244,
   "materials": [
     {
       "number": 1,
@@ -1218,6 +1218,16 @@
       "number": 241,
       "key": "tools/similarity-solid-ratios/",
       "title": "相似な立体の表面積比と体積比"
+    },
+    {
+      "number": 242,
+      "key": "tools/inscribed-angle-explorer/",
+      "title": "円周角と同じ弧の中心角"
+    },
+    {
+      "number": 243,
+      "key": "tools/inscribed-angle-proof/",
+      "title": "円周角の定理を3つの場合で示す"
     }
   ],
   "retiredNumbers": [
