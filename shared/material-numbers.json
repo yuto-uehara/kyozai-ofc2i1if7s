@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 200,
+  "nextNumber": 202,
   "materials": [
     {
       "number": 1,
@@ -1008,6 +1008,16 @@
       "number": 199,
       "key": "tools/square-root-meaning/",
       "title": "平方根の意味と√の表す数"
+    },
+    {
+      "number": 200,
+      "key": "tools/square-root-order/",
+      "title": "平方根の大小と数直線"
+    },
+    {
+      "number": 201,
+      "key": "tools/rational-irrational-numbers/",
+      "title": "有理数と無理数を区別する"
     }
   ],
   "retiredNumbers": [
