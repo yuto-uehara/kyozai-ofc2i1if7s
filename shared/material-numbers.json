@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 246,
+  "nextNumber": 249,
   "materials": [
     {
       "number": 1,
@@ -1238,6 +1238,21 @@
       "number": 245,
       "key": "tools/inscribed-angle-converse/",
       "title": "円周角の定理の逆と同一円周"
+    },
+    {
+      "number": 246,
+      "key": "tools/angle-position-locus/",
+      "title": "見込む角から位置をしぼる"
+    },
+    {
+      "number": 247,
+      "key": "tools/circle-construction-reasons/",
+      "title": "円周角で説明する接線と高さ"
+    },
+    {
+      "number": 248,
+      "key": "tools/circle-similarity-use/",
+      "title": "円の図から相似と線分の関係へ"
     }
   ],
   "retiredNumbers": [
