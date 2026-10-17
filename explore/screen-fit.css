@@ -66,3 +66,6 @@
 @media(max-height:450px) and (min-width:600px){.screen-fit .fit-sector-chart{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:10px}.screen-fit .fit-sector-chart>.diagram{grid-template-columns:1fr 2fr}.screen-fit .fit-sector-dock{grid-column:2}}
 .screen-fit .fit-toolbar button{width:44px;min-width:44px}
 .screen-fit .eyebrow{margin:0;font-size:13px}
+
+/* One pair of stage arrows; reset remains available on every view. */
+.screen-fit .fit-view-status{flex:1;min-width:0;text-align:center;font-size:12px;line-height:1.25}.screen-fit .fit-toolbar #reset,.screen-fit .fit-toolbar #move-reset,.screen-fit .fit-toolbar #cone-reset{width:auto;min-width:70px;font-size:12px;padding:4px;white-space:normal}.screen-fit .navigation:has(#prev[hidden]){display:none}.screen-fit .nav-buttons:has(#back[hidden]){display:flex;justify-content:center}.screen-fit .fit-toolbar .fit-back{min-width:0}.screen-fit .fit-toolbar{gap:3px}@media(max-width:400px){.screen-fit .fit-view-status{font-size:10px}.screen-fit .fit-toolbar button{min-width:36px;width:36px}.screen-fit .fit-toolbar .fit-back{font-size:10px;max-width:45px}.screen-fit .fit-toolbar #reset,.screen-fit .fit-toolbar #move-reset,.screen-fit .fit-toolbar #cone-reset{min-width:56px;max-width:66px}}

@@ -9,9 +9,7 @@
   const oldMain=q('main'), title=q('h1'), shell=el('main','fit-shell');
   const head=el('div','fit-heading'), toolbar=el('nav','fit-toolbar');toolbar.setAttribute('aria-label','表示する内容');
   const back=el('a','fit-back');back.href='../';back.textContent='← 教材一覧';
-  const label=el('label','fit-view-label');label.htmlFor='fit-view';label.textContent='表示';
-  const picker=el('select');picker.id='fit-view';picker.setAttribute('aria-label','表示する内容を切り替える');
-  toolbar.append(back,label,picker);
+  const status=el('span','fit-view-status');status.setAttribute('role','status');status.setAttribute('aria-live','polite');toolbar.append(back,status);
   const deck=el('div','fit-deck'), footer=el('div','fit-footer');
   shell.append(head,toolbar,deck,footer);document.body.append(shell);
   document.body.classList.add('screen-fit','fit-'+route);
@@ -87,17 +85,22 @@
     // On calculation steps, show products alongside the source and arrow when
     // there is room; short screens offer the adjacent explicit product view.
   }
+  const reset=q('#reset,#move-reset,#cone-reset');if(reset)toolbar.append(reset);
   // Keep live announcement nodes. Remove only empty layout and redundant links.
   all('.sr-only,.visually-hidden').filter(n=>!shell.contains(n)).forEach(n=>shell.append(n));
   [...document.body.children].filter(n=>n!==shell&&n.tagName!=='SCRIPT').forEach(n=>n.remove());
-  pages.forEach((p,i)=>{const o=el('option');o.value=String(i);o.textContent=p.name;picker.append(o);});
-  function show(i){pages.forEach((p,k)=>p.node.hidden=k!==i);picker.value=String(i);document.documentElement.dataset.fitView=String(i);}
-  picker.addEventListener('change',()=>show(Number(picker.value)));
-  // Explicit previous/next views keep all lesson content discoverable.
+  let active=0;
+  const lessonPrev=q('#prev')||(route==='distributive'?q('#back'):null),lessonNext=q('#next');
+  if(lessonPrev)lessonPrev.hidden=true;if(lessonNext)lessonNext.hidden=true;
+  const dots=q('#dots');if(dots)dots.hidden=true;
   const prev=el('button','fit-view-prev'),next=el('button','fit-view-next');
   prev.type=next.type='button';prev.textContent='‹';next.textContent='›';
-  prev.setAttribute('aria-label','前の表示');next.setAttribute('aria-label','次の表示');
-  prev.addEventListener('click',()=>show((Number(picker.value)+pages.length-1)%pages.length));
-  next.addEventListener('click',()=>show((Number(picker.value)+1)%pages.length));toolbar.append(prev,next);
+  prev.setAttribute('aria-label','前の段階・画面');next.setAttribute('aria-label','次の段階・画面');toolbar.insertBefore(prev,status);toolbar.insertBefore(next,reset||null);
+  function update(){status.textContent=(active+1)+' / '+pages.length+' '+pages[active].name;prev.disabled=active===0&&(!lessonPrev||lessonPrev.disabled);next.disabled=active===pages.length-1&&!(active===0&&lessonNext&&!lessonNext.disabled);}
+  function show(i){active=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.node.hidden=k!==active);document.documentElement.dataset.fitView=String(active);update();}
+  function move(dir){const button=dir>0?lessonNext:lessonPrev;if(active===0&&button&&!button.disabled){button.click();update();}else show(active+dir);}
+  prev.addEventListener('click',()=>move(-1));next.addEventListener('click',()=>move(1));
+  if(reset)reset.addEventListener('click',()=>show(0));
+  const observer=new MutationObserver(update);if(lessonPrev)observer.observe(lessonPrev,{attributes:true,attributeFilter:['disabled']});if(lessonNext)observer.observe(lessonNext,{attributes:true,attributeFilter:['disabled']});
   show(0);
 })();
