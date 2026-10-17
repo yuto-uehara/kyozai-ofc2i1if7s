@@ -4,7 +4,7 @@ const tools=document.createElement('nav');tools.className='screen-tools';tools.s
 const back=document.createElement('a');back.href='../../index.html';back.textContent='‹ 一覧';tools.append(back);
 const views={value:'all'};const status=document.createElement('span');status.className='screen-view-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');const prev=document.createElement('button'),next=document.createElement('button');prev.textContent='‹';next.textContent='›';prev.setAttribute('aria-label','前の表示');next.setAttribute('aria-label','次の表示');
 const actions=document.createElement('div');actions.className='screen-action-panel';actions.hidden=true;actions.setAttribute('aria-label','教材の操作');const menu=document.createElement('button');menu.textContent='操作';menu.setAttribute('aria-expanded','false');const reset=document.createElement('button');reset.textContent='リセット';reset.className='screen-reset';const close=()=>{actions.hidden=true;menu.setAttribute('aria-expanded','false');};menu.onclick=()=>{actions.hidden=!actions.hidden;menu.setAttribute('aria-expanded',String(!actions.hidden));};
-const isSvg=figure.tagName.toLowerCase()==='svg',slug=location.pathname.split('/').pop();
+const isSvg=figure.tagName.toLowerCase()==='svg',slug=document.body.dataset.legacyRoute||location.pathname.split('/').pop();
 const regions={
 '2n4s_parallel_angles.html':{portrait:[[0,0,650,600],[0,0,650,600],[0,0,1000,235]],landscape:[[0,0,650,600],[0,0,650,600],[1200,0,400,330]],labels:['上の交点','下の交点','角の関係']},
 '1n5s_sector.html':{portrait:[[0,0,1000,810],[0,790,1000,550]],landscape:[[130,100,620,620],[940,30,660,580]],labels:['図を動かす','半径・式']},

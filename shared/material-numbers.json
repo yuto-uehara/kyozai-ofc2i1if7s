@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 91,
+  "nextNumber": 93,
   "materials": [
     {
       "number": 1,
@@ -92,7 +92,7 @@
     {
       "number": 17,
       "key": "1n5s/html/1n5s_transform.html",
-      "title": "図形の移動"
+      "title": "平行移動を動かして確かめる"
     },
     {
       "number": 18,
@@ -463,6 +463,16 @@
       "number": 90,
       "key": "explore/reflection.html",
       "title": "対称移動と対応する点"
+    },
+    {
+      "number": 91,
+      "key": "1n5s/html/1n5s_rotation.html",
+      "title": "回転移動を動かして確かめる"
+    },
+    {
+      "number": 92,
+      "key": "1n5s/html/1n5s_reflection.html",
+      "title": "対称移動を動かして確かめる"
     }
   ],
   "retiredNumbers": [
