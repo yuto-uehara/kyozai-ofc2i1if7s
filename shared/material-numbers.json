@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 198,
+  "nextNumber": 200,
   "materials": [
     {
       "number": 1,
@@ -998,6 +998,16 @@
       "number": 197,
       "key": "tools/constant-width-area/",
       "title": "一定幅の面積と真ん中の線"
+    },
+    {
+      "number": 198,
+      "key": "tools/polynomial-area-pieces/",
+      "title": "面積の分け方で展開と因数分解を見る"
+    },
+    {
+      "number": 199,
+      "key": "tools/square-root-meaning/",
+      "title": "平方根の意味と√の表す数"
     }
   ],
   "retiredNumbers": [
