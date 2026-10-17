@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 232,
+  "nextNumber": 233,
   "materials": [
     {
       "number": 1,
@@ -1168,6 +1168,11 @@
       "number": 231,
       "key": "tools/triangle-parallel-ratios/",
       "title": "三角形と平行線の線分比"
+    },
+    {
+      "number": 232,
+      "key": "tools/triangle-ratio-converse/",
+      "title": "線分の比から平行を確かめる"
     }
   ],
   "retiredNumbers": [
