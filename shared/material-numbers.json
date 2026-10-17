@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 202,
+  "nextNumber": 204,
   "materials": [
     {
       "number": 1,
@@ -1018,6 +1018,16 @@
       "number": 201,
       "key": "tools/rational-irrational-numbers/",
       "title": "有理数と無理数を区別する"
+    },
+    {
+      "number": 202,
+      "key": "tools/radical-multiply-divide/",
+      "title": "根号の乗除と成り立つ条件"
+    },
+    {
+      "number": 203,
+      "key": "tools/radical-square-factors/",
+      "title": "平方因数を使って根号を変形する"
     }
   ],
   "retiredNumbers": [
