@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 154,
+  "nextNumber": 156,
   "materials": [
     {
       "number": 1,
@@ -778,6 +778,16 @@
       "number": 153,
       "key": "tools/linear-from-slope-point/",
       "title": "傾きと1点から一次関数の式へ"
+    },
+    {
+      "number": 154,
+      "key": "tools/equation-solution-line/",
+      "title": "方程式の解の組と直線"
+    },
+    {
+      "number": 155,
+      "key": "tools/simultaneous-intersection/",
+      "title": "連立方程式の解と交点"
     }
   ],
   "retiredNumbers": [
