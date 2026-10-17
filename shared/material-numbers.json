@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 96,
+  "nextNumber": 98,
   "materials": [
     {
       "number": 1,
@@ -287,7 +287,7 @@
     {
       "number": 56,
       "key": "tools/prime-factorization/",
-      "title": "素数・素因数分解と約数を図でつなぐ"
+      "title": "素因数分解を一段ずつ"
     },
     {
       "number": 57,
@@ -488,6 +488,16 @@
       "number": 95,
       "key": "1n3s/html/1n3s_equation_transposition.html",
       "title": "移項で方程式を解く"
+    },
+    {
+      "number": 96,
+      "key": "tools/divisor-arrays/",
+      "title": "長方形の並べ方と約数"
+    },
+    {
+      "number": 97,
+      "key": "tools/prime-numbers/",
+      "title": "約数から素数を見分ける"
     }
   ],
   "retiredNumbers": [
