@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 240,
+  "nextNumber": 241,
   "materials": [
     {
       "number": 1,
@@ -1208,6 +1208,11 @@
       "number": 239,
       "key": "tools/significant-digits/",
       "title": "有効数字と10のべきの表し方"
+    },
+    {
+      "number": 240,
+      "key": "tools/similarity-area-ratios/",
+      "title": "相似比から面積比へ"
     }
   ],
   "retiredNumbers": [
