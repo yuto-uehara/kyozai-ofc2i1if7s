@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 137,
+  "nextNumber": 141,
   "materials": [
     {
       "number": 1,
@@ -693,6 +693,26 @@
       "number": 136,
       "key": "tools/polynomial-fraction-subtract/",
       "title": "分母が数の式の減法"
+    },
+    {
+      "number": 137,
+      "key": "tools/monomial-multiply/",
+      "title": "単項式どうしの乗法"
+    },
+    {
+      "number": 138,
+      "key": "tools/monomial-divide/",
+      "title": "単項式どうしの除法"
+    },
+    {
+      "number": 139,
+      "key": "tools/monomial-power/",
+      "title": "単項式の累乗"
+    },
+    {
+      "number": 140,
+      "key": "tools/monomial-mixed/",
+      "title": "単項式の乗除混合"
     }
   ],
   "retiredNumbers": [
