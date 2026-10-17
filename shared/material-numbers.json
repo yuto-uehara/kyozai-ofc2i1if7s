@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 241,
+  "nextNumber": 242,
   "materials": [
     {
       "number": 1,
@@ -1213,6 +1213,11 @@
       "number": 240,
       "key": "tools/similarity-area-ratios/",
       "title": "相似比から面積比へ"
+    },
+    {
+      "number": 241,
+      "key": "tools/similarity-solid-ratios/",
+      "title": "相似な立体の表面積比と体積比"
     }
   ],
   "retiredNumbers": [
