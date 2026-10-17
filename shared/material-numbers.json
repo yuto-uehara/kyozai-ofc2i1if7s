@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 81,
+  "nextNumber": 84,
   "materials": [
     {
       "number": 1,
@@ -352,7 +352,7 @@
     {
       "number": 69,
       "key": "tools/construction-distance/",
-      "title": "作図を等距離で確かめる"
+      "title": "垂直二等分線と等距離"
     },
     {
       "number": 70,
@@ -413,6 +413,21 @@
       "number": 80,
       "key": "tools/point-plane-distance/",
       "title": "点から平面までの距離"
+    },
+    {
+      "number": 81,
+      "key": "tools/solid-classification/",
+      "title": "立体の分類"
+    },
+    {
+      "number": 82,
+      "key": "tools/angle-bisector-distance/",
+      "title": "角の二等分線と等距離"
+    },
+    {
+      "number": 83,
+      "key": "tools/perpendicular-distance/",
+      "title": "垂線と最短距離"
     }
   ],
   "retiredNumbers": [
