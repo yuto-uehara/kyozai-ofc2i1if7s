@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 257,
+  "nextNumber": 259,
   "materials": [
     {
       "number": 1,
@@ -1293,6 +1293,16 @@
       "number": 256,
       "key": "tools/pythagoras-nets-folds/",
       "title": "展開図と折り返しで長さを求める"
+    },
+    {
+      "number": 257,
+      "key": "tools/survey-population-sampling/",
+      "title": "母集団・標本と調査の選び方"
+    },
+    {
+      "number": 258,
+      "key": "tools/sample-proportion-estimate/",
+      "title": "標本の割合から全体を推定する"
     }
   ],
   "retiredNumbers": [
