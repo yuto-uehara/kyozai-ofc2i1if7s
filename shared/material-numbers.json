@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 180,
+  "nextNumber": 181,
   "materials": [
     {
       "number": 1,
@@ -908,6 +908,11 @@
       "number": 179,
       "key": "tools/equally-likely-outcomes/",
       "title": "同様に確からしい場合を選ぶ"
+    },
+    {
+      "number": 180,
+      "key": "tools/systematic-outcome-counting/",
+      "title": "表と樹形図で場合を数える"
     }
   ],
   "retiredNumbers": [
