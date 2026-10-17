@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 234,
+  "nextNumber": 235,
   "materials": [
     {
       "number": 1,
@@ -1178,6 +1178,11 @@
       "number": 233,
       "key": "tools/midpoint-connector/",
       "title": "中点連結定理の平行と半分"
+    },
+    {
+      "number": 234,
+      "key": "tools/parallel-transversal-ratios/",
+      "title": "平行線を横切る線分の比"
     }
   ],
   "retiredNumbers": [
