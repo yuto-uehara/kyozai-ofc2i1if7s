@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 221,
+  "nextNumber": 224,
   "materials": [
     {
       "number": 1,
@@ -1113,6 +1113,21 @@
       "number": 220,
       "key": "tools/square-function-graph/",
       "title": "y＝ax²のグラフと係数"
+    },
+    {
+      "number": 221,
+      "key": "tools/square-function-rate/",
+      "title": "y＝ax²の変化の割合"
+    },
+    {
+      "number": 222,
+      "key": "tools/square-function-average-speed/",
+      "title": "距離の変化と平均の速さ"
+    },
+    {
+      "number": 223,
+      "key": "tools/square-function-range/",
+      "title": "y＝ax²の増減と変域"
     }
   ],
   "retiredNumbers": [
