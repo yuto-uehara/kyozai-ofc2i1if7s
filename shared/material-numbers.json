@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 121,
+  "nextNumber": 122,
   "materials": [
     {
       "number": 1,
@@ -613,6 +613,11 @@
       "number": 120,
       "key": "tools/negative-reciprocal/",
       "title": "負の数の逆数と除法"
+    },
+    {
+      "number": 121,
+      "key": "tools/read-proportion-graph/",
+      "title": "グラフから比例の式へ"
     }
   ],
   "retiredNumbers": [
