@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 127,
+  "nextNumber": 128,
   "materials": [
     {
       "number": 1,
@@ -643,6 +643,11 @@
       "number": 126,
       "key": "tools/distance-time-gaps/",
       "title": "距離の差と時刻の差"
+    },
+    {
+      "number": 127,
+      "key": "tools/surface-translation/",
+      "title": "面を垂直に動かして立体へ"
     }
   ],
   "retiredNumbers": [
