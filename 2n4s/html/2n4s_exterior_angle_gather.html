@@ -18,7 +18,7 @@ button.on{background:#191919;color:#fff}
 button:disabled{opacity:.3;cursor:default}
 @media (max-width:560px){button{font-size:19px;padding:0 12px}}
 </style>
-<link rel="stylesheet" href="../../shared/legacy-screen.css">
+<link rel="stylesheet" href="../../shared/legacy-screen.css?rev=20261017nav">
 <link rel="stylesheet" href="../../shared/material-numbers.css?rev=20261013numbers"></head>
 <body>
 <div id="wrap">
@@ -236,6 +236,6 @@ if(window.ResizeObserver)new ResizeObserver(resize).observe(cv);
 window.__ext={setPoly:a=>{if(mode!=="idle")return;P=a.map(([x,y])=>({x,y}));draw();},get:()=>({n:P.length,mode,s,P:P.map(p=>[p.x,p.y]),...(()=>{const A=analyze(P);return{convex:A.convex,sumDeg:A.ex.reduce((a,e)=>a+e.t,0)*DEG,ex:A.ex.map(e=>e.t*DEG)}})()}),toScreen:(x,y)=>toS({x,y}),R:()=>R,center:()=>toS(C)};
 reset(); resize();
 </script>
-<script src="../../shared/legacy-screen.js"></script>
+<script src="../../shared/legacy-screen.js?rev=20261017nav"></script>
 <script src="../../shared/material-numbers.js?rev=20261013numbers"></script></body>
 </html>
