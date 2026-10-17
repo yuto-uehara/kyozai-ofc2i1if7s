@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 233,
+  "nextNumber": 234,
   "materials": [
     {
       "number": 1,
@@ -1173,6 +1173,11 @@
       "number": 232,
       "key": "tools/triangle-ratio-converse/",
       "title": "線分の比から平行を確かめる"
+    },
+    {
+      "number": 233,
+      "key": "tools/midpoint-connector/",
+      "title": "中点連結定理の平行と半分"
     }
   ],
   "retiredNumbers": [
