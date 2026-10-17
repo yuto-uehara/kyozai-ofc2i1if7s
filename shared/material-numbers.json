@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 238,
+  "nextNumber": 239,
   "materials": [
     {
       "number": 1,
@@ -1198,6 +1198,11 @@
       "number": 237,
       "key": "tools/scale-drawing-distance/",
       "title": "縮図から距離と高さを求める"
+    },
+    {
+      "number": 238,
+      "key": "tools/measurement-rounding-error/",
+      "title": "測定値の誤差と真の値の範囲"
     }
   ],
   "retiredNumbers": [
