@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 122,
+  "nextNumber": 123,
   "materials": [
     {
       "number": 1,
@@ -618,6 +618,11 @@
       "number": 121,
       "key": "tools/read-proportion-graph/",
       "title": "グラフから比例の式へ"
+    },
+    {
+      "number": 122,
+      "key": "tools/read-inverse-graph/",
+      "title": "グラフから反比例の式へ"
     }
   ],
   "retiredNumbers": [
