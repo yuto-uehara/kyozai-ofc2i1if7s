@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 161,
+  "nextNumber": 162,
   "materials": [
     {
       "number": 1,
@@ -813,6 +813,11 @@
       "number": 160,
       "key": "tools/parallel-angle-converse/",
       "title": "角の等しさから平行を判断する"
+    },
+    {
+      "number": 161,
+      "key": "tools/congruence-correspondence/",
+      "title": "合同の対応と記号の順序"
     }
   ],
   "retiredNumbers": [
