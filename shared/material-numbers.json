@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 120,
+  "nextNumber": 121,
   "materials": [
     {
       "number": 1,
@@ -608,6 +608,11 @@
       "number": 119,
       "key": "tools/signed-terms/",
       "title": "符号を含めて項をまとめる"
+    },
+    {
+      "number": 120,
+      "key": "tools/negative-reciprocal/",
+      "title": "負の数の逆数と除法"
     }
   ],
   "retiredNumbers": [
