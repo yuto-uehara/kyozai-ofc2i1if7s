@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 124,
+  "nextNumber": 126,
   "materials": [
     {
       "number": 1,
@@ -628,6 +628,16 @@
       "number": 123,
       "key": "tools/queue-prediction/",
       "title": "比例で待ち時間を予測する"
+    },
+    {
+      "number": 124,
+      "key": "tools/fixed-quantity-relations/",
+      "title": "固定する量と比例・反比例"
+    },
+    {
+      "number": 125,
+      "key": "tools/power-time-model/",
+      "title": "反比例モデルと時間の単位"
     }
   ],
   "retiredNumbers": [
