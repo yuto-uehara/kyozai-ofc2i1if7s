@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 175,
+  "nextNumber": 177,
   "materials": [
     {
       "number": 1,
@@ -883,6 +883,16 @@
       "number": 174,
       "key": "tools/quadrilateral-diagonals/",
       "title": "平行四辺形の対角線で形を判定"
+    },
+    {
+      "number": 175,
+      "key": "tools/hypotenuse-midpoint/",
+      "title": "直角三角形の斜辺の中点の性質"
+    },
+    {
+      "number": 176,
+      "key": "tools/proof-condition-review/",
+      "title": "証明で使う条件・外せる条件"
     }
   ],
   "retiredNumbers": [
