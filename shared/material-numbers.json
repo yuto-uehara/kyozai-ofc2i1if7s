@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 116,
+  "nextNumber": 117,
   "materials": [
     {
       "number": 1,
@@ -588,6 +588,11 @@
       "number": 115,
       "key": "tools/linear-expression-divide/",
       "title": "一次式全体の除法"
+    },
+    {
+      "number": 116,
+      "key": "tools/denominator-substitution/",
+      "title": "分母の文字に代入する"
     }
   ],
   "retiredNumbers": [
