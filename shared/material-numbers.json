@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 224,
+  "nextNumber": 227,
   "materials": [
     {
       "number": 1,
@@ -1128,6 +1128,21 @@
       "number": 223,
       "key": "tools/square-function-range/",
       "title": "y＝ax²の増減と変域"
+    },
+    {
+      "number": 224,
+      "key": "tools/square-function-model/",
+      "title": "測定値からy＝ax²とみなす"
+    },
+    {
+      "number": 225,
+      "key": "tools/parabola-line-intersections/",
+      "title": "放物線と直線の交点"
+    },
+    {
+      "number": 226,
+      "key": "tools/piecewise-function-relations/",
+      "title": "区間で変わる関数の対応"
     }
   ],
   "retiredNumbers": [
