@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 259,
+  "nextNumber": 260,
   "materials": [
     {
       "number": 1,
@@ -1303,6 +1303,11 @@
       "number": 258,
       "key": "tools/sample-proportion-estimate/",
       "title": "標本の割合から全体を推定する"
+    },
+    {
+      "number": 259,
+      "key": "tools/repeated-sample-means/",
+      "title": "標本平均を繰り返して比べる"
     }
   ],
   "retiredNumbers": [
