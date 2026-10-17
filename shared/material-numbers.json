@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 165,
+  "nextNumber": 166,
   "materials": [
     {
       "number": 1,
@@ -833,6 +833,11 @@
       "number": 164,
       "key": "tools/bisector-congruence-reason/",
       "title": "角の二等分線の作図を合同で説明"
+    },
+    {
+      "number": 165,
+      "key": "tools/isosceles-base-angles/",
+      "title": "二等辺三角形の底角が等しい理由"
     }
   ],
   "retiredNumbers": [
