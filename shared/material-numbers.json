@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 142,
+  "nextNumber": 143,
   "materials": [
     {
       "number": 1,
@@ -718,6 +718,11 @@
       "number": 141,
       "key": "tools/simplify-substitute/",
       "title": "整理してから代入する"
+    },
+    {
+      "number": 142,
+      "key": "tools/consecutive-three-sum/",
+      "title": "連続する3整数の和を説明する"
     }
   ],
   "retiredNumbers": [
