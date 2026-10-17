@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 105,
+  "nextNumber": 106,
   "materials": [
     {
       "number": 1,
@@ -533,6 +533,11 @@
       "number": 104,
       "key": "tools/sphere-surface-area/",
       "title": "球の表面積"
+    },
+    {
+      "number": 105,
+      "key": "tools/circle-restoration/",
+      "title": "円の一部から元の円を復元する"
     }
   ],
   "retiredNumbers": [
