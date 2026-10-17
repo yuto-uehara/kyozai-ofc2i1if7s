@@ -15,8 +15,11 @@ const SF={active:false,index:0,_part:false,
  const wrap=document.getElementById('wrap'),bar=document.getElementById('bar');
  const nav=document.createElement('nav');nav.id='sf-nav';nav.setAttribute('aria-label','表示パネル');
  const back=document.createElement('button');back.textContent='‹';back.setAttribute('aria-label','前のパネル');
- const select=document.createElement('select');select.setAttribute('aria-label','表示する内容');this.labels.forEach((label,i)=>{const op=document.createElement('option');op.value=i;op.textContent=`${i+1}/${this.labels.length} ${label}`;select.append(op);});
- const next=document.createElement('button');next.textContent='›';next.setAttribute('aria-label','次のパネル');nav.append(back,select,next);wrap.prepend(nav);
+ const label=document.createElement('span');label.id='sf-status';label.setAttribute('role','status');label.setAttribute('aria-live','polite');
+ const next=document.createElement('button');next.textContent='›';next.setAttribute('aria-label','次のパネル');
+ const home=document.createElement('a');home.textContent='教材一覧';home.href='../index.html#cstat'+(+this.id<=4?'1':+this.id<=9?'2':'3');home.id='sf-home';
+ const reset=document.getElementById('bReset');nav.append(home,back,label,next);if(reset)nav.append(reset);wrap.prepend(nav);
+ this.refreshNav=()=>{label.textContent=this.active?`${this.index+1}/${this.labels.length} ${this.labels[this.index]}`:'全体を表示';back.disabled=this.index===0;next.disabled=this.index===this.labels.length-1;};
  const dock=document.createElement('div');dock.id='sf-dock';wrap.append(dock);
  const menu=document.createElement('button');menu.textContent='操作';menu.setAttribute('aria-expanded','false');
  const close=()=>{bar.classList.remove('sf-open');menu.setAttribute('aria-expanded','false');menu.textContent='操作';};
@@ -24,11 +27,11 @@ const SF={active:false,index:0,_part:false,
  const primary=document.querySelector('#b1,#bNew,#bRand,#b1000'),second=document.getElementById('b100')||document.getElementById('bAuto');
  [primary,second].filter((x,i,a)=>x&&a.indexOf(x)===i).forEach(source=>{const b=document.createElement('button');b.textContent=source.textContent.length>9?'もう一度':source.textContent;b.className=source.className;b.onclick=()=>source.click();dock.append(b);new MutationObserver(()=>{b.disabled=source.disabled;b.className=source.className;}).observe(source,{attributes:true});});dock.append(menu);
  bar.addEventListener('click',e=>{if(e.target.tagName==='BUTTON'&&e.target.id!=='bQ')close();});
- const change=i=>{drags.clear();if(typeof onUp==='function')onUp();this.index=(i+this.labels.length)%this.labels.length;select.value=this.index;close();document.getElementById('tip').classList.remove('show');fit();};
- select.onchange=()=>change(+select.value);back.onclick=()=>change(this.index-1);next.onclick=()=>change(this.index+1);
+ const change=i=>{drags.clear();if(typeof onUp==='function')onUp();this.index=Math.max(0,Math.min(this.labels.length-1,i));this.refreshNav();close();document.getElementById('tip').classList.remove('show');fit();};
+ if(reset)reset.addEventListener('click',()=>change(0));back.onclick=()=>change(this.index-1);next.onclick=()=>change(this.index+1);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();document.getElementById('tip').classList.remove('show');}});
  const oldLayout=layout,oldDraw=draw;
- layout=function(){const h=H;SF.active=innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',SF.active);if(SF.active)H=Math.max(900,H);oldLayout();H=h;if(SF.active)SF.layout();};
+ layout=function(){const h=H;SF.active=innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',SF.active);if(SF.active)H=Math.max(900,H);oldLayout();H=h;if(SF.active)SF.layout();SF.refreshNav();};
  draw=function(){SF._part=false;oldDraw();if(SF._part){ctx.restore();SF._part=false;}};
  this.active=innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',this.active);
  cv.setAttribute('aria-label',document.title+'。表示パネルと操作ボタンで実験できます。');
@@ -52,7 +55,7 @@ const SF={active:false,index:0,_part:false,
    const down=onDown;onDown=function(...args){if(SF.active&&SF.index!==(SF.id==='04'?1:0))return false;return down(...args);};
  }
  const tip=document.getElementById('tip');const dismiss=document.createElement('button');dismiss.className='sf-tip-close';dismiss.textContent='閉じる';dismiss.onclick=()=>{tip.classList.remove('show');document.getElementById('bQ').classList.remove('on');};tip.append(dismiss);
- this.select=change;
+ this.select=change;this.refreshNav();
  },
  layout(){
  const box={x:52,y:36,w:W-76,h:Math.max(40,H-72)},wide={x:18,y:28,w:W-36,h:Math.max(40,H-52)};

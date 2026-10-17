@@ -29,8 +29,8 @@ button:disabled{opacity:.32;cursor:default}
 #tip.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
-<link rel="stylesheet" href="screen-fit.css">
-<script src="screen-fit.js"></script>
+<link rel="stylesheet" href="screen-fit.css?rev=20261017nav">
+<script src="screen-fit.js?rev=20261017nav"></script>
 <link rel="stylesheet" href="../shared/material-numbers.css?rev=20261013numbers"></head>
 <body>
 <div id="wrap">
@@ -250,14 +250,14 @@ let G={},paths=[],games=0,wins=0,steps=0;
 const sN=new Slider({label:"N",min:2,max:20,step:1,value:10,f:v=>v+"枚",on:v=>{if(sK.v>=v)sK.v=v-1;sK.max=v-1;clr();}});
 const sK=new Slider({label:"k",min:1,max:9,step:1,value:3,f:v=>v+"枚",on:()=>clr()});
 const sP=new Slider({label:"p",min:0.3,max:0.7,step:0.01,value:0.5,f:v=>v.toFixed(2),on:()=>clr()});
-function clr(){paths=[];games=0;wins=0;steps=0;req();}
+function clr(){RP=null;replayVersion++;paths=[];games=0;wins=0;steps=0;req();}
 function theory(){const k=sK.v,N=sN.v,p=sP.v,q=1-p;if(Math.abs(p-0.5)<1e-9)return{w:k/N,t:k*(N-k)};const r=q/p,w=(1-Math.pow(r,k))/(1-Math.pow(r,N));return{w,t:k/(q-p)-N/(q-p)*w};}
-function play(m){const N=sN.v,p=sP.v;for(let i=0;i<m;i++){let x=sK.v,t=0;const rec=paths.length<40||i===m-1;const pth=rec?[x]:null;
+function play(m){const token=++replayVersion;const N=sN.v,p=sP.v;for(let i=0;i<m;i++){let x=sK.v,t=0;const rec=paths.length<40||i===m-1;const pth=rec?[x]:null;
   while(x>0&&x<N){x+=rnd()<p?1:-1;t++;if(rec)pth.push(x);}
   games++;steps+=t;if(x===N)wins++;if(rec){paths.push({p:pth,w:x===N});if(paths.length>40)paths.shift();}}
   if(m===1){const P=paths[paths.length-1].p,dur=Math.min(0.42,6/P.length)*1000,t0=performance.now();RP={i:0,f:0,n:P.length-1};
-    const f=t=>{if(!RP)return;const e=(t-t0)/dur;RP.i=Math.min(RP.n,Math.floor(e));RP.f=e-RP.i;if(e>=RP.n+1.5){RP=null;}req();if(RP)requestAnimationFrame(f);};requestAnimationFrame(f);}else RP=null;req();}
-let RP=null;const PA=makePerson(8),PB=makePerson(17);
+    const f=t=>{if(!RP||token!==replayVersion)return;const e=(t-t0)/dur;RP.i=Math.min(RP.n,Math.floor(e));RP.f=e-RP.i;if(e>=RP.n+1.5){RP=null;}req();if(RP)requestAnimationFrame(f);};requestAnimationFrame(f);}else RP=null;req();}
+let RP=null,replayVersion=0;const PA=makePerson(8),PB=makePerson(17);
 function stack(cx,by,cnt,cw,ch){for(let j=0;j<cnt;j++){const s=Math.floor(j/10),y=by-(j%10)*ch,x=cx+(s-0.5*(Math.ceil(cnt/10)-1))*cw*1.15;
   ctx.fillStyle="#8d9196";ctx.beginPath();ctx.ellipse(x,y,cw/2,ch*1.1,0,0,TAU);ctx.fill();ctx.fillStyle="#c9ccd0";ctx.beginPath();ctx.ellipse(x,y-ch*0.35,cw/2,ch*1.1,0,0,TAU);ctx.fill();
   if(j%10===9||j===cnt-1){const g=ctx.createLinearGradient(x-cw/2,0,x+cw/2,0);g.addColorStop(0,"#b9bdc2");g.addColorStop(0.4,"#f2f3f4");g.addColorStop(1,"#a3a8ad");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y-ch*0.35,cw/2,ch*1.1,0,0,TAU);ctx.fill();}}}
