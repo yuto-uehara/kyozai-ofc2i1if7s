@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 183,
+  "nextNumber": 184,
   "materials": [
     {
       "number": 1,
@@ -923,6 +923,11 @@
       "number": 182,
       "key": "tools/lottery-order-fairness/",
       "title": "戻さないくじの順番と公平性"
+    },
+    {
+      "number": 183,
+      "key": "tools/boxplot-comparison/",
+      "title": "箱ひげ図で中心と散らばりを比べる"
     }
   ],
   "retiredNumbers": [
