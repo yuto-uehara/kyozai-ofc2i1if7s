@@ -179,9 +179,25 @@ function imgPts(){
 function poly(g,pts,fill,stroke){el('polygon',{points:pts.map(p=>X(p).join(',')).join(' '),fill,stroke,'stroke-width':5,'stroke-linejoin':'round'},g);}
 function seg(g,p,q,c,w,dash){const a=X(p),b=X(q);el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:c,'stroke-width':w,'stroke-dasharray':dash||'none'},g);}
 function labels(g,pts,names,c){const cx=(pts[0][0]+pts[1][0]+pts[2][0])/3,cy=(pts[0][1]+pts[1][1]+pts[2][1])/3;
-  pts.forEach((p,i)=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;const q=X([p[0]+dx/l*0.75,p[1]+dy/l*0.75]);T(g,q[0],q[1],names[i],SZ('label'),c);});}
+  pts.forEach((p,i)=>{const dx=p[0]-cx,dy=p[1]-cy,l=Math.hypot(dx,dy)||1;const q=X([p[0]+dx/l*0.75,p[1]+dy/l*0.75]);const label=T(g,q[0],q[1],names[i],SZ('label'),c);label.classList.add('vertex-label');label.dataset.px=X(p)[0];label.dataset.py=X(p)[1];});}
 function tick(g,p,q,k,c){const a=X(p),b=X(q),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,l=Math.hypot(b[0]-a[0],b[1]-a[1])||1,ux=(b[0]-a[0])/l,uy=(b[1]-a[1])/l;
-  for(let i=0;i<k;i++){const o=(i-(k-1)/2)*9,cx=mx+ux*o,cy=my+uy*o;el('line',{x1:cx-uy*10,y1:cy+ux*10,x2:cx+uy*10,y2:cy-ux*10,stroke:c,'stroke-width':3},g);}}
+  for(let i=0;i<k;i++){const o=(i-(k-1)/2)*9,cx=mx+ux*o,cy=my+uy*o;el('line',{x1:cx-uy*10,y1:cy+ux*10,x2:cx+uy*10,y2:cy-ux*10,stroke:c,'stroke-width':3,class:'equal-tick'},g);}}
+// Keep vertex names clear of each other and the equal-distance marks.
+function placeReflectionLabels(g){
+ const pad=6,used=[...g.querySelectorAll('.equal-tick')].map(e=>e.getBBox());
+ const overlap=(a,b)=>a.x<b.x+b.width+pad&&a.x+a.width+pad>b.x&&a.y<b.y+b.height+pad&&a.y+a.height+pad>b.y;
+ for(const label of g.querySelectorAll('.vertex-label')){
+  const px=+label.dataset.px,py=+label.dataset.py,x=+label.getAttribute('x'),y=+label.getAttribute('y'),angle=Math.atan2(y-py,x-px);
+  let found=false;
+  for(const radius of [Math.hypot(x-px,y-py),L.u,1.4*L.u,1.8*L.u]){
+   for(const turn of [0,.25,-.25,.5,-.5,.75,-.75,1]){
+    label.setAttribute('x',px+radius*Math.cos(angle+Math.PI*turn));label.setAttribute('y',py+radius*Math.sin(angle+Math.PI*turn));
+    const box=label.getBBox();if(!used.some(b=>overlap(box,b))){found=true;break;}
+   }if(found)break;
+  }
+  used.push(label.getBBox());
+ }
+}
 function handle(g,p,c){const a=X(p);DOT(g,a[0],a[1],c);}
 function draw(){
   root.innerHTML='';const g=root;
@@ -201,6 +217,7 @@ function draw(){
         el('polyline',{points:[q1,q2,q3].map(q=>X(q).join(',')).join(' '),fill:'none',stroke:cs[i],'stroke-width':3},fg);}});
   }
   labels(fg,TRI,NM,COL.blue); labels(fg,I,NM.map(n=>n+'′'),COL.orange);
+  if(st.mode===2)placeReflectionLabels(fg);
   // mode handles
   if(st.mode===1){ const o=X(st.O),a=X(TRI[0]),b=X(I[0]);
     const r=46,a1=Math.atan2(a[1]-o[1],a[0]-o[0]);

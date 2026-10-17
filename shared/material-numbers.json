@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 101,
+  "nextNumber": 104,
   "materials": [
     {
       "number": 1,
@@ -262,7 +262,7 @@
     {
       "number": 51,
       "key": "stats/11_clt.html",
-      "title": "大数の法則・中心極限定理"
+      "title": "大数の法則"
     },
     {
       "number": 52,
@@ -272,7 +272,7 @@
     {
       "number": 53,
       "key": "stats/13_random_walk.html",
-      "title": "ランダムウォーク"
+      "title": "ランダムウォークの距離"
     },
     {
       "number": 54,
@@ -513,6 +513,21 @@
       "number": 100,
       "key": "tools/sphere-volume/",
       "title": "球の体積"
+    },
+    {
+      "number": 101,
+      "key": "tools/distribution-comparison/",
+      "title": "人数の違う集団を比べる"
+    },
+    {
+      "number": 102,
+      "key": "stats/11_sample_means.html",
+      "title": "中心極限定理"
+    },
+    {
+      "number": 103,
+      "key": "stats/13_return_origin.html",
+      "title": "ランダムウォークの原点回帰"
     }
   ],
   "retiredNumbers": [

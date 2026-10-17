@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>大数の法則と中心極限定理</title>
+<title>大数の法則</title>
 <style>
 :root{--paper:#f7f5f0;--ink:#2a2a2a;--mute:#8a8579;--rule:#e2ddd2;--acc:#2f6f6a;--acc2:#8c3a3f;--sand:#c9b38f;
   --sans:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",sans-serif;
@@ -30,19 +30,19 @@ button:disabled{opacity:.32;cursor:default}
 @media (max-width:860px){#tip{font-size:18px}}
 </style>
 <link rel="stylesheet" href="screen-fit.css?rev=20261017nav">
-<script src="screen-fit.js?rev=20261017nav"></script>
+<script src="screen-fit.js?rev=20261017statssplit"></script>
 <link rel="stylesheet" href="../shared/material-numbers.css?rev=20261013numbers"></head>
-<body>
+<body data-stats-parts="0,1,3,5">
 <div id="wrap">
 <canvas id="cv"></canvas>
 <div id="bar">
   <button id="dU" class="on">一様</button><button id="dE">指数</button><button id="dD">サイコロ</button><button id="dA">U字</button>
-  <span class="sep"></span><button id="bCur" class="on">曲線</button><button id="bQ">?</button><span class="sep"></span>
+  <span class="sep"></span><button id="bCur" class="on" hidden>曲線</button><button id="bQ">?</button><span class="sep"></span>
   <button id="b1" class="main">×1</button><button id="b100">×100</button><button id="b1000">×1000</button><button id="bAuto">自動</button>
   <button id="bReset">リセット</button>
 </div>
 </div>
-<div id="tip">平均は μ に近づき（大数の法則）、標本平均の分布は正規分布 N(μ, σ²/n) に近づく（中心極限定理）。</div>
+<div id="tip">独立に取り出す個数を増やし、全体の平均が母平均 μ に近づく様子を確かめる。n は1回で取り出す個数。</div>
 <script>
 "use strict";
 /* ===== 共通: 色・乱数・描画・スライダー ===== */
@@ -299,7 +299,7 @@ function draw(){SF.part(0);const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
       else{const r=sz*0.48,hue=clamp((x-D.a)/(D.b-D.a),0,1),col=shade("#b5824a",-0.35+hue*0.6);dot(cx+1,cy+2,r,"rgba(0,0,0,.3)");const g=ctx.createRadialGradient(cx-r*0.35,cy-r*0.35,r*0.1,cx,cy,r);g.addColorStop(0,"#fff7e8");g.addColorStop(1,col);ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,TAU);ctx.fill();
         if(sz>26)T(x.toFixed(2),cx,cy,{a:"center",size:r*0.55,c:"#2a2a2a",serif:1});}});
     T("x̄ = "+lastS.mean.toFixed(3),tr.x+tr.w-ii-6,tr.y+tr.h-ii-L*0.6,{a:"right",size:L*0.9,c:"#f3ecd9",serif:1});}
-  else T("「1回」で n 個を取り出す",tr.x+tr.w/2,tr.y+tr.h/2,{a:"center",size:L*0.8,c:"rgba(243,236,217,.7)"});
+  else T("「×1」で n 個を取り出す",tr.x+tr.w/2,tr.y+tr.h/2,{a:"center",size:L*0.8,c:"rgba(243,236,217,.7)"});
   T("取り出した "+n+" 個",tr.x,tr.y-L*0.6,{size:TK,c:GR});
   SF.part(4);
   // 数値
@@ -320,5 +320,5 @@ window.SIM={get:()=>{const D=DIST[dk],em=sum/m;return{dk,n:sn.v,m,mean:em,sd:Mat
 SF.install();
 fit();
 </script>
-<script src="../shared/material-numbers.js?rev=20261013numbers"></script></body>
+<script src="../shared/material-numbers.js?rev=20261017statssplit"></script></body>
 </html>

@@ -9,9 +9,10 @@ const SF={active:false,index:0,_part:false,
  '11':['母集団','平均の変化','標本平均の分布','取り出した標本','平均・標準偏差','標本数を設定'],
  '12':['1000人・面積図','人数の内訳','陽性の確率','条件を設定'], '13':['歩く様子','距離','原点に戻る割合'],
  '14':['今日の天気','状態の移り変わり','最近の天気','晴れの割合','割合のグラフ','条件を設定']},
- part(i){if(!this.active)return;if(this._part)ctx.restore();ctx.save();this._part=true;if(i!==this.index){ctx.beginPath();ctx.rect(0,0,0,0);ctx.clip();}},
+ part(i){if(!this.active)return;if(this._part)ctx.restore();ctx.save();this._part=true;if(i!==(this.parts?this.parts[this.index]:this.index)){ctx.beginPath();ctx.rect(0,0,0,0);ctx.clip();}},
  install(){
  this.id=location.pathname.split('/').pop().slice(0,2);this.labels=this.routes[this.id];if(!this.labels)return;
+ this.parts=document.body.dataset.statsParts?.split(',').map(Number);if(this.parts)this.labels=this.parts.map(i=>this.labels[i]);
  const wrap=document.getElementById('wrap'),bar=document.getElementById('bar');
  const nav=document.createElement('nav');nav.id='sf-nav';nav.setAttribute('aria-label','表示パネル');
  const back=document.createElement('button');back.textContent='‹';back.setAttribute('aria-label','前のパネル');
@@ -31,9 +32,9 @@ const SF={active:false,index:0,_part:false,
  if(reset)reset.addEventListener('click',()=>change(0));back.onclick=()=>change(this.index-1);next.onclick=()=>change(this.index+1);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();document.getElementById('tip').classList.remove('show');}});
  const oldLayout=layout,oldDraw=draw;
- layout=function(){const h=H;SF.active=innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',SF.active);if(SF.active)H=Math.max(900,H);oldLayout();H=h;if(SF.active)SF.layout();SF.refreshNav();};
+ layout=function(){const h=H;SF.active=!!SF.parts||innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',SF.active);if(SF.active)H=Math.max(900,H);oldLayout();H=h;if(SF.active)SF.layout();SF.refreshNav();};
  draw=function(){SF._part=false;oldDraw();if(SF._part){ctx.restore();SF._part=false;}};
- this.active=innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',this.active);
+ this.active=!!SF.parts||innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',this.active);
  cv.setAttribute('aria-label',document.title+'。表示パネルと操作ボタンで実験できます。');
  // Native alternatives keep small grid/door targets usable by touch and keyboard.
  const selector=(label)=>{const el=document.createElement('select');el.setAttribute('aria-label',label);bar.append(el);return el;};
@@ -72,7 +73,7 @@ const SF={active:false,index:0,_part:false,
  case '08':{const s=Math.min(W-60,H-62);G.s={x:(W-s)/2,y:34,s};G.c=box;}break;
  case '09':G.sc=wide;G.c=box;G.tx=W/2;G.ty=35;if(this.index===3)sliders();break;
  case '10':G.bx=W/2;G.bw=W-50;G.top=38;G.bh=(H-100)*.5;G.hy=G.top+G.bh+10;G.hh=Math.max(30,(H-100)*.5);G.tx=24;G.ty=38;if(this.index===2)sliders();break;
- case '11':G.p=box;G.r=box;G.h=box;G.tray={x:16,y:32,w:W-32,h:Math.max(45,H-50)};G.tx=24;G.ty=40;if(this.index===5)sliders();break;
+ case '11':G.p=box;G.r=box;G.h=box;G.tray={x:16,y:32,w:W-32,h:Math.max(45,H-50)};G.tx=24;G.ty=40;if((this.parts?this.parts[this.index]:this.index)===5)sliders();break;
  case '12':G.f={x:18,y:34,w:W-36,h:Math.max(40,H-65)};G.tx=16;G.tw=W-32;G.ty=34;if(this.index===3)sliders();break;
  case '13':G.a={x:48,y:32,w:W-70,h:Math.max(50,H-62)};G.b={x:50,y:58,w:W-76,h:Math.max(40,H-88)};G.tx=24;G.ty=36;break;
  case '14':G.win={x:20,y:20,w:W-40,h:H-40};G.d={x:0,y:10,w:W,h:H-20};G.cal={x:20,y:H*.25,w:W-40,h:Math.min(110,H*.5)};G.tx=20;G.ty=35;G.c=box;if(this.index===5)sliders();break;
