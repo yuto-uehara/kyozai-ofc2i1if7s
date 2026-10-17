@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 210,
+  "nextNumber": 212,
   "materials": [
     {
       "number": 1,
@@ -1058,6 +1058,16 @@
       "number": 209,
       "key": "tools/paper-square-root-ratio/",
       "title": "半分にしても同じ形の紙と√2"
+    },
+    {
+      "number": 210,
+      "key": "tools/quadratic-equation-meaning/",
+      "title": "二次方程式と解の意味"
+    },
+    {
+      "number": 211,
+      "key": "tools/quadratic-factor-solving/",
+      "title": "因数分解で二次方程式を解く"
     }
   ],
   "retiredNumbers": [
