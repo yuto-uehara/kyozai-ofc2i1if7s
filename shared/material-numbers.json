@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 212,
+  "nextNumber": 214,
   "materials": [
     {
       "number": 1,
@@ -1068,6 +1068,16 @@
       "number": 211,
       "key": "tools/quadratic-factor-solving/",
       "title": "因数分解で二次方程式を解く"
+    },
+    {
+      "number": 212,
+      "key": "tools/quadratic-square-root-solving/",
+      "title": "平方根を使って二次方程式を解く"
+    },
+    {
+      "number": 213,
+      "key": "tools/quadratic-completing-square/",
+      "title": "平方完成で二次方程式を解く"
     }
   ],
   "retiredNumbers": [
