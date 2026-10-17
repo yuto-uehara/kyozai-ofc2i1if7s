@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 231,
+  "nextNumber": 232,
   "materials": [
     {
       "number": 1,
@@ -1163,6 +1163,11 @@
       "number": 230,
       "key": "tools/similarity-proof-grounds/",
       "title": "根拠をそろえて相似を証明"
+    },
+    {
+      "number": 231,
+      "key": "tools/triangle-parallel-ratios/",
+      "title": "三角形と平行線の線分比"
     }
   ],
   "retiredNumbers": [
