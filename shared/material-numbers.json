@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 193,
+  "nextNumber": 195,
   "materials": [
     {
       "number": 1,
@@ -973,6 +973,16 @@
       "number": 192,
       "key": "tools/common-factor/",
       "title": "因数分解の意味と共通因数"
+    },
+    {
+      "number": 193,
+      "key": "tools/factorization-identities/",
+      "title": "形と符号で選ぶ因数分解"
+    },
+    {
+      "number": 194,
+      "key": "tools/factorization-strategy/",
+      "title": "共通因数と置換で因数分解を進める"
     }
   ],
   "retiredNumbers": [
