@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 187,
+  "nextNumber": 189,
   "materials": [
     {
       "number": 1,
@@ -943,6 +943,16 @@
       "number": 186,
       "key": "tools/polynomial-monomial-multiply/",
       "title": "多項式と単項式の乗法"
+    },
+    {
+      "number": 187,
+      "key": "tools/polynomial-monomial-divide/",
+      "title": "多項式を単項式で割る"
+    },
+    {
+      "number": 188,
+      "key": "tools/polynomial-product/",
+      "title": "多項式どうしの積を展開する"
     }
   ],
   "retiredNumbers": [
