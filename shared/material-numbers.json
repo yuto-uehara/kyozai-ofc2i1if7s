@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 123,
+  "nextNumber": 124,
   "materials": [
     {
       "number": 1,
@@ -623,6 +623,11 @@
       "number": 122,
       "key": "tools/read-inverse-graph/",
       "title": "グラフから反比例の式へ"
+    },
+    {
+      "number": 123,
+      "key": "tools/queue-prediction/",
+      "title": "比例で待ち時間を予測する"
     }
   ],
   "retiredNumbers": [
