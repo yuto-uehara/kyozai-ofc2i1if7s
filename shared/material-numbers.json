@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 249,
+  "nextNumber": 251,
   "materials": [
     {
       "number": 1,
@@ -1253,6 +1253,16 @@
       "number": 248,
       "key": "tools/circle-similarity-use/",
       "title": "円の図から相似と線分の関係へ"
+    },
+    {
+      "number": 249,
+      "key": "tools/pythagoras-area-proof/",
+      "title": "三平方の定理と面積による理由"
+    },
+    {
+      "number": 250,
+      "key": "tools/pythagoras-converse-check/",
+      "title": "三平方の定理の逆で判定する"
     }
   ],
   "retiredNumbers": [
