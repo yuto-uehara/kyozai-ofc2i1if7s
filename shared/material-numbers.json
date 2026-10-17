@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 216,
+  "nextNumber": 219,
   "materials": [
     {
       "number": 1,
@@ -1088,6 +1088,21 @@
       "number": 215,
       "key": "tools/quadratic-method-choice/",
       "title": "二次方程式の解法を選ぶ"
+    },
+    {
+      "number": 216,
+      "key": "tools/quadratic-number-problems/",
+      "title": "整数の条件と二次方程式"
+    },
+    {
+      "number": 217,
+      "key": "tools/quadratic-geometry-problems/",
+      "title": "通路と容器の二次方程式"
+    },
+    {
+      "number": 218,
+      "key": "tools/quadratic-moving-points/",
+      "title": "動点の面積と二次方程式"
     }
   ],
   "retiredNumbers": [
