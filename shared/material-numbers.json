@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 106,
+  "nextNumber": 107,
   "materials": [
     {
       "number": 1,
@@ -538,6 +538,11 @@
       "number": 105,
       "key": "tools/circle-restoration/",
       "title": "円の一部から元の円を復元する"
+    },
+    {
+      "number": 106,
+      "key": "tools/perpendicular-at-point/",
+      "title": "直線上の点を通る垂線"
     }
   ],
   "retiredNumbers": [
