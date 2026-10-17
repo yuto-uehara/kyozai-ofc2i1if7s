@@ -1,0 +1,22 @@
+(function(){'use strict';
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+// Numerators have coefficients of x, y, and the constant term. Denominators are positive numbers.
+const examples=[{a:[1,2,0],d:3,b:[2,-1,0],e:4},{a:[1,2,0],d:2,b:[1,2,0],e:6},{a:[-1,3,0],d:4,b:[3,-1,0],e:6},{a:[1,-2,3],d:5,b:[1,-2,3],e:5},{a:[2,0,-3],d:4,b:[1,0,1],e:6}];
+function model(i,subtract){const q=examples[i],a=q.a.slice(),b=q.b.map(n=>i===3&&!subtract?-n:n),denominator=q.d/gcd(q.d,q.e)*q.e,leftFactor=denominator/q.d,rightFactor=denominator/q.e,left=a.map(n=>n*leftFactor),right=b.map(n=>n*rightFactor),numerator=left.map((n,k)=>n+(subtract?-1:1)*right[k]),common=numerator.reduce((g,n)=>gcd(g,n),denominator);return {a,b,d:q.d,e:q.e,denominator,leftFactor,rightFactor,left,right,numerator,common,reduced:numerator.map(n=>n/common),reducedDenominator:denominator/common};}
+const api={gcd,examples,model};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(typeof document==='undefined')return;
+const $=id=>document.getElementById(id),subtract=document.body.dataset.operation==='subtract',sign=subtract?-1:1,op=subtract?' − ':' ＋ ';let state;
+const symbols=['x','y',''],num=n=>String(n).replace('-','−');
+function term(n,k,first){return(first?(n<0?'−':''):(n<0?' − ':' ＋ '))+(Math.abs(n)===1&&symbols[k]?'':Math.abs(n))+symbols[k];}
+function polynomial(v){let first=true;const out=[];v.forEach((n,k)=>{if(n){out.push('<span class="poly-term">'+term(n,k,first)+'</span>');first=false;}});return out.join('<wbr>')||'0';}
+const fraction=(top,bottom)=>'<span class="poly-fraction"><span class="numerator">'+top+'</span><span class="denominator">'+bottom+'</span></span>';
+function render(){const i=+$('example').value,step=+$('step').value,m=model(i,subtract);$('original').innerHTML=fraction(polynomial(m.a),m.d)+'<span>'+op+'</span>'+fraction(polynomial(m.b),m.e);
+$('stage-title').textContent=['元の分母と分子を確かめる','分子全体と分母に同じ数を掛ける','分母を保って分子を計算する','分子の同類項をまとめる','約分して答えを整える'][step];
+$('work-label').textContent=step===0?'分母は0以外の数':step===1?'共通分母：'+m.denominator:step===2?'分子の各項の符号を確かめる':step===3?'分子をまとめた式':'計算の結果';
+if(step===0){$('work').innerHTML='分母：'+m.d+' と '+m.e+'<br><span class="detail">共通分母にそろえて'+(subtract?'引く':'足す')+'</span>';$('result').textContent='分子全体を1つのまとまりとして見る';$('reason').textContent='分母が異なるまま、分子どうしを計算することはできません。まず分母の最小公倍数を調べます。';$('check').textContent='この教材の分母は数だけです。文字を分母にする計算は扱いません。';}
+if(step===1){$('work').innerHTML='<div class="fraction-pair">'+fraction(m.leftFactor+'('+polynomial(m.a)+')',m.leftFactor+' × '+m.d)+'<span>'+op+'</span>'+fraction(m.rightFactor+'('+polynomial(m.b)+')',m.rightFactor+' × '+m.e)+'</div>';$('result').textContent='分母 '+m.denominator+'：左は'+m.leftFactor+'倍、右は'+m.rightFactor+'倍';$('reason').textContent='分子と分母に同じ数を掛けるので、式の値は変わりません。分配法則で、分子のすべての項にその数を掛けます。';$('check').textContent='最初の文字の項だけでなく、負の項や定数項も掛けます。';}
+if(step===2){let first=true;const expanded=m.left.map((n,k)=>({n,k})).concat(m.right.map((n,k)=>({n:sign*n,k}))).filter(t=>t.n).map(({n,k})=>{const s='<span class="poly-term">'+term(n,k,first)+'</span>';first=false;return s;}).join('<wbr>');$('work').innerHTML=fraction(expanded||'0',m.denominator);$('result').textContent=subtract?'後ろの分子の全項の符号を変える':'分子の各項の符号を保って足す';$('reason').textContent=subtract?'後ろの分子全体を引くので、その全項に−1を掛けて足します。負の項は正の項になります。':'分母をそろえたら、分母はそのままにして分子どうしを足します。分母どうしは足しません。';$('check').textContent=subtract?'分母はそのまま。分母どうしを引きません。':'負の項も、その符号のまま足します。';}
+if(step===3){$('work').innerHTML=fraction(polynomial(m.numerator),m.denominator);$('result').textContent='xの項・yの項・定数項をそれぞれ計算';$('reason').textContent='同類項だけをまとめます。xの項とyの項は、係数を足して1つにまとめることはできません。';$('check').textContent='係数が0になった項は消します。';}
+if(step===4){const zero=m.reduced.every(n=>n===0);$('work').innerHTML=zero?'0':m.reducedDenominator===1?polynomial(m.reduced):fraction(polynomial(m.reduced),m.reducedDenominator);$('result').textContent=zero?'分子が0なので、答えは0':m.common===1?'これ以上、整数の共通因数では約分できない':'分子の全項と分母を '+m.common+' で割る';$('reason').textContent=zero?'0を0以外の数で割ると0です。':m.common===1?'分子の全項と分母に共通する、1より大きい整数の因数はありません。':'約分は分子全体に対して行います。1つの項だけを分母と約分してはいけません。';$('check').textContent=zero?'答えは空欄ではなく、0と書きます。':'分母に掛かった数と、分子の全項の共通因数を確認しよう。';}
+state={i,step,subtract,...m};}
+$('example').onchange=()=>{$('step').value=0;render();};$('step').addEventListener('input',render);$('reset').onclick=()=>{$('example').value=0;$('step').value=0;render();};window.PolynomialFractions={get:()=>state};render();
+})();
