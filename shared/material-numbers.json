@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 130,
+  "nextNumber": 131,
   "materials": [
     {
       "number": 1,
@@ -658,6 +658,11 @@
       "number": 129,
       "key": "tools/sphere-sections/",
       "title": "球の切る位置と断面"
+    },
+    {
+      "number": 130,
+      "key": "tools/polynomial-structure/",
+      "title": "項・係数・次数を読む"
     }
   ],
   "retiredNumbers": [
