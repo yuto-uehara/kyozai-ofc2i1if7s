@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 110,
+  "nextNumber": 111,
   "materials": [
     {
       "number": 1,
@@ -558,6 +558,11 @@
       "number": 109,
       "key": "tools/equidistant-circle/",
       "title": "等距離の点と円"
+    },
+    {
+      "number": 110,
+      "key": "tools/equidistant-on-line/",
+      "title": "指定直線上の等距離点"
     }
   ],
   "retiredNumbers": [
