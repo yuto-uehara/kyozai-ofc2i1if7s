@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 189,
+  "nextNumber": 190,
   "materials": [
     {
       "number": 1,
@@ -953,6 +953,11 @@
       "number": 188,
       "key": "tools/polynomial-product/",
       "title": "多項式どうしの積を展開する"
+    },
+    {
+      "number": 189,
+      "key": "tools/multiplication-identities/",
+      "title": "乗法公式の成り立ちと使い方"
     }
   ],
   "retiredNumbers": [
