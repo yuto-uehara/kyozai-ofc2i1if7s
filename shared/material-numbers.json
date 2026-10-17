@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 128,
+  "nextNumber": 130,
   "materials": [
     {
       "number": 1,
@@ -648,6 +648,16 @@
       "number": 127,
       "key": "tools/surface-translation/",
       "title": "面を垂直に動かして立体へ"
+    },
+    {
+      "number": 128,
+      "key": "tools/axis-sections/",
+      "title": "円柱・円錐の基本断面"
+    },
+    {
+      "number": 129,
+      "key": "tools/sphere-sections/",
+      "title": "球の切る位置と断面"
     }
   ],
   "retiredNumbers": [
