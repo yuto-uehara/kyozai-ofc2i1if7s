@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 195,
+  "nextNumber": 198,
   "materials": [
     {
       "number": 1,
@@ -983,6 +983,21 @@
       "number": 194,
       "key": "tools/factorization-strategy/",
       "title": "共通因数と置換で因数分解を進める"
+    },
+    {
+      "number": 195,
+      "key": "tools/polynomial-smart-calculation/",
+      "title": "式を変形して計算を楽にする"
+    },
+    {
+      "number": 196,
+      "key": "tools/odd-number-identities/",
+      "title": "続いた奇数の性質を式で証明する"
+    },
+    {
+      "number": 197,
+      "key": "tools/constant-width-area/",
+      "title": "一定幅の面積と真ん中の線"
     }
   ],
   "retiredNumbers": [
