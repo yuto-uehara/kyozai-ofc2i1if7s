@@ -217,12 +217,12 @@ function draw(){
   // panel
   TOOLBAR([{t:'関係線',on:st.lines,aria:'関係線を表示',fn:()=>{st.lines=!st.lines;draw();}},
     {t:'リセット',sep:true,fn:()=>{init();draw();}}]);
-  const [ix,iy]=L.info;
-  if(st.mode===1) T(g,ix,iy,st.ang+'°',SZ('big'),COL.green,'start');
+  const [ix,iy]=L.info;const info=el('g',{'data-transform-info':''},g);
+  if(st.mode===1) T(info,ix,iy,st.ang+'°',SZ('big'),COL.green,'start');
   if(st.lines){
     const rows=st.mode===0?[['AA′ // BB′ // CC′',COL.black],['AA′ = BB′ = CC′',COL.black]]:
       st.mode===1?[['OA = OA′',COL.green],['OB = OB′',COL.red]]:[['AA′ ⊥ ℓ',COL.green],['BB′ ⊥ ℓ',COL.red]];
-    rows.forEach((r,k)=>T(g,ix,iy+(st.mode===1?SZ(120):0)+k*SZ(62),r[0],SZ('main'),r[1],'start'));
+    rows.forEach((r,k)=>T(info,ix,iy+(st.mode===1?SZ(120):0)+k*SZ(62),r[0],SZ('main'),r[1],'start'));
   }
 }
 function toW(p){return [(p.x-L.ox)/L.u,(p.y-L.oy)/L.u];}
@@ -250,6 +250,6 @@ addEventListener('resize',layout);
 init();layout();
 
 </script>
-<script src="../../shared/legacy-screen.js?rev=20261017transform"></script>
+<script src="../../shared/legacy-screen.js?rev=20261017rotationbounds"></script>
 <script src="../../shared/material-numbers.js?rev=20261017legacytransform"></script></body>
 </html>
