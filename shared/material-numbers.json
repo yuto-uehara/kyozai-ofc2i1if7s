@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 153,
+  "nextNumber": 154,
   "materials": [
     {
       "number": 1,
@@ -773,6 +773,11 @@
       "number": 152,
       "key": "tools/word-mixture/",
       "title": "割合の基準量から立式する"
+    },
+    {
+      "number": 153,
+      "key": "tools/linear-from-slope-point/",
+      "title": "傾きと1点から一次関数の式へ"
     }
   ],
   "retiredNumbers": [
