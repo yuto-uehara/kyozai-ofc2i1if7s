@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 219,
+  "nextNumber": 221,
   "materials": [
     {
       "number": 1,
@@ -1103,6 +1103,16 @@
       "number": 218,
       "key": "tools/quadratic-moving-points/",
       "title": "動点の面積と二次方程式"
+    },
+    {
+      "number": 219,
+      "key": "tools/square-function-table/",
+      "title": "xの2乗に比例する関数"
+    },
+    {
+      "number": 220,
+      "key": "tools/square-function-graph/",
+      "title": "y＝ax²のグラフと係数"
     }
   ],
   "retiredNumbers": [
