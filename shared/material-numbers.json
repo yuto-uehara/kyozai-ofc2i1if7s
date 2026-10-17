@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 126,
+  "nextNumber": 127,
   "materials": [
     {
       "number": 1,
@@ -638,6 +638,11 @@
       "number": 125,
       "key": "tools/power-time-model/",
       "title": "反比例モデルと時間の単位"
+    },
+    {
+      "number": 126,
+      "key": "tools/distance-time-gaps/",
+      "title": "距離の差と時刻の差"
     }
   ],
   "retiredNumbers": [
