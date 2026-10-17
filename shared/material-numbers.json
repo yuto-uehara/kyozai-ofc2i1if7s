@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 244,
+  "nextNumber": 246,
   "materials": [
     {
       "number": 1,
@@ -1228,6 +1228,16 @@
       "number": 243,
       "key": "tools/inscribed-angle-proof/",
       "title": "円周角の定理を3つの場合で示す"
+    },
+    {
+      "number": 244,
+      "key": "tools/equal-arcs-inscribed-angles/",
+      "title": "等しい弧と円周角の関係"
+    },
+    {
+      "number": 245,
+      "key": "tools/inscribed-angle-converse/",
+      "title": "円周角の定理の逆と同一円周"
     }
   ],
   "retiredNumbers": [
