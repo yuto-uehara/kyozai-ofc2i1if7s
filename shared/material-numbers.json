@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 204,
+  "nextNumber": 207,
   "materials": [
     {
       "number": 1,
@@ -1028,6 +1028,21 @@
       "number": 203,
       "key": "tools/radical-square-factors/",
       "title": "平方因数を使って根号を変形する"
+    },
+    {
+      "number": 204,
+      "key": "tools/rationalize-denominator/",
+      "title": "分母の有理化と値を保つ理由"
+    },
+    {
+      "number": 205,
+      "key": "tools/radical-add-subtract/",
+      "title": "根号を簡単にして加減する"
+    },
+    {
+      "number": 206,
+      "key": "tools/radical-expansion/",
+      "title": "根号を含む式に分配と公式を使う"
     }
   ],
   "retiredNumbers": [
