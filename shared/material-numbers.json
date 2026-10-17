@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 239,
+  "nextNumber": 240,
   "materials": [
     {
       "number": 1,
@@ -1203,6 +1203,11 @@
       "number": 238,
       "key": "tools/measurement-rounding-error/",
       "title": "測定値の誤差と真の値の範囲"
+    },
+    {
+      "number": 239,
+      "key": "tools/significant-digits/",
+      "title": "有効数字と10のべきの表し方"
     }
   ],
   "retiredNumbers": [
