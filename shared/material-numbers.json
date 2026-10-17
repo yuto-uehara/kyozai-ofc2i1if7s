@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 163,
+  "nextNumber": 164,
   "materials": [
     {
       "number": 1,
@@ -823,6 +823,11 @@
       "number": 162,
       "key": "tools/triangle-exterior-reason/",
       "title": "三角形の外角の性質を説明する"
+    },
+    {
+      "number": 163,
+      "key": "tools/congruence-proof-plan/",
+      "title": "結論から合同の証明を組み立てる"
     }
   ],
   "retiredNumbers": [
