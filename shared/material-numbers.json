@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 107,
+  "nextNumber": 108,
   "materials": [
     {
       "number": 1,
@@ -543,6 +543,11 @@
       "number": 106,
       "key": "tools/perpendicular-at-point/",
       "title": "直線上の点を通る垂線"
+    },
+    {
+      "number": 107,
+      "key": "tools/triangle-height/",
+      "title": "三角形の高さを作図する"
     }
   ],
   "retiredNumbers": [
