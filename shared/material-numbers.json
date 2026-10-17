@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 104,
+  "nextNumber": 105,
   "materials": [
     {
       "number": 1,
@@ -528,6 +528,11 @@
       "number": 103,
       "key": "stats/13_return_origin.html",
       "title": "ランダムウォークの原点回帰"
+    },
+    {
+      "number": 104,
+      "key": "tools/sphere-surface-area/",
+      "title": "球の表面積"
     }
   ],
   "retiredNumbers": [
