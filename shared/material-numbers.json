@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 235,
+  "nextNumber": 236,
   "materials": [
     {
       "number": 1,
@@ -1183,6 +1183,11 @@
       "number": 234,
       "key": "tools/parallel-transversal-ratios/",
       "title": "平行線を横切る線分の比"
+    },
+    {
+      "number": 235,
+      "key": "tools/midpoint-quadrilateral/",
+      "title": "四角形の中点を結ぶと"
     }
   ],
   "retiredNumbers": [
