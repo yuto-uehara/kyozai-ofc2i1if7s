@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 166,
+  "nextNumber": 168,
   "materials": [
     {
       "number": 1,
@@ -838,6 +838,16 @@
       "number": 165,
       "key": "tools/isosceles-base-angles/",
       "title": "二等辺三角形の底角が等しい理由"
+    },
+    {
+      "number": 166,
+      "key": "tools/isosceles-vertex-bisector/",
+      "title": "二等辺三角形の頂角二等分線の性質"
+    },
+    {
+      "number": 167,
+      "key": "tools/equal-angles-equal-sides/",
+      "title": "等しい底角から等しい辺を示す"
     }
   ],
   "retiredNumbers": [
