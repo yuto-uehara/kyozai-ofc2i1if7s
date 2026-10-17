@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 229,
+  "nextNumber": 230,
   "materials": [
     {
       "number": 1,
@@ -1153,6 +1153,11 @@
       "number": 228,
       "key": "tools/triangle-similarity-conditions/",
       "title": "三角形の相似条件を確かめる"
+    },
+    {
+      "number": 229,
+      "key": "tools/similarity-center-construction/",
+      "title": "相似の中心から拡大・縮小"
     }
   ],
   "retiredNumbers": [
