@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>等式の性質と移項</title>
+<title>天びんで等式の性質を確かめる</title>
 <style>
 html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
@@ -23,13 +23,10 @@ button i{font-family:"Times New Roman",Times,"Liberation Serif",serif;font-weigh
 </style>
 <link rel="stylesheet" href="../../shared/legacy-screen.css?rev=20261017nav">
 <link rel="stylesheet" href="../../shared/material-numbers.css?rev=20261013numbers"></head>
-<body>
+<body data-equation-mode="bal">
 <div id="wrap">
 <canvas id="cv"></canvas>
 <div id="bar">
-  <button id="tBal" class="on">天びん</button>
-  <button id="tMv">移項</button>
-  <span class="sep"></span>
   <button id="bPrev" aria-label="前の式">◀</button>
   <button id="bNext" aria-label="次の式">▶</button>
   <button id="bRand">ランダム</button>
@@ -57,7 +54,7 @@ const MI="−", TAU=Math.PI*2;
 const clamp=(a,v,b)=>Math.max(a,Math.min(b,v));
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
 const easeOut=t=>1-Math.pow(1-t,3);
-let W=1,H=1,dpr=1,m=1,lab=30,mode="bal",uid=1;
+let W=1,H=1,dpr=1,m=1,lab=30,mode=document.body.dataset.equationMode||"bal",uid=1;
 
 /* ---------- fractions ---------- */
 const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a;};
@@ -532,7 +529,6 @@ function resize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio
 /* ---------- buttons ---------- */
 const $=id=>document.getElementById(id);
 function ui(){
-  $("tBal").classList.toggle("on",mode==="bal");$("tMv").classList.toggle("on",mode==="mv");
   document.querySelectorAll(".b").forEach(b=>b.classList.toggle("hide",mode!=="bal"));
   document.querySelectorAll(".m").forEach(b=>b.classList.toggle("hide",mode!=="mv"));
   const dv=$("bDiv");dv.classList.toggle("hide",mode!=="bal");
@@ -542,8 +538,6 @@ function ui(){
     dv.textContent=I?(I.a.n<0?"÷("+MI+qstr(qabs(I.a)).replace("-","")+")":"÷"+qstr(I.a)):"÷";dv.disabled=!I||busy;
     $("bComb").disabled=!combGroups().length||busy;$("bProp").classList.toggle("on",mv.showProp);
     $("bBack").disabled=mv.steps.length<2||busy;$("bPrev").disabled=!mv.rand&&mv.i===0;$("bNext").disabled=!mv.rand&&mv.i===MP.length-1;$("bRand").disabled=busy;}}
-$("tBal").onclick=()=>{closeHistory();mvCancelPending();mode="bal";bal.drag=null;mv.drag=null;ui();kick();};
-$("tMv").onclick=()=>{closeHistory();mvCancelPending();mode="mv";bal.drag=null;mv.drag=null;mvFit();ui();kick();};
 function step(d){ // ◀ ▶: textbook presets (from a random problem: the neighbouring preset)
   if(mode==="bal"){const i=clamp(0,bal.i+d,BP.length-1);if(i===bal.i&&!bal.rand)return;bal.i=i;balLoad(BP[i],false);}
   else{const i=clamp(0,mv.i+d,MP.length-1);if(i===mv.i&&!mv.rand)return;mv.i=i;mvLoad(MP[i],false);}}
@@ -663,8 +657,8 @@ window.__eq={
   checkAll:()=>MP.map(p=>{const S=[p[0].map(([k,v])=>({k,v:Q(v)})),p[1].map(([k,v])=>({k,v:Q(v)}))];return qstr(mvSolution(S))===qstr(p[2]);})
     .concat(BP.map(p=>p.L.x*p.sol+p.L.c===p.R.x*p.sol+p.R.c)),
 };
-bal.P=BP[0];mv.P=MP[0];balReset();mvReset();resize();ui();
+bal.P=BP[0];mv.P=MP[0];const initialMode=mode;mode="bal";balReset();mvReset();mode=initialMode;resize();ui();
 </script>
 <script src="../../shared/legacy-screen.js?rev=20261017nav"></script>
-<script src="../../shared/material-numbers.js?rev=20261013numbers"></script></body>
+<script src="../../shared/material-numbers.js?rev=20261017equationsplit"></script></body>
 </html>

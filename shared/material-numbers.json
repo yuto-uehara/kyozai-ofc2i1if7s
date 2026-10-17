@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 95,
+  "nextNumber": 96,
   "materials": [
     {
       "number": 1,
@@ -45,7 +45,7 @@
     {
       "number": 9,
       "key": "1n3s/html/1n3s_equation_balance.html",
-      "title": "等式の性質と移項"
+      "title": "天びんで等式の性質を確かめる"
     },
     {
       "number": 10,
@@ -483,6 +483,11 @@
       "number": 94,
       "key": "1n5s/html/1n5s_sector_area.html",
       "title": "おうぎ形の面積を動かす"
+    },
+    {
+      "number": 95,
+      "key": "1n3s/html/1n3s_equation_transposition.html",
+      "title": "移項で方程式を解く"
     }
   ],
   "retiredNumbers": [
