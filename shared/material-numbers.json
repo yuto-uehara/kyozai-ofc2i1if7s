@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 171,
+  "nextNumber": 173,
   "materials": [
     {
       "number": 1,
@@ -863,6 +863,16 @@
       "number": 170,
       "key": "tools/right-triangle-congruence/",
       "title": "直角三角形の2つの合同条件"
+    },
+    {
+      "number": 171,
+      "key": "tools/parallelogram-properties/",
+      "title": "定義から平行四辺形の性質を示す"
+    },
+    {
+      "number": 172,
+      "key": "tools/parallelogram-conditions-proof/",
+      "title": "平行四辺形になる5条件の理由"
     }
   ],
   "retiredNumbers": [
