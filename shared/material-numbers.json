@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 99,
+  "nextNumber": 101,
   "materials": [
     {
       "number": 1,
@@ -327,7 +327,7 @@
     {
       "number": 64,
       "key": "tools/solid-volume/",
-      "title": "柱・錐・球の体積を比べる"
+      "title": "柱の体積"
     },
     {
       "number": 65,
@@ -503,6 +503,16 @@
       "number": 98,
       "key": "tools/calculation-order/",
       "title": "累乗を含む式の計算順序"
+    },
+    {
+      "number": 99,
+      "key": "tools/pyramid-volume/",
+      "title": "錐の体積"
+    },
+    {
+      "number": 100,
+      "key": "tools/sphere-volume/",
+      "title": "球の体積"
     }
   ],
   "retiredNumbers": [
