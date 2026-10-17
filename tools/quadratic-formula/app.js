@@ -1,0 +1,22 @@
+(function(){'use strict';const examples=[{label:'根号を簡単にする',a:1,b:-2,c:-1},{label:'分子全体を分母で割る',a:2,b:3,c:-1},{label:'負のaとbを括弧で代入',a:-1,b:-2,c:1},{label:'負のcを括弧で代入',a:2,b:-3,c:-2},{label:'平方根部分が0',a:1,b:4,c:4},{label:'平方根部分が負',a:1,b:2,c:3},{label:'b＝0の場合',a:1,b:0,c:-5},{label:'共通因数で約分する',a:2,b:-4,c:-4}];const gcd=(a,b)=>b?gcd(b,a%b):a;function num(n){return String(n||0).replace('-','−');}function rat(n,d){if(d<0){n=-n;d=-d;}const g=gcd(Math.abs(n),d);return num(n/g)+(d/g===1?'':'/'+num(d/g));}function term(c,v,first){return c?(c<0?'−':first?'':'＋')+(Math.abs(c)===1&&v?'':num(Math.abs(c)))+v:'';}function poly(a,b,c){return term(a,'x²',true)+term(b,'x',!a)+term(c,'',!a&&!b)||'0';}function squareFactor(n){if(!n)return{k:0,d:1};let k=1;for(let i=1;i*i<=n;i++)if(n%(i*i)===0)k=i;return{k,d:n/(k*k)};}function model(i){const e=examples[i];if(!e||!e.a)throw Error('quadratic requires a≠0');const r=e.b*e.b-4*e.a*e.c,f=r>=0?squareFactor(r):null,roots=r<0?[]:r===0?[-e.b/(2*e.a)]:[(-e.b-Math.sqrt(r))/(2*e.a),(-e.b+Math.sqrt(r))/(2*e.a)].sort((a,b)=>a-b);return{i,a:e.a,b:e.b,c:e.c,r,f,roots};}const frac=(n,d)=>'<span class="whole-frac"><span>'+n+'</span><span>'+d+'</span></span>';function answer(m){if(m.r<0)return '実数の解はない';if(m.r===0)return 'x＝'+rat(-m.b,2*m.a);if(m.f.d===1)return 'x＝'+[rat(-m.b-m.f.k,2*m.a),rat(-m.b+m.f.k,2*m.a)].join('、');const den=2*Math.abs(m.a),base=m.a<0?m.b:-m.b,g=gcd(gcd(Math.abs(base),m.f.k),den),k=m.f.k/g,n=(base?num(base/g):'')+'±'+(k===1?'':num(k))+'√'+m.f.d;return 'x＝'+(den/g===1?n:frac(n,den/g));}const api={examples,model};if(typeof module!=='undefined'&&module.exports)module.exports=api;if(typeof document==='undefined')return;const $=id=>document.getElementById(id);let state;function render(){const i=+$('example').value,step=+$('step').value,e=examples[i],m=model(i);$('original').textContent=e.original||poly(m.a,m.b,m.c)+'＝0';$('work-label').textContent='ax²＋bx＋c＝0 ／ a≠0 ／ 実数の範囲';
+const b='('+num(m.b)+')',a='('+num(m.a)+')',c='('+num(m.c)+')',inside=b+'²−4×'+a+'×'+c,two=2*m.a,lin=term(two,'x',true)+term(m.b,'',!two),titles=['整理した式の係数を読む','両辺を4a倍して準備する','両辺にb²を足して平方完成','左辺を一つの平方にする','平方根を正負とも求める','bを引いて2aで割る','公式へ符号ごと代入する','根号を整理し約分する','元の式が成り立つと確かめる'];$('stage-title').textContent=titles[step];$('work').innerHTML=[
+'a＝'+num(m.a)+'、b＝'+num(m.b)+'、c＝'+num(m.c)+'<br>a≠0なので二次方程式',
+'4a²x²＋4abx＝−4ac<br><span class="small">この例：'+poly(4*m.a*m.a,4*m.a*m.b,0)+'＝'+num(-4*m.a*m.c)+'</span>',
+'4a²x²＋4abx＋b²＝b²−4ac<br>両辺へ同じb²を足す<br><span class="small">この例では b²＝'+num(m.b*m.b)+'</span>',
+'(2ax＋b)²＝b²−4ac<br>この例：('+lin+')²＝'+num(m.r),
+ m.r<0?'この例の右辺は'+num(m.r)+'＜0<br>実数の平方は0以上<br>実数の解はない':'2ax＋b＝±√(b²−4ac)<br>'+ (m.r===0?'この例は右辺0なので一つの値': '('+lin+')＝±√'+m.r),
+'x＝'+frac('−b±√(b²−4ac)','2a')+'<br><span class="small">a≠0なので2aで割れる</span>',
+m.r<0?'根号の中：'+inside+'<br>＝'+num(m.r)+'＜0<br>実数の解はない':'x＝'+frac('−'+b+'±√['+inside+']','2×'+a),
+(m.r<0?'根号の中が負なので<br>実数の範囲では計算しない':m.r===0?'√0＝0': '√'+m.r+'＝'+(m.f.k===1?'':num(m.f.k))+(m.f.d===1?'':'√'+m.f.d))+'<br>'+answer(m),
+ m.r<0?'('+lin+')²＝'+num(m.r)+' は不可能<br>元の式にも実数の解はない':'各解を代入すると<br>'+num(4*m.a)+'×(元の左辺)＝'+num(m.r)+'−'+num(m.r)+'＝0<br>よって元の左辺＝0'
+][step];$('result').textContent=step===5||step===6?'公式は根号の中が0以上のときに実数で使える':'a≠0を保ち、元に戻せる変形で全解を求める';$('reason').textContent=[
+'まず右辺を0にして整理します。a、b、cは符号を含めた係数です。xの項がなければb＝0です。a＝0の式にはこの公式を使いません。',
+'元の両辺を4a倍し、定数項を移します。a≠0なので4aも0ではなく、4aで割れば元に戻せます。',
+'平方の公式(2ax＋b)²＝4a²x²＋4abx＋b²を使うため、両辺に同じb²を足します。平方完成であり、解を変える操作ではありません。',
+'左辺を展開すれば直前の式に戻ります。この平方の形から、No212と同じように平方根を使って解きます。',
+'右辺が正なら正負の両方、0なら0だけです。この例の右辺が負なら実数の解はありません。ここでは平方根の性質だけで判断します。',
+'両辺からbを引き、0でない2aで分子全体を割ります。aが負でも同じ変形ができ、±の両方を残します。根号の中が負の例には実数の公式として代入できません。',
+ m.r<0?'この例は根号の中が負になるので、ここに示す代入の形は実数の値を表しません。根号の中を計算した段階で実数解なしと判断します。':'負の係数は括弧ごと代入します。−b、b²、−4ac、2aをそれぞれ区別し、分子全体が2aで割られることを確認します。',
+'根号内の平方因数を外へ出します。約分は分子の各項と分母に共通する因数で行います。分母が負なら符号をそろえ、±の二つの値の順序が入れ替わっても解の集合は同じです。',
+'恒等式4a(ax²＋bx＋c)＝(2ax＋b)²−(b²−4ac)を使って元式を検算します。各候補の代入で右辺が0になり、4a≠0なので元式の左辺も0です。全解である理由は前の同値変形です。'
+][step];$('check').innerHTML='<a href="../quadratic-completing-square/">No213 平方完成</a> ／ <a href="../quadratic-method-choice/">No215 解法選択</a>';state={step,...m};}$('example').innerHTML=examples.map((e,i)=>'<option value="'+i+'">'+e.label+'</option>').join('');$('example').onchange=$('step').oninput=render;$('reset').onclick=()=>{$('example').value=0;$('step').value=0;render();};window.Application={get:()=>state};render();})();

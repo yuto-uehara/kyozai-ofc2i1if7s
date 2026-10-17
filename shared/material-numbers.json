@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 214,
+  "nextNumber": 216,
   "materials": [
     {
       "number": 1,
@@ -1078,6 +1078,16 @@
       "number": 213,
       "key": "tools/quadratic-completing-square/",
       "title": "平方完成で二次方程式を解く"
+    },
+    {
+      "number": 214,
+      "key": "tools/quadratic-formula/",
+      "title": "平方完成から解の公式へ"
+    },
+    {
+      "number": 215,
+      "key": "tools/quadratic-method-choice/",
+      "title": "二次方程式の解法を選ぶ"
     }
   ],
   "retiredNumbers": [
