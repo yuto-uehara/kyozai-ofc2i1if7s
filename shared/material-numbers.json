@@ -557,7 +557,7 @@
     {
       "number": 109,
       "key": "tools/equidistant-circle/",
-      "title": "線分と半直線まで等距離の円"
+      "title": "等距離の点と円"
     }
   ],
   "retiredNumbers": [
