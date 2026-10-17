@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 168,
+  "nextNumber": 170,
   "materials": [
     {
       "number": 1,
@@ -848,6 +848,16 @@
       "number": 167,
       "key": "tools/equal-angles-equal-sides/",
       "title": "等しい底角から等しい辺を示す"
+    },
+    {
+      "number": 168,
+      "key": "tools/equilateral-equivalence/",
+      "title": "正三角形の3辺・3角と60°"
+    },
+    {
+      "number": 169,
+      "key": "tools/converse-counterexamples/",
+      "title": "逆の命題を反例で調べる"
     }
   ],
   "retiredNumbers": [
