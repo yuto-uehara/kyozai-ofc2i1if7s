@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 131,
+  "nextNumber": 132,
   "materials": [
     {
       "number": 1,
@@ -663,6 +663,11 @@
       "number": 130,
       "key": "tools/polynomial-structure/",
       "title": "項・係数・次数を読む"
+    },
+    {
+      "number": 131,
+      "key": "tools/polynomial-add/",
+      "title": "多項式の加法"
     }
   ],
   "retiredNumbers": [
