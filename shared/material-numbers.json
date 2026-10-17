@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 148,
+  "nextNumber": 150,
   "materials": [
     {
       "number": 1,
@@ -748,6 +748,16 @@
       "number": 147,
       "key": "tools/simultaneous-substitution/",
       "title": "代入法で連立方程式を解く"
+    },
+    {
+      "number": 148,
+      "key": "tools/simultaneous-normalize/",
+      "title": "連立方程式の係数を整える"
+    },
+    {
+      "number": 149,
+      "key": "tools/chained-equality/",
+      "title": "A＝B＝Cを2つの等式へ"
     }
   ],
   "retiredNumbers": [
