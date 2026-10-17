@@ -8,10 +8,10 @@ const isSvg=figure.tagName.toLowerCase()==='svg',slug=location.pathname.split('/
 const regions={
 '2n4s_parallel_angles.html':{portrait:[[0,0,650,600],[0,0,650,600],[0,0,1000,235]],landscape:[[0,0,650,600],[0,0,650,600],[1200,0,400,330]],labels:['上の交点','下の交点','角の関係']},
 '1n5s_sector.html':{portrait:[[0,0,1000,810],[0,790,1000,550]],landscape:[[130,100,620,620],[940,30,660,580]],labels:['図を動かす','半径・式']},
-'1n5s_transform.html':{portrait:[[0,0,1000,850],[0,820,1000,520]],landscape:[[0,0,1050,820],[1020,0,580,820]],labels:['図を動かす','角度・関係']},
+'1n5s_transform.html':{portrait:[[0,0,1000,850],[0,0,1000,1340]],landscape:[[0,0,1050,820],[0,0,1600,820]],labels:['図を動かす','図と角度・関係']},
 '1n6s_projection.html':{portrait:[[0,0,1000,730],[0,710,1000,330],[0,1035,1000,305]],landscape:[[0,0,960,820],[940,0,660,410],[940,410,660,410]],labels:['立体を動かす','立面図','平面図']},
 '1n6s_revolution.html':{portrait:[[0,0,1000,1060],[0,1050,1000,290]],landscape:[[0,0,1160,820],[1160,200,440,400]],labels:['回転体','回転角を変える']},
-'2n5s_parallelogram_conditions.html':{portrait:[[0,0,1000,750],[0,740,1000,600]],landscape:[[0,0,1000,820],[980,0,620,820]],labels:['図を動かす','成立する条件']}
+'2n5s_parallelogram_conditions.html':{portrait:[[0,0,1000,730],[0,740,1000,600]],landscape:[[0,0,980,820],[980,0,620,820]],labels:['図を動かす','成立する条件']}
 };
 const config=regions[slug];let sourceBox=null,ignore=false,focusGroup=null,clipRect=null;
 if(isSvg&&config){const ns='http://www.w3.org/2000/svg';focusGroup=document.createElementNS(ns,'g');while(figure.firstChild)focusGroup.append(figure.firstChild);figure.append(focusGroup);const defs=document.createElementNS(ns,'defs'),clip=document.createElementNS(ns,'clipPath');clip.id='screen-focus-clip';clip.setAttribute('clipPathUnits','userSpaceOnUse');clipRect=document.createElementNS(ns,'rect');clip.append(clipRect);defs.append(clip);figure.append(defs);}
