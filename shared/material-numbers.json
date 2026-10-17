@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 156,
+  "nextNumber": 157,
   "materials": [
     {
       "number": 1,
@@ -788,6 +788,11 @@
       "number": 155,
       "key": "tools/simultaneous-intersection/",
       "title": "連立方程式の解と交点"
+    },
+    {
+      "number": 156,
+      "key": "tools/linear-measurement-model/",
+      "title": "測定値から一次関数とみなす"
     }
   ],
   "retiredNumbers": [
