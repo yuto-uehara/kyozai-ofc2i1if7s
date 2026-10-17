@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 144,
+  "nextNumber": 145,
   "materials": [
     {
       "number": 1,
@@ -728,6 +728,11 @@
       "number": 143,
       "key": "tools/quantity-invariance/",
       "title": "式から影響する量を見分ける"
+    },
+    {
+      "number": 144,
+      "key": "tools/isolate-variable/",
+      "title": "指定した文字について解く"
     }
   ],
   "retiredNumbers": [
