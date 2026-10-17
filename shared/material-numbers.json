@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 159,
+  "nextNumber": 161,
   "materials": [
     {
       "number": 1,
@@ -803,6 +803,16 @@
       "number": 158,
       "key": "tools/moving-point-intervals/",
       "title": "動点の面積を区間ごとに表す"
+    },
+    {
+      "number": 159,
+      "key": "tools/read-linear-graph/",
+      "title": "グラフから一次関数の式へ"
+    },
+    {
+      "number": 160,
+      "key": "tools/parallel-angle-converse/",
+      "title": "角の等しさから平行を判断する"
     }
   ],
   "retiredNumbers": [
