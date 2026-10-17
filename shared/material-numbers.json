@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 108,
+  "nextNumber": 109,
   "materials": [
     {
       "number": 1,
@@ -548,6 +548,11 @@
       "number": 107,
       "key": "tools/triangle-height/",
       "title": "三角形の高さを作図する"
+    },
+    {
+      "number": 108,
+      "key": "tools/circle-tangent/",
+      "title": "円周上の点を通る接線"
     }
   ],
   "retiredNumbers": [
