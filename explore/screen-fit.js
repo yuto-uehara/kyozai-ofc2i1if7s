@@ -39,8 +39,8 @@
       page('弧と円周をたどる',groups.slice(2));
       page('図の読み方',[q('.visual-head'),q('.compare-note'),visual.querySelector('.note'),q('#constraint-note'),q('.footnote')]);
     }else{
-      page('移動の種類と対応点',[...controls.children].filter(x=>x.classList.contains('control')).slice(0,2));
-      page('移動量・中心・対称の軸',[q('#translate-controls'),q('#rotate-controls'),q('#reflect-controls')]);
+      page('対応する点を選ぶ',[q('.point-buttons')?.closest('.control')]);
+      page(({translate:'移動量を変える',rotate:'回転角と中心を変える',reflect:'対称の軸を変える'})[document.body.dataset.transformMode]||'移動量・中心・対称の軸',[q('#translate-controls'),q('#rotate-controls'),q('#reflect-controls')]);
       page('動きを見る',[[...controls.children].filter(x=>x.classList.contains('row')),q('#animation-note')]);
       page('図の読み方',[q('.visual-head'),q('.legend'),q('#move-note'),q('.footnote')]);
       // Old anchors scrolled to the distant settings. They now select the view.

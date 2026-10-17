@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 89,
+  "nextNumber": 91,
   "materials": [
     {
       "number": 1,
@@ -112,7 +112,7 @@
     {
       "number": 21,
       "key": "explore/transform.html",
-      "title": "図形の移動と対応する点"
+      "title": "平行移動と対応する点"
     },
     {
       "number": 22,
@@ -453,6 +453,16 @@
       "number": 88,
       "key": "explore/fraction-division.html",
       "title": "分数のわり算を試す"
+    },
+    {
+      "number": 89,
+      "key": "explore/rotation.html",
+      "title": "回転移動と対応する点"
+    },
+    {
+      "number": 90,
+      "key": "explore/reflection.html",
+      "title": "対称移動と対応する点"
     }
   ],
   "retiredNumbers": [
