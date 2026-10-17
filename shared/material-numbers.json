@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 86,
+  "nextNumber": 89,
   "materials": [
     {
       "number": 1,
@@ -20,7 +20,7 @@
     {
       "number": 4,
       "key": "explore/fractions.html",
-      "title": "分数の四則演算を試す"
+      "title": "分数のたし算を試す"
     },
     {
       "number": 5,
@@ -438,6 +438,21 @@
       "number": 85,
       "key": "explore/division-to-fraction.html",
       "title": "割り算を分数に直す"
+    },
+    {
+      "number": 86,
+      "key": "explore/fraction-subtraction.html",
+      "title": "分数のひき算を試す"
+    },
+    {
+      "number": 87,
+      "key": "explore/fraction-multiplication.html",
+      "title": "分数のかけ算を試す"
+    },
+    {
+      "number": 88,
+      "key": "explore/fraction-division.html",
+      "title": "分数のわり算を試す"
     }
   ],
   "retiredNumbers": [
