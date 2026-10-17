@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 117,
+  "nextNumber": 118,
   "materials": [
     {
       "number": 1,
@@ -593,6 +593,11 @@
       "number": 116,
       "key": "tools/denominator-substitution/",
       "title": "分母の文字に代入する"
+    },
+    {
+      "number": 117,
+      "key": "tools/natural-inverse/",
+      "title": "自然数に限る反比例"
     }
   ],
   "retiredNumbers": [
