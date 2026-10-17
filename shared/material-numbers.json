@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 162,
+  "nextNumber": 163,
   "materials": [
     {
       "number": 1,
@@ -818,6 +818,11 @@
       "number": 161,
       "key": "tools/congruence-correspondence/",
       "title": "合同の対応と記号の順序"
+    },
+    {
+      "number": 162,
+      "key": "tools/triangle-exterior-reason/",
+      "title": "三角形の外角の性質を説明する"
     }
   ],
   "retiredNumbers": [
