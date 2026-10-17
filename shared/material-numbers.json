@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 84,
+  "nextNumber": 86,
   "materials": [
     {
       "number": 1,
@@ -20,7 +20,7 @@
     {
       "number": 4,
       "key": "explore/fractions.html",
-      "title": "分数の計算を試す"
+      "title": "分数の四則演算を試す"
     },
     {
       "number": 5,
@@ -428,6 +428,16 @@
       "number": 83,
       "key": "tools/perpendicular-distance/",
       "title": "垂線と最短距離"
+    },
+    {
+      "number": 84,
+      "key": "explore/common-denominator.html",
+      "title": "通分を試す"
+    },
+    {
+      "number": 85,
+      "key": "explore/division-to-fraction.html",
+      "title": "割り算を分数に直す"
     }
   ],
   "retiredNumbers": [

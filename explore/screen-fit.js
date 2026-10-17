@@ -2,7 +2,7 @@
    not copied: existing input listeners, live regions and lesson state survive. */
 (() => {
   'use strict';
-  const route=location.pathname.split('/').pop().replace('.html','');
+  const route=document.body.dataset.fitRoute||location.pathname.split('/').pop().replace('.html','');
   if(!['linear','transform','cone','fractions','distributive','sector'].includes(route))return;
   const q=s=>document.querySelector(s), all=s=>[...document.querySelectorAll(s)];
   const el=(tag,cls)=>Object.assign(document.createElement(tag),{className:cls||''});
@@ -51,7 +51,7 @@
     attach('.opening-task');
     const lesson=q('.lesson');
     const mainPage=page('計算の手順',[q('.lessonhead'),q('#stepTitle'),q('#equation'),q('#explain'),q('#visual')],'fit-calculation');
-    page('種類と例題を選ぶ',[q('#modules'),q('#tabs'),q('.controls')]);
+    page(document.body.dataset.lessonMode==='arithmetic'?'計算の種類と例題':'例題を選ぶ',[q('#tabs'),q('.controls')]);
     const details=q('#meaning-details');
     page('図で意味を見る',[q('#meaning-explain'),q('#meaning-visual'),q('#caption')],'fit-meaning');
     page('計算のポイント',[q('#takeaway'),q('.foot'),q('.eyebrow')]);

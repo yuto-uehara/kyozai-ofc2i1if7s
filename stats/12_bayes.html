@@ -34,6 +34,7 @@ button:disabled{opacity:.32;cursor:default}
 <link rel="stylesheet" href="../shared/material-numbers.css?rev=20261013numbers"></head>
 <body>
 <div id="wrap">
+<p id="expected-count-note" style="flex:none;margin:0;padding:5px 10px;border-bottom:1px solid var(--rule);font:12px/1.4 var(--sans)">人数と式は1000人あたりの期待人数です。人物図は整数に丸めた概略、実験は実際の試行人数を表示します。</p>
 <canvas id="cv"></canvas>
 <div id="bar">
   <button id="vI" class="on">1000人</button><button id="vA">面積図</button>
@@ -267,7 +268,7 @@ function kit(x,y,h,pos){const w=h*0.36;softShadow(()=>{ctx.fillStyle="#f7f7f5";r
 function draw(){SF.part(0);const t=th();corner("検査で陽性 → 本当に病気？");
   const f=G.f;
   // 1000人での人数（期待値）
-  const N=1000,ill=Math.round(N*t.p),tp=Math.round(ill*t.se),fn=ill-tp,fp=Math.round((N-ill)*(1-t.sp)),tn=N-ill-fp;
+  const N=1000,expected=Object.fromEntries(['tp','fp','fn','tn'].map(k=>[k,Number((N*t[k]).toFixed(6))])),ill=Math.round(N*t.p),tp=Math.round(ill*t.se),fn=ill-tp,fp=Math.round((N-ill)*(1-t.sp)),tn=N-ill-fp;
   if(view==="vI"){let cols=25,s=0;for(let c=20;c<=60;c++){const q=Math.min(f.w/c,f.h/Math.ceil(N/c));if(q>s){s=q;cols=c;}}const rows=Math.ceil(N/cols);const x0=f.x+(f.w-s*cols)/2,y0=f.y+(f.h-s*rows)/2;
     softShadow(()=>{ctx.fillStyle="#fbf9f3";rrect(x0-8,y0-8,s*cols+16,s*rows+16,8);ctx.fill();},12,3,.12);
     for(let i=0;i<N;i++){const st=i<tp?0:i<ill?2:i<ill+fp?1:3;const x=x0+(i%cols)*s,y=y0+Math.floor(i/cols)*s,P=PEOPLE[i];
@@ -282,13 +283,13 @@ function draw(){SF.part(0);const t=th();corner("検査で陽性 → 本当に病
     T("病気",x0+wi/2,y0+h+L*0.75,{a:"center",size:TK,c:DK[RED]});T("病気でない",x0+wi+(w-wi)/2,y0+h-L*0.8,{a:"center",size:TK,c:GR});}
   SF.part(1);
   // 凡例と式
-  const tx=G.tx,ty=G.ty,lg=[[CTP,"病気・陽性",tp],[CFP,"病気でない・陽性",fp],[CFN,"病気・陰性",fn],[CTN,"病気でない・陰性",tn]];
+  const tx=G.tx,ty=G.ty,lg=[[CTP,"病気・陽性",expected.tp],[CFP,"病気でない・陽性",expected.fp],[CFN,"病気・陰性",expected.fn],[CTN,"病気でない・陰性",expected.tn]];
   lg.forEach(([c,s,v],i)=>{const x=SF.active?(W>600?tx+(i%2)*G.tw/2:tx):tx+(i%2)*G.tw/2,y=SF.active?ty+(W>600?Math.floor(i/2):i)*48:ty+Math.floor(i/2)*L*2.6;kit(x,y-L*1.05,L*2.1,i<2);
     ctx.strokeStyle=i===0?"#8c3a3f":i===1?"#c08a3e":"rgba(0,0,0,0)";rawLW(2);ctx.beginPath();ctx.arc(x+L*1.55,y,L*0.38,0,TAU);ctx.stroke();if(i===2){ctx.fillStyle="rgba(140,58,63,.15)";ctx.fillRect(x+L*1.17,y-L*0.38,L*0.76,L*0.76);}
     T(s,x+L*2.2,y-L*0.35,{size:TK*0.95,c:GR});T(v+" 人",x+L*2.2,y+L*0.55,{size:L*0.9,c:INK,serif:1});});
 SF.part(2);
     const ey=SF.active?44:ty+L*6.2;
-  const ew=EQN(["陽性で病気 ",{n:tp,d:tp+"+"+fp,c:DK[RED]}," = "],tx,ey,{size:L});
+  const ew=EQN(["陽性で病気 ",{n:expected.tp,d:expected.tp+"+"+expected.fp,c:DK[RED]}," ≈ "],tx,ey,{size:L});
   T((t.ppv*100).toFixed(1)+"%",tx+ew+6,ey,{size:SF.active?24:clamp(BIG*0.6,36,72),w:800,c:DK[RED],halo:8});
   EQN(["（式 ",{n:"P(病)P(陽|病)",d:"P(陽)"}," ）"],tx,ey+L*2.6,{size:TK,c:GR});
   if(ex)T("実験 "+ex.tp+"/"+(ex.tp+ex.fp)+" = "+(ex.tp+ex.fp?(ex.tp/(ex.tp+ex.fp)*100).toFixed(1)+"%":"—")+"  ("+ex.N+"人)",tx,ey+L*4.3,{size:L*0.85,c:DK[OR]});
