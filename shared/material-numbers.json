@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 118,
+  "nextNumber": 119,
   "materials": [
     {
       "number": 1,
@@ -598,6 +598,11 @@
       "number": 117,
       "key": "tools/natural-inverse/",
       "title": "自然数に限る反比例"
+    },
+    {
+      "number": 118,
+      "key": "tools/proportion-dense-points/",
+      "title": "比例の点から直線へ"
     }
   ],
   "retiredNumbers": [
