@@ -46,6 +46,7 @@ const all=units(el);pages=[];let group=[];
 for(const u of all){const trial=[...group,u];visibleUnits(el,all,trial);if(el.getBoundingClientRect().height>height+1&&group.length){pages.push(group);group=[u]}else group=trial}
 if(group.length)pages.push(group);if(!pages.length)pages=[all];part=Math.min(part,pages.length-1);visibleUnits(el,all,pages[part]);
 pageLabel.textContent=(available.indexOf(el)+1)+' / '+available.length+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');if(el.matches('.work-card,.formula-card')&&lessonDock?.querySelector('#count'))pageLabel.textContent='手順 '+lessonDock.querySelector('#count').textContent+(pages.length>1?' · '+(part+1)+' / '+pages.length:'');pageLabel.setAttribute('aria-label',label(el,active)+(pages.length>1?'、'+(part+1)+'段階目':''));pageLabel.title=label(el,active);
+const stepRange=el.hasAttribute('data-fit-step-label')&&main.querySelector(el.dataset.fitStepRange);if(stepRange)pageLabel.textContent='手順 '+(+stepRange.value- +stepRange.min+1)+' / '+(+stepRange.max- +stepRange.min+1);
 const ctl=controller(el),atStart=ctl&&el===ctl.group[0]&&part===0,atEnd=ctl&&el===ctl.group.at(-1)&&part===pages.length-1;arrows[0].disabled=available.indexOf(el)===0&&part===0&&!(atStart&&!ctl.first);arrows[1].disabled=(atEnd&&ctl.blocked)||(available.indexOf(el)===available.length-1&&part===pages.length-1&&!(atEnd&&!ctl.last));
 }catch(e){console.error('Screen layout:',e)}finally{observe();busy=false}}
 function move(dir){const available=panels.filter(p=>!p.hidden),el=panels[active],ctl=controller(el);
