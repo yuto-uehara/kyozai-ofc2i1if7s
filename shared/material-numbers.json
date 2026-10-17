@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 112,
+  "nextNumber": 114,
   "materials": [
     {
       "number": 1,
@@ -568,6 +568,16 @@
       "number": 111,
       "key": "tools/equation-solution-check/",
       "title": "代入して解を確かめる"
+    },
+    {
+      "number": 112,
+      "key": "tools/linear-expression-add/",
+      "title": "一次式の加法"
+    },
+    {
+      "number": 113,
+      "key": "tools/linear-expression-subtract/",
+      "title": "一次式の減法"
     }
   ],
   "retiredNumbers": [
