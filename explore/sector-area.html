@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>おうぎ形の面積｜円の面積に倍率をかける</title>
+<style>
+:root{--ink:#191919;--muted:#626873;--line:#dfe3e8;--blue:#215892;--blue-fill:#c9dff5;--arc:#b23e25;--green:#20743f;--green-bg:#e9f5eb}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic",Meiryo,sans-serif;font-weight:600}button,input{font:inherit}button{touch-action:manipulation;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #377cdf;outline-offset:5px}main{max-width:1340px;margin:auto;padding:24px 30px 22px}header{display:flex;align-items:baseline;justify-content:space-between;gap:20px;border-bottom:2px solid var(--ink);padding-bottom:16px}h1{font-size:clamp(25px,3vw,38px);letter-spacing:.05em;margin:0}.subtitle{color:var(--muted);font-size:17px}button.reset{min-height:48px;padding:8px 18px;border:2px solid var(--ink);border-radius:10px;background:#fff;font-size:17px;white-space:nowrap}button:hover{background:#f0f2f4}button:active{transform:translateY(1px)}.hero{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:center;padding:20px 0}.diagram{min-width:0}.diagram-head{display:flex;justify-content:center;gap:14px;align-items:center;font-size:18px}.pill{border:1.5px solid #b9c0c7;border-radius:999px;padding:6px 17px;color:#4e555e;background:#f4f5f6}.diagram svg{width:100%;max-height:400px;display:block;overflow:visible}.legend{display:flex;justify-content:center;gap:24px;font-size:17px;margin-top:-2px}.legend span{display:inline-flex;align-items:center;gap:8px}.swatch{display:inline-block;width:22px;height:14px;border-radius:3px;background:var(--blue-fill);border:2px solid var(--blue)}.swatch.arc{height:5px;background:var(--arc);border:0}.factor-panel{align-self:stretch;display:flex;flex-direction:column;justify-content:center;gap:18px}.kicker{color:var(--muted);font-size:18px;margin:0}.factor-equation{display:flex;align-items:center;gap:16px;font-size:clamp(31px,3.2vw,49px);color:var(--green);min-height:96px;flex-wrap:wrap}.factor-equation .eq{color:var(--ink)}.fraction{display:inline-grid;grid-template-rows:1fr 1fr;vertical-align:middle;line-height:1.13;text-align:center;padding:0 .1em;white-space:nowrap}.fraction>span:first-child{border-bottom:.055em solid currentColor;padding:0 .2em .12em}.fraction>span:last-child{padding:.12em .2em 0}.big-factor{display:flex;align-items:center;gap:8px;font-size:1.1em}.times{font-size:.7em}.factor-bar{height:22px;background:#e8ebee;border:1.5px solid #b9c0c7;border-radius:5px;overflow:hidden}.factor-bar-fill{background:var(--green);height:100%;width:33.3333%}.bar-label{display:flex;justify-content:space-between;font-size:15px;color:var(--muted);margin-top:6px}.same-factor{font-size:clamp(18px,1.8vw,23px);line-height:1.7;margin:0}.same-factor strong{color:var(--green)}.formulas{display:grid;grid-template-columns:1fr 1fr;gap:20px}.formula-card{border:2px solid var(--line);border-top:5px solid var(--arc);border-radius:12px;padding:17px 22px}.formula-card.area{border-top-color:var(--blue)}.card-title{font-size:18px;color:var(--arc);margin:0 0 13px}.area .card-title{color:var(--blue)}.formula-flow{display:flex;align-items:center;gap:13px;font-size:clamp(24px,2.5vw,34px);flex-wrap:wrap}.whole-term{display:flex;flex-direction:column;align-items:center;gap:10px}.whole-term small{font-size:14px;color:var(--muted);font-weight:500}.formula-symbol{color:var(--ink)}.ratio-term{color:var(--green)}.answer{color:var(--arc);white-space:nowrap}.area .answer{color:var(--blue)}.answer small{font-size:.52em;font-weight:500;margin-left:5px}.numeric{margin:15px 0 0;font-size:18px;color:var(--muted);line-height:1.8}.numeric .ratio-term{font-weight:700}.numeric .answer{font-size:22px}.controls{border-top:2px solid var(--ink);padding:22px 0 0;margin-top:24px;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:32px}.control-label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:20px}.control-label output{font-size:26px}.control-label.theta output{color:var(--green)}input[type=range]{display:block;width:100%;height:42px;margin:9px 0 2px;accent-color:var(--green);cursor:pointer;touch-action:pan-y}#radius{accent-color:var(--ink)}.presets{display:flex;flex-wrap:wrap;gap:7px}.presets button{min-width:48px;min-height:44px;border:1.5px solid #b9c0c7;border-radius:8px;background:#fff;padding:6px 10px;font-size:16px}.presets button[aria-pressed=true]{background:var(--green);color:white;border-color:var(--green)}.range-ends{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:-2px}.note{font-size:14px;color:var(--muted);margin:16px 0 0;line-height:1.7}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}svg text{font-family:inherit;font-weight:700}.var{font-family:Georgia,"Times New Roman",serif;font-style:italic}.radius-label{paint-order:stroke;stroke:#fff;stroke-width:7px;stroke-linejoin:round;fill:var(--ink)}
+@media(min-width:1550px){main{max-width:1520px;padding-top:32px}.diagram svg{max-height:440px}.factor-panel{gap:24px}.formula-card{padding:22px 28px}.controls{margin-top:30px}}
+@media(max-width:760px){main{padding:18px 18px 24px}header{gap:10px;padding-bottom:12px}.subtitle{font-size:13px;margin-top:5px;display:block}.reset{font-size:14px!important;padding:6px 12px!important}.hero{gap:8px;grid-template-columns:1fr;padding:18px 0}.diagram svg{max-height:310px}.diagram-head{font-size:15px}.legend{font-size:15px}.factor-panel{gap:10px;margin-top:14px}.kicker{font-size:16px}.factor-equation{font-size:36px;min-height:82px;justify-content:center}.same-factor{text-align:center;font-size:17px}.formulas{grid-template-columns:1fr;gap:12px}.formula-card{padding:15px 17px}.formula-flow{font-size:28px;gap:11px}.card-title{font-size:17px}.numeric{font-size:17px}.controls{grid-template-columns:1fr;gap:22px;margin-top:22px;padding-top:18px}.control-label{font-size:18px}.control-label output{font-size:23px}.presets{gap:6px}.presets button{min-width:43px;font-size:15px;padding:5px 8px}.note{font-size:13px}}
+@media(max-width:370px){main{padding-left:12px;padding-right:12px}.formula-flow{font-size:24px;gap:8px}.numeric{font-size:15px}.numeric .answer{font-size:20px}.factor-equation{font-size:31px}.legend{gap:16px}.presets button{min-width:39px;padding:5px 6px}}
+@media(prefers-reduced-motion:no-preference){.factor-bar-fill{transition:width .08s linear}}
+@media print{main{padding:0}.controls,.reset{display:none}.hero{grid-template-columns:1fr 1fr}.formulas{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="stylesheet" href="screen-fit.css?rev=20261017svg"><link rel="stylesheet" href="../shared/material-numbers.css?rev=20261013numbers"></head>
+<body data-fit-route="sector" data-sector-goal="area">
+<main>
+<nav aria-label="教材の切り替え" style="display:flex;gap:18px;font-size:14px;margin-bottom:18px;flex-wrap:wrap"><a href="../" style="color:inherit;text-decoration:none">← 教材一覧</a><a href="distributive.html" style="color:inherit">分配法則へ</a></nav>
+<header><div><h1>おうぎ形の面積</h1><span class="subtitle" id="sector-task">半径 6 cm、中心角 120°。面積を求める。</span></div><button class="reset" id="reset" type="button">リセット</button></header>
+<section class="hero" aria-label="円全体とおうぎ形の割合">
+ <div class="diagram">
+  <div class="diagram-head"><span class="pill">円全体 ＝ 1</span><span>同じ半径 <span class="var">r</span></span></div>
+  <svg id="diagram" viewBox="0 -30 520 490" role="img" aria-labelledby="diagramTitle diagramDesc">
+   <title id="diagramTitle">円の一部としてのおうぎ形</title><desc id="diagramDesc"></desc>
+   <circle id="wholeCircle" cx="260" cy="230" r="120" fill="#eef0f3" stroke="#a9b0b9" stroke-width="3"/>
+   <path id="sectorFill" fill="#c9dff5"/>
+   <circle id="fullFill" cx="260" cy="230" r="120" fill="#c9dff5" visibility="hidden"/>
+   <path id="sectorArc" fill="none" stroke="#215892" stroke-width="3"/>
+   <circle id="fullArc" cx="260" cy="230" r="120" fill="none" stroke="#215892" stroke-width="3" visibility="hidden"/>
+   <path id="radii" fill="none" stroke="#191919" stroke-width="3"/>
+   <path id="angleArc" fill="none" stroke="#20743f" stroke-width="3"/>
+   <circle cx="260" cy="230" r="4.5" fill="#191919"/>
+   <text id="angleText" x="260" y="68" text-anchor="middle" font-size="29" fill="#20743f">120°</text>
+   <text id="radiusText" class="radius-label" x="320" y="258" text-anchor="middle" font-size="24">r = 6 cm</text>
+  </svg>
+  <div class="legend"><span><i class="swatch"></i>面積</span></div>
+ </div>
+ <div class="factor-panel">
+  <p class="kicker">円全体の、どれだけ？</p>
+  <div class="factor-equation" aria-label="中心角を360度で割った倍率">
+   <span class="fraction"><span id="angleNumerator">120°</span><span>360°</span></span>
+   <span class="eq">＝</span><span id="fractionResult" class="big-factor"></span><span class="times">倍</span>
+  </div>
+  <div><div class="factor-bar" aria-hidden="true"><div id="factorFill" class="factor-bar-fill"></div></div><div class="bar-label"><span>0</span><span>円全体 1</span></div></div>
+  <p class="same-factor">面積は<br><strong>円の面積 × 中心角の倍率</strong></p>
+ </div>
+</section>
+<section class="formulas" aria-label="面積の公式">
+
+ <article class="formula-card area"><h2 class="card-title">面積 <span class="var">S</span></h2>
+  <div class="formula-flow"><span class="whole-term"><small>円の面積</small><span>π<span class="var">r</span>²</span></span><span>×</span><span class="ratio-term fraction"><span class="var">θ</span><span>360</span></span><span>＝</span><span class="answer var">S</span></div>
+  <p class="numeric"><span id="wholeArea">36π</span> × <span class="ratio-term" id="areaFactor"></span> ＝ <span class="answer" id="areaResult"></span></p>
+ </article>
+</section>
+<section class="controls" aria-label="数値を変える">
+ <div><label for="angle" class="control-label theta"><span>中心角 <span class="var">θ</span></span><output id="angleOutput" for="angle">120°</output></label><input id="angle" type="range" min="0" max="360" step="1" value="120" aria-describedby="angleHint"><span id="angleHint" class="sr-only">0度から360度。角度を変えると、円全体に対する倍率が変わります。</span><div class="presets" aria-label="中心角の例"><button type="button" data-angle="0">0°</button><button type="button" data-angle="60">60°</button><button type="button" data-angle="90">90°</button><button type="button" data-angle="120">120°</button><button type="button" data-angle="180">180°</button><button type="button" data-angle="270">270°</button><button type="button" data-angle="360">360°</button></div></div>
+ <div><label for="radius" class="control-label"><span>半径 <span class="var">r</span></span><output id="radiusOutput" for="radius">6 cm</output></label><input id="radius" type="range" min="1" max="10" step="1" value="6"><div class="range-ends"><span>1 cm</span><span>10 cm</span></div><p class="note">角度が同じなら、半径を変えても倍率は同じ。</p></div>
+</section>
+<p class="note">θ は中心角の度数。0°は「部分なし」、360°は「円全体」として表示します。</p>
+<p id="status" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const state={angle:120,radius:6};
+const areaLesson=document.body.dataset.sectorGoal==='area',goalName=areaLesson?'面積':'弧の長さ';
+function gcd(a,b){while(b){const t=a%b;a=b;b=t;}return a||1;}
+function reduced(n,d){const g=gcd(n,d);return {n:n/g,d:d/g};}
+function fraction(n,d){const q=reduced(n,d);return q.d===1?String(q.n):`<span class="fraction"><span>${q.n}</span><span>${q.d}</span></span>`;}
+function piTerm(n,d){const q=reduced(n,d);if(!q.n)return '0';if(q.d===1)return (q.n===1?'':q.n)+'π';return fraction(q.n,q.d)+'π';}
+function setAttrs(id,attrs){for(const [key,value] of Object.entries(attrs))$(id).setAttribute(key,value);}
+function arcPath(r,angle){const t=-angle*Math.PI/180,x=260+r*Math.cos(t),y=230+r*Math.sin(t);return `M ${260+r} 230 A ${r} ${r} 0 ${angle>180?1:0} 0 ${x} ${y}`;}
+function draw(){
+ const {angle:a,radius:r}=state,R=r*20,t=-a*Math.PI/180,x=260+R*Math.cos(t),y=230+R*Math.sin(t),q=reduced(a,360),f=fraction(a,360);
+ $('sector-task').textContent=`半径 ${r} cm、中心角 ${a}°。${goalName}を求める。`;
+ $('angle').value=String(a);$('radius').value=String(r);$('angleOutput').value=a+'°';$('radiusOutput').value=r+' cm';
+ $('angle').setAttribute('aria-valuetext',a+'度');$('radius').setAttribute('aria-valuetext',r+'センチメートル');
+ $('angleNumerator').textContent=a+'°';$('fractionResult').innerHTML=f;$('factorFill').style.width=(a/3.6)+'%';
+ for(const id of ['wholeCircle','fullFill','fullArc'])setAttrs(id,{r:R});
+ setAttrs('fullFill',{visibility:a===360?'visible':'hidden'});setAttrs('fullArc',{visibility:a===360?'visible':'hidden'});
+ setAttrs('sectorFill',{d:a>0&&a<360?`M 260 230 L ${260+R} 230 A ${R} ${R} 0 ${a>180?1:0} 0 ${x} ${y} Z`:'',visibility:a>0&&a<360?'visible':'hidden'});
+ setAttrs('sectorArc',{d:a>0&&a<360?arcPath(R,a):'',visibility:a>0&&a<360?'visible':'hidden'});
+ setAttrs('radii',{d:`M 260 230 L ${260+R} 230`+(a>0&&a<360?` M 260 230 L ${x} ${y}`:'')});
+ const ra=Math.min(35,R*.35);setAttrs('angleArc',{d:a>0&&a<360?arcPath(ra,a):'',visibility:a>0&&a<360?'visible':'hidden'});
+ // External angle label keeps tiny and reflex angles readable at every radius.
+ setAttrs('angleText',{x:260,y:230-R-20});$('angleText').textContent=a+'°';
+ setAttrs('radiusText',{x:260+Math.max(R/2,70),y:260});$('radiusText').textContent='r = '+r+' cm';
+ if(areaLesson){$('wholeArea').textContent=r*r+'π';$('areaFactor').innerHTML=f;$('areaResult').innerHTML=piTerm(r*r*a,360)+'<small>cm²</small>';}else{$('wholeLength').textContent=2*r+'π';$('lengthFactor').innerHTML=f;$('lengthResult').innerHTML=piTerm(2*r*a,360)+'<small>cm</small>';}
+ document.querySelectorAll('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.angle)===a)));
+ const ratio=q.d===1?String(q.n):q.n+'/'+q.d;
+ const summary=`半径${r}センチメートル、中心角${a}度。円全体に対して${ratio}倍。${areaLesson?'円の面積':'円周'}にこの倍率をかけて${goalName}を求めます。`;
+ $('diagramDesc').textContent=summary;$('status').textContent=summary;
+ document.documentElement.dataset.angle=String(a);document.documentElement.dataset.radius=String(r);document.documentElement.dataset.factor=String(a/360);
+}
+$('angle').addEventListener('input',e=>{state.angle=Number(e.target.value);draw();});
+$('radius').addEventListener('input',e=>{state.radius=Number(e.target.value);draw();});
+document.querySelectorAll('[data-angle]').forEach(b=>b.addEventListener('click',()=>{state.angle=Number(b.dataset.angle);draw();}));
+$('reset').addEventListener('click',()=>{state.angle=120;state.radius=6;draw();});
+draw();
+</script>
+<script src="screen-fit.js?rev=20261017sector"></script><script src="../shared/material-numbers.js?rev=20261017sector"></script></body>
+</html>

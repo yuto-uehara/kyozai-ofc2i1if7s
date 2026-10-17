@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 93,
+  "nextNumber": 94,
   "materials": [
     {
       "number": 1,
@@ -107,7 +107,7 @@
     {
       "number": 20,
       "key": "explore/sector.html",
-      "title": "おうぎ形の弧と面積"
+      "title": "おうぎ形の弧の長さ"
     },
     {
       "number": 21,
@@ -473,6 +473,11 @@
       "number": 92,
       "key": "1n5s/html/1n5s_reflection.html",
       "title": "対称移動を動かして確かめる"
+    },
+    {
+      "number": 93,
+      "key": "explore/sector-area.html",
+      "title": "おうぎ形の面積"
     }
   ],
   "retiredNumbers": [

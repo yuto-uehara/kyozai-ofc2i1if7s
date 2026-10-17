@@ -41,8 +41,8 @@
     }else{
       page('対応する点を選ぶ',[q('.point-buttons')?.closest('.control')]);
       page(({translate:'移動量を変える',rotate:'回転角と中心を変える',reflect:'対称の軸を変える'})[document.body.dataset.transformMode]||'移動量・中心・対称の軸',[q('#translate-controls'),q('#rotate-controls'),q('#reflect-controls')]);
-      page('動きを見る',[[...controls.children].filter(x=>x.classList.contains('row')),q('#animation-note')]);
-      page('図の読み方',[q('.visual-head'),q('.legend'),q('#move-note'),q('.footnote')]);
+      const play=q('#move-play');if(play)dock.append(play);
+      page('図の読み方',[q('.visual-head'),q('.legend'),q('#move-note'),q('#animation-note'),q('.footnote')]);
       // Old anchors scrolled to the distant settings. They now select the view.
       dock.querySelectorAll('a').forEach(a=>{a.href='#';a.textContent='中心・対応点を変える';a.addEventListener('click',e=>{e.preventDefault();show(2);});});
     }
@@ -73,7 +73,7 @@
     }
     chart.append(dock);
     page('円全体に対する倍率',[q('.factor-panel')]);
-    all('.formula-card').forEach((n,i)=>page(i?'面積を求める':'弧の長さを求める',[n]));
+    all('.formula-card').forEach(n=>page(n.classList.contains('area')?'面積を求める':'弧の長さを求める',[n]));
     const c=q('.controls');[...c.children].forEach((n,i)=>page(i?'半径を変える':'中心角を変える',[n]));
     page('読み方・リセット',[q('#reset'),...oldMain.querySelectorAll(':scope > .note'),oldMain.querySelector('nav')]);
   } else {
