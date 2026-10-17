@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 254,
+  "nextNumber": 257,
   "materials": [
     {
       "number": 1,
@@ -1278,6 +1278,21 @@
       "number": 253,
       "key": "tools/circle-length-pythagoras/",
       "title": "円の弦と接線の長さを求める"
+    },
+    {
+      "number": 254,
+      "key": "tools/pythagoras-everyday-models/",
+      "title": "日常の場面を直角三角形にする"
+    },
+    {
+      "number": 255,
+      "key": "tools/pythagoras-spatial-sections/",
+      "title": "立体の中の直角三角形と長さ"
+    },
+    {
+      "number": 256,
+      "key": "tools/pythagoras-nets-folds/",
+      "title": "展開図と折り返しで長さを求める"
     }
   ],
   "retiredNumbers": [
