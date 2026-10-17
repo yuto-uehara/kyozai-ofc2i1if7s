@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 237,
+  "nextNumber": 238,
   "materials": [
     {
       "number": 1,
@@ -1193,6 +1193,11 @@
       "number": 236,
       "key": "tools/proportional-division-construction/",
       "title": "線分を決めた比に分ける作図"
+    },
+    {
+      "number": 237,
+      "key": "tools/scale-drawing-distance/",
+      "title": "縮図から距離と高さを求める"
     }
   ],
   "retiredNumbers": [
