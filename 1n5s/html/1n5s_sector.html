@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おうぎ形</title>
+<title>おうぎ形の弧の長さを動かして確かめる</title>
 <style>
 html,body{margin:0;height:100%;background:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans CJK JP","Noto Sans JP","Yu Gothic","Meiryo",sans-serif}
@@ -26,7 +26,7 @@ text{font-weight:700}
 </style>
 <link rel="stylesheet" href="../../shared/legacy-screen.css?rev=20261017nav">
 <link rel="stylesheet" href="../../shared/material-numbers.css?rev=20261013numbers"></head>
-<body>
+<body data-legacy-route="1n5s_sector.html" data-sector-goal="arc">
 <div id="wrap">
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
 <div id="bar"></div>
@@ -158,6 +158,7 @@ function coefParts(r,color){ if(r.n===r.d)return []; if(r.n===-r.d)return [['−
 
 const root=el('g',{},svg);
 let st,L,sr=null,CEN=null;
+const areaLesson=document.body.dataset.sectorGoal==='area';
 function init(){st={r:6,a:120};}
 function layout(){
   if(isLand()){svg.setAttribute('viewBox','0 0 1600 820');
@@ -177,10 +178,10 @@ function draw(){
   el('circle',{cx,cy,r:Rp,fill:'none',stroke:COL.gray,'stroke-width':3,'stroke-dasharray':'10 8'},g);
   // sector from angle 0 (right) counterclockwise by a
   const t=-a*Math.PI/180,ex=cx+Rp*Math.cos(t),ey=cy+Rp*Math.sin(t),large=a>180?1:0;
-  if(a>=360) el('circle',{cx,cy,r:Rp,fill:COL.lblue,stroke:COL.blue,'stroke-width':5},g);
+  if(a>=360) el('circle',{cx,cy,r:Rp,fill:areaLesson?COL.lblue:'none',stroke:areaLesson?COL.blue:COL.red,'stroke-width':5},g);
   else if(a>0){
-    el('path',{d:`M${cx},${cy} L${cx+Rp},${cy} A${Rp},${Rp} 0 ${large} 0 ${ex},${ey} Z`,fill:COL.lblue,stroke:COL.blue,'stroke-width':5,'stroke-linejoin':'round'},g);
-    el('path',{d:`M${cx+Rp},${cy} A${Rp},${Rp} 0 ${large} 0 ${ex},${ey}`,fill:'none',stroke:COL.red,'stroke-width':10,'stroke-linecap':'round'},g);
+    el('path',{d:`M${cx},${cy} L${cx+Rp},${cy} A${Rp},${Rp} 0 ${large} 0 ${ex},${ey} Z`,fill:areaLesson?COL.lblue:'none',stroke:COL.blue,'stroke-width':3,'stroke-linejoin':'round'},g);
+    el('path',{d:`M${cx+Rp},${cy} A${Rp},${Rp} 0 ${large} 0 ${ex},${ey}`,fill:'none',stroke:areaLesson?COL.blue:COL.red,'stroke-width':areaLesson?3:10,'stroke-linecap':'round'},g);
   }
   // angle mark
   const ra=Math.min(60,Rp*0.35);
@@ -202,8 +203,8 @@ function draw(){
   RICH(g,bx,by,[['{r} = '+st.r+' cm',COL.black],['    {a} = '+a+'°',COL.green]],SZ('main'),'start');
   const [qx,qy]=L.eq,fs=SZ('main');
   const l=R(2*st.r*a,360), S=R(st.r*st.r*a,360);
-  RICH(g,qx,qy+SZ(30),[['ℓ = 2{π} × '+st.r+' × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(l,COL.red),[' cm',COL.black]],fs,'start');
-  RICH(g,qx,qy+SZ(160),[['{S} = {π} × '+st.r+'² × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(S,COL.blue),[' cm²',COL.black]],fs,'start');
+  if(!areaLesson)RICH(g,qx,qy+SZ(30),[['ℓ = 2{π} × '+st.r+' × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(l,COL.red),[' cm',COL.black]],fs,'start');
+  if(areaLesson)RICH(g,qx,qy+SZ(30),[['{S} = {π} × '+st.r+'² × ',COL.black],...(a===360?[['1',COL.green]]:[['FRAC',String(a),'360',COL.green]]),[' = ',COL.black],...piParts(S,COL.blue),[' cm²',COL.black]],fs,'start');
   TOOLBAR([{t:'リセット',fn:()=>{init();draw();}}]);
 }
 HITS.push(p=>sliderHit(sr,i=>{if(i+1!==st.r){st.r=i+1;draw();}})(p));
@@ -218,6 +219,6 @@ addEventListener('resize',layout);
 init();layout();
 
 </script>
-<script src="../../shared/legacy-screen.js?rev=20261017nav"></script>
-<script src="../../shared/material-numbers.js?rev=20261013numbers"></script></body>
+<script src="../../shared/legacy-screen.js?rev=20261017rotationbounds"></script>
+<script src="../../shared/material-numbers.js?rev=20261017legacysector"></script></body>
 </html>
