@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 230,
+  "nextNumber": 231,
   "materials": [
     {
       "number": 1,
@@ -1158,6 +1158,11 @@
       "number": 229,
       "key": "tools/similarity-center-construction/",
       "title": "相似の中心から拡大・縮小"
+    },
+    {
+      "number": 230,
+      "key": "tools/similarity-proof-grounds/",
+      "title": "根拠をそろえて相似を証明"
     }
   ],
   "retiredNumbers": [
