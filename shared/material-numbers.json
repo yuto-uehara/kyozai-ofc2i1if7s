@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 227,
+  "nextNumber": 229,
   "materials": [
     {
       "number": 1,
@@ -1143,6 +1143,16 @@
       "number": 226,
       "key": "tools/piecewise-function-relations/",
       "title": "区間で変わる関数の対応"
+    },
+    {
+      "number": 227,
+      "key": "tools/similarity-correspondence/",
+      "title": "相似の対応と相似比"
+    },
+    {
+      "number": 228,
+      "key": "tools/triangle-similarity-conditions/",
+      "title": "三角形の相似条件を確かめる"
     }
   ],
   "retiredNumbers": [
