@@ -1,5 +1,5 @@
 (function(){'use strict';const examples=[
-{label:'100を中心とする積',original:'99×101',form:'(100−1)(100＋1)',identity:'(a−b)(a＋b)＝a²−b²',changed:'100²−1²',calculation:'10000−1＝9999',reason:'100から同じだけ離れた2数なので、和と差の積にします。',benefit:'2桁どうしの筆算を、100の平方と1の引き算に変えられます。',direct:99*101,value:9999},
+{label:'100を中心とする積',original:'99×101',form:'(100−1)(100＋1)',identity:'(a−b)(a＋b)＝a²−b²',changed:'100²−1²',calculation:'10000−1＝9999',reason:'100から同じだけ離れた2数なので、和と差の積にします。',benefit:'99と101の筆算を、100の平方と1の引き算に変えられます。',direct:99*101,value:9999},
 {label:'100に近い数の平方',original:'98²',form:'(100−2)²',identity:'(a−b)²＝a²−2ab＋b²',changed:'10000−400＋4',calculation:'9604',reason:'98を100−2と見ます。中央の−2abと最後の＋b²を両方残します。',benefit:'計算しやすい100を基準にでき、平方を各項の平方だけにする誤りも防げます。',direct:98**2,value:9604},
 {label:'平方の差を積にする',original:'52²−48²',form:'(52−48)(52＋48)',identity:'a²−b²＝(a−b)(a＋b)',changed:'4×100',calculation:'400',reason:'2つの平方を別々に計算せず、平方差を和と差の積へ変えます。',benefit:'大きな平方2回の計算が、小さな差ときりのよい和の積になります。',direct:52**2-48**2,value:400},
 {label:'代入前に因数分解',original:'x²＋6x＋9 ／ x＝97',form:'x²＋6x＋9＝(x＋3)²',identity:'x²＋2ax＋a²＝(x＋a)²',changed:'(97＋3)²＝100²',calculation:'10000',reason:'先に文字式を平方の形へ変え、それから97を代入します。',benefit:'97²や6×97を別々に求める必要がなくなります。',direct:97**2+6*97+9,value:10000},
