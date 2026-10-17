@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 145,
+  "nextNumber": 146,
   "materials": [
     {
       "number": 1,
@@ -733,6 +733,11 @@
       "number": 144,
       "key": "tools/isolate-variable/",
       "title": "指定した文字について解く"
+    },
+    {
+      "number": 145,
+      "key": "tools/simultaneous-solution/",
+      "title": "連立方程式の解を確かめる"
     }
   ],
   "retiredNumbers": [
