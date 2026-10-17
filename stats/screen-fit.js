@@ -33,7 +33,7 @@ const SF={active:false,index:0,_part:false,
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){close();document.getElementById('tip').classList.remove('show');}});
  const oldLayout=layout,oldDraw=draw;
  layout=function(){const h=H;SF.active=!!SF.parts||innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',SF.active);if(SF.active)H=Math.max(900,H);oldLayout();H=h;if(SF.active)SF.layout();SF.refreshNav();};
- draw=function(){SF._part=false;oldDraw();if(SF._part){ctx.restore();SF._part=false;}};
+ draw=function(){SF._part=false;oldDraw();if(SF._part){ctx.restore();SF._part=false;}if(SF.id==='11'&&SF.parts&&[1,2].includes(SF.parts[SF.index]))sn.draw();};
  this.active=!!SF.parts||innerWidth<900||innerHeight<650;document.documentElement.classList.toggle('sf-fit',this.active);
  cv.setAttribute('aria-label',document.title+'。表示パネルと操作ボタンで実験できます。');
  // Native alternatives keep small grid/door targets usable by touch and keyboard.
@@ -73,7 +73,7 @@ const SF={active:false,index:0,_part:false,
  case '08':{const s=Math.min(W-60,H-62);G.s={x:(W-s)/2,y:34,s};G.c=box;}break;
  case '09':G.sc=wide;G.c=box;G.tx=W/2;G.ty=35;if(this.index===3)sliders();break;
  case '10':G.bx=W/2;G.bw=W-50;G.top=38;G.bh=(H-100)*.5;G.hy=G.top+G.bh+10;G.hh=Math.max(30,(H-100)*.5);G.tx=24;G.ty=38;if(this.index===2)sliders();break;
- case '11':G.p=box;G.r=box;G.h=box;G.tray={x:16,y:32,w:W-32,h:Math.max(45,H-50)};G.tx=24;G.ty=40;if((this.parts?this.parts[this.index]:this.index)===5)sliders();break;
+ case '11':G.p=box;G.r=box;G.h=box;G.tray={x:16,y:32,w:W-32,h:Math.max(45,H-50)};G.tx=24;G.ty=40;if(this.parts&&[1,2].includes(this.parts[this.index])){G.r.h=G.h.h=Math.max(40,H-160);sn.show=true;sn.place(40,H-38,W-80);}else if((this.parts?this.parts[this.index]:this.index)===5)sliders();break;
  case '12':G.f={x:18,y:34,w:W-36,h:Math.max(40,H-65)};G.tx=16;G.tw=W-32;G.ty=34;if(this.index===3)sliders();break;
  case '13':G.a={x:48,y:32,w:W-70,h:Math.max(50,H-62)};G.b={x:50,y:58,w:W-76,h:Math.max(40,H-88)};G.tx=24;G.ty=36;break;
  case '14':G.win={x:20,y:20,w:W-40,h:H-40};G.d={x:0,y:10,w:W,h:H-20};G.cal={x:20,y:H*.25,w:W-40,h:Math.min(110,H*.5)};G.tx=20;G.ty=35;G.c=box;if(this.index===5)sliders();break;
