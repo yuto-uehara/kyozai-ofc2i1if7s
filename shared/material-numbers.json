@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 192,
+  "nextNumber": 193,
   "materials": [
     {
       "number": 1,
@@ -968,6 +968,11 @@
       "number": 191,
       "key": "tools/expanded-polynomial-combination/",
       "title": "展開と加減を順序よく整理する"
+    },
+    {
+      "number": 192,
+      "key": "tools/common-factor/",
+      "title": "因数分解の意味と共通因数"
     }
   ],
   "retiredNumbers": [
