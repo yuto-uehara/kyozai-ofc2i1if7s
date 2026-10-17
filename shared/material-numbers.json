@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 114,
+  "nextNumber": 116,
   "materials": [
     {
       "number": 1,
@@ -578,6 +578,16 @@
       "number": 113,
       "key": "tools/linear-expression-subtract/",
       "title": "一次式の減法"
+    },
+    {
+      "number": 114,
+      "key": "tools/linear-expression-multiply/",
+      "title": "一次式と分数の乗法"
+    },
+    {
+      "number": 115,
+      "key": "tools/linear-expression-divide/",
+      "title": "一次式全体の除法"
     }
   ],
   "retiredNumbers": [
