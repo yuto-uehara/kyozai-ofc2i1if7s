@@ -265,7 +265,7 @@ function layout(){const land=isLand();G.land=land;
   else{G.p={x:L*3,y:L*2.8,w:W*0.42,h:H*0.16};G.r={x:W*0.42+L*7,y:L*2.8,w:W*0.58-L*8.5,h:H*0.16};G.h={x:L*3,y:H*0.16+L*7.6,w:W-L*5,h:H*0.3};sn.place(L*2.5,H-L*2.2,W-L*5);G.tray={x:L*1.5,y:H*0.46+L*9.4,w:W*0.5-L*2,h:H-H*0.46-L*15};G.tx=W*0.52+L;G.ty=G.tray.y+L*1.4;}}
 function draw(){SF.part(0);const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
   if(!SF.active){gridPaper(G.p.x-L*0.6,G.p.y-L*1.6,G.p.w+L*1.2,G.p.h+L*3,10);gridPaper(G.h.x-L*0.6,G.h.y-L*1.6,G.h.w+L*1.2,G.h.h+L*3,10);}
-  corner("母集団: "+D.nm);
+  
   // 母集団
   const pm=D.disc?0.3:dk==="dE"?1.1:dk==="dA"?3:1.4;
   const c1=chart(G.p,{x0:D.a,x1:D.b,y0:0,y1:pm,yt:false,xs:D.disc?1:dk==="dE"?1:0.5});
@@ -273,7 +273,7 @@ function draw(){SF.part(0);const D=DIST[dk],n=sn.v,sd=Math.sqrt(D.s2/n);
   else{const pts=[];for(let i=0;i<=200;i++){const x=D.a+(D.b-D.a)*i/200,y=D.pdf(x);if(isFinite(y))pts.push([c1.X(x),c1.Y(Math.min(y,pm))]);}ctx.fillStyle=LT[PU];ctx.beginPath();ctx.moveTo(pts[0][0],c1.Y(0));pts.forEach(p=>ctx.lineTo(p[0],p[1]));ctx.lineTo(pts[pts.length-1][0],c1.Y(0));ctx.fill();poly(pts,PU,4);}
   line(c1.X(D.mu),G.p.y,c1.X(D.mu),G.p.y+G.p.h,RED,3,[10,8]);
   if(lastS)for(const x of lastS.xs)if(x<=D.b)dot(c1.X(x),c1.Y(0)-8,5,INK);
-  T("μ = "+D.mu.toFixed(2)+"   σ² = "+(dk==="dD"?"35/12":dk==="dU"?"1/12":dk==="dA"?"1/8":"1"),G.p.x,G.p.y-L*0.9,{size:TK,c:DK[PU]});
+  T(D.nm+"  μ = "+D.mu.toFixed(2)+"   σ² = "+(dk==="dD"?"35/12":dk==="dU"?"1/12":dk==="dA"?"1/8":"1"),G.p.x,G.p.y-L*0.9,{size:TK,c:DK[PU]});
   SF.part(1);
   // 大数の法則
   const xm=niceUp(Math.max(10,draws)),dev=Math.sqrt(D.s2)*1.2;
