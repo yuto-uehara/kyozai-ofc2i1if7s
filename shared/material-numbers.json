@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 158,
+  "nextNumber": 159,
   "materials": [
     {
       "number": 1,
@@ -798,6 +798,11 @@
       "number": 157,
       "key": "tools/travel-stops-meetings/",
       "title": "停止・追いつき・すれ違いを読む"
+    },
+    {
+      "number": 158,
+      "key": "tools/moving-point-intervals/",
+      "title": "動点の面積を区間ごとに表す"
     }
   ],
   "retiredNumbers": [
