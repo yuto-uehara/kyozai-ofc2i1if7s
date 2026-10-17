@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 157,
+  "nextNumber": 158,
   "materials": [
     {
       "number": 1,
@@ -793,6 +793,11 @@
       "number": 156,
       "key": "tools/linear-measurement-model/",
       "title": "測定値から一次関数とみなす"
+    },
+    {
+      "number": 157,
+      "key": "tools/travel-stops-meetings/",
+      "title": "停止・追いつき・すれ違いを読む"
     }
   ],
   "retiredNumbers": [
