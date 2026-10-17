@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 109,
+  "nextNumber": 110,
   "materials": [
     {
       "number": 1,
@@ -553,6 +553,11 @@
       "number": 108,
       "key": "tools/circle-tangent/",
       "title": "円周上の点を通る接線"
+    },
+    {
+      "number": 109,
+      "key": "tools/equidistant-circle/",
+      "title": "線分と半直線まで等距離の円"
     }
   ],
   "retiredNumbers": [
