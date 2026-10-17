@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 147,
+  "nextNumber": 148,
   "materials": [
     {
       "number": 1,
@@ -743,6 +743,11 @@
       "number": 146,
       "key": "tools/simultaneous-elimination/",
       "title": "加減法で連立方程式を解く"
+    },
+    {
+      "number": 147,
+      "key": "tools/simultaneous-substitution/",
+      "title": "代入法で連立方程式を解く"
     }
   ],
   "retiredNumbers": [
