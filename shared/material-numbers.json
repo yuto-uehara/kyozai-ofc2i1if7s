@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 179,
+  "nextNumber": 180,
   "materials": [
     {
       "number": 1,
@@ -903,6 +903,11 @@
       "number": 178,
       "key": "tools/quadrilateral-area-transform/",
       "title": "四角形を等積な三角形に変える"
+    },
+    {
+      "number": 179,
+      "key": "tools/equally-likely-outcomes/",
+      "title": "同様に確からしい場合を選ぶ"
     }
   ],
   "retiredNumbers": [
