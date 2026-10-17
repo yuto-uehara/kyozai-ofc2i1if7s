@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270"><rect width="480" height="270" fill="#faf8f2"/><g text-anchor="middle" font-family="sans-serif" fill="#3a332a"><text x="240" y="65" font-size="22">座標の差から2点間の距離へ</text><text x="240" y="145" font-size="27">座標差 → 直角 → 距離</text><text x="240" y="220" font-size="19">直角三角形と式を対応させる</text></g></svg>

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 251,
+  "nextNumber": 254,
   "materials": [
     {
       "number": 1,
@@ -1263,6 +1263,21 @@
       "number": 250,
       "key": "tools/pythagoras-converse-check/",
       "title": "三平方の定理の逆で判定する"
+    },
+    {
+      "number": 251,
+      "key": "tools/special-right-triangle-ratios/",
+      "title": "平面図形と特別な直角三角形"
+    },
+    {
+      "number": 252,
+      "key": "tools/coordinate-distance-pythagoras/",
+      "title": "座標の差から2点間の距離へ"
+    },
+    {
+      "number": 253,
+      "key": "tools/circle-length-pythagoras/",
+      "title": "円の弦と接線の長さを求める"
     }
   ],
   "retiredNumbers": [
