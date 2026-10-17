@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 173,
+  "nextNumber": 175,
   "materials": [
     {
       "number": 1,
@@ -873,6 +873,16 @@
       "number": 172,
       "key": "tools/parallelogram-conditions-proof/",
       "title": "平行四辺形になる5条件の理由"
+    },
+    {
+      "number": 173,
+      "key": "tools/special-quadrilaterals/",
+      "title": "長方形・ひし形・正方形の定義と関係"
+    },
+    {
+      "number": 174,
+      "key": "tools/quadrilateral-diagonals/",
+      "title": "平行四辺形の対角線で形を判定"
     }
   ],
   "retiredNumbers": [
