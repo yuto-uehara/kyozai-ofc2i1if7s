@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 98,
+  "nextNumber": 99,
   "materials": [
     {
       "number": 1,
@@ -498,6 +498,11 @@
       "number": 97,
       "key": "tools/prime-numbers/",
       "title": "約数から素数を見分ける"
+    },
+    {
+      "number": 98,
+      "key": "tools/calculation-order/",
+      "title": "累乗を含む式の計算順序"
     }
   ],
   "retiredNumbers": [
