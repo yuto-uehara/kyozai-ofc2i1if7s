@@ -7,6 +7,13 @@ var relative=path.startsWith(base.pathname)?path.slice(base.pathname.length):'';
 var key=relative==='player.html'?(new URLSearchParams(location.search).get('v')||''):relative.replace(/index\.html$/,'');
 var item=materials.find(function(m){return m.key===key||(m.aliases||[]).includes(key);});
 if(!item)return;
+// Refresh an explicit catalogue return without losing the selected grade/unit.
+var back=document.querySelector('a.back');
+if(back){var destination=new URL(back.href),catalog=new URL('index.html',base);if(destination.origin===catalog.origin&&destination.pathname===catalog.pathname){
+try{var saved=JSON.parse(sessionStorage.getItem('kyozai.catalogReturn')||'null');if(saved&&saved.lesson===location.pathname){var previous=new URL(saved.catalog);if(previous.origin===catalog.origin&&(previous.pathname===catalog.pathname||previous.pathname===base.pathname)){previous.pathname=catalog.pathname;destination=previous;}}}catch(e){}
+function refreshReturn(){destination.searchParams.set('return',String(Date.now()));back.href=destination.href;}
+refreshReturn();back.addEventListener('click',refreshReturn);
+}}
 var label='No. '+String(item.number).padStart(3,'0');
 document.documentElement.dataset.materialNumber=String(item.number);
 document.title=label+'｜'+document.title;
