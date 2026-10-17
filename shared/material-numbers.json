@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 207,
+  "nextNumber": 210,
   "materials": [
     {
       "number": 1,
@@ -1043,6 +1043,21 @@
       "number": 206,
       "key": "tools/radical-expansion/",
       "title": "根号を含む式に分配と公式を使う"
+    },
+    {
+      "number": 207,
+      "key": "tools/radical-approximation/",
+      "title": "根号の変形で近似値を求める"
+    },
+    {
+      "number": 208,
+      "key": "tools/radical-expression-value/",
+      "title": "式を整理してから根号の値を代入する"
+    },
+    {
+      "number": 209,
+      "key": "tools/paper-square-root-ratio/",
+      "title": "半分にしても同じ形の紙と√2"
     }
   ],
   "retiredNumbers": [
