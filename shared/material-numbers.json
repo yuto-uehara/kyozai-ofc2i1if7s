@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "nextNumber": 143,
+  "nextNumber": 144,
   "materials": [
     {
       "number": 1,
@@ -723,6 +723,11 @@
       "number": 142,
       "key": "tools/consecutive-three-sum/",
       "title": "連続する3整数の和を説明する"
+    },
+    {
+      "number": 143,
+      "key": "tools/quantity-invariance/",
+      "title": "式から影響する量を見分ける"
     }
   ],
   "retiredNumbers": [
